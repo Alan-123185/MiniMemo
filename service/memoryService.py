@@ -1,0 +1,2 @@
+class memoryService:
+    pass
