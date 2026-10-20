@@ -21,3 +21,4 @@ __pycache__/
 # 日志与临时文件
 *.log
 .DS_Store
+.env

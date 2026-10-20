@@ -21,3 +21,10 @@ class agentRepository:
         self.session.add(new_agent)
         self.session.commit()
 
+
+    def get_agents(self):
+        """
+        获取所有被记忆接管的智能体列表
+        """
+        return self.session.query(Agent).all()
+

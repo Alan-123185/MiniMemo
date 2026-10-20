@@ -5,14 +5,15 @@ from repository.dependencies import get_agent_repo
 
 router = APIRouter()
 
-@router.get("/MiniMemo/agents")
-async def get_agents():
+@router.get("/MiniMemo/agent/list")
+async def get_agents(agent_rep=Depends(get_agent_repo)):
     """
     获取所有被记忆接管的智能体列表
     """
-    return Result.success()
+    agent_list = agent_rep.get_agents()
+    return Result(response=agent_list)
 
-@router.post("/MiniMemo/register_agent")
+@router.post("/MiniMemo/agent/register")
 async def register_agent(agent_id: str,agent_rep=Depends(get_agent_repo)):
     """
     注册一个智能体到记忆接管系统
@@ -20,4 +21,5 @@ async def register_agent(agent_id: str,agent_rep=Depends(get_agent_repo)):
     """
     agent_rep.register_agent(agent_id)
     return Result.success()
+
 
