@@ -1,0 +1,23 @@
+# IDE
+.idea/
+.vscode/
+
+# Python 虚拟环境
+.venv/
+venv/
+ENV/
+
+# Python 字节码与缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 数据库
+*.db
+*.sqlite
+*.sqlite3
+
+# 日志与临时文件
+*.log
+.DS_Store
