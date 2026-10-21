@@ -5,6 +5,7 @@ from service.memoryService import memoryService
 
 
 
+
 def get_memory_service(memory_repository=Depends(get_memory_repo), origin_content_repository=Depends(get_origin_content_repo)) -> memoryService:
     return memoryService(
         memory_repository=memory_repository,
