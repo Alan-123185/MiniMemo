@@ -25,4 +25,6 @@ class Settings(BaseSettings):
     TOP_K:int=5    #搜索记忆时的最大返回条数
 
 
+    negative_words:list[str]=["不", "没", "无", "别", "勿", "非", "未", "莫", "甭", "不要", "没有"]  #负面词汇列表，用于过滤记忆中的负面内容
+
 settings = Settings()

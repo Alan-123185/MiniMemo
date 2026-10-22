@@ -26,12 +26,22 @@ class memoryService:
         # 这里可以实现将记忆存储到数据库或其他存储介质的逻辑
 
         def _process_similarity(memories:list) -> list:
+
+            def _nagative_common(memory1:str,memory2:str) -> bool:
+                """
+                负面判断，判断是否有负面内容，如果有则删除
+                """
+                for negative_word in settings.negative_words:
+                    if (negative_word in memory1 and negative_word in memory2) or (negative_word not in memory1 and negative_word not in memory2):
+                        return True
+                return False
+
             list_to_remove=[]
             for i in range(len(memories)):
                 for j in range(i+1,len(memories)):
                     if memories[i]["embedding"] and memories[j]["embedding"]:
                         similarity=cosine_similarity(memories[i]["embedding"],memories[j]["embedding"])
-                        if similarity>settings.SIMILARITY_THRESHOLD:
+                        if similarity>settings.SIMILARITY_THRESHOLD and _nagative_common(memories[i]["content"],memories[j]["content"]):
                             list_to_remove.append(j)
             memories = [m for idx, m in enumerate(memories) if idx not in list_to_remove]
             return memories
