@@ -16,7 +16,7 @@ class modelService:
 
 
     @staticmethod
-    def chat(origin_content:str,model:modelConfig,additional_kwargs:dict|None) -> list:
+    def chat(origin_content:str,model:modelConfig,additional_kwargs:dict|None=None) -> list:
         client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
         prompt=MEMORY_PROMPT+"\n"+origin_content
         if additional_kwargs:
@@ -89,23 +89,11 @@ class modelService:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     model_service = modelService()
-    model_service.chat(modelConfig(
+    model_service.chat(
+        "这是一个测试内容",
+        modelConfig(
         model_name="DeepSeek",
         base_url="https://api.chat.csu.edu.cn/v1",
         api_key="sk-JsCtaPDtaGo8eSkgJRcyMETFgWc1yRYmdK0fGCrxJZ7uJpfy"

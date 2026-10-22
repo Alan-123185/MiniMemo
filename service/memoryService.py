@@ -1,8 +1,10 @@
 import numpy as np
+
+from common.requestSchema.searchRequest import searchRequest
 from common.requestSchema.storeRequest import storeRequest
 from config.data import settings
 from config.modelConfig import get_pool
-from models import  originContent
+from models import originContent, Memory
 from repository.embeddingRepository import embeddingRepository
 from repository.memoryRepository import memoryRepository
 from repository.originContentRepository import originContentRepository
@@ -51,11 +53,21 @@ class memoryService:
         for memory in memories_list:
             embedding=modelService.embedding(memory["content"],embedding_model)
             memory["embedding"]=np.asarray(embedding).astype(np.float32).tobytes()
+            memory["embedding_model"]=embedding_model.model_name
         memories_list=_process_similarity(memories_list)  #处理相似内容
         self.memory_repository.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_id=origin_content_id)
 
 
 
+    def search_memory(self, search_request:searchRequest) -> list[str]:
+        """
+        搜索指定智能体的记忆
+        """
+        model=get_pool()
+        embedding_model = model.embedding
+        query_embedding=modelService.embedding(search_request.query,embedding_model)
+        memory_list=self.memory_repository.search_memory(agent_id=search_request.agent_id,query=query_embedding,embedding_model=embedding_model.model_name)
+        return [memory.content for memory in memory_list]
 
 
 

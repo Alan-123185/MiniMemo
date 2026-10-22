@@ -17,3 +17,10 @@ class embeddingRepository:
         for memory_vector in memory_vectors:
             self.session.add(memory_vector)
         self.session.commit()
+
+
+    def query_vectors(self,agent_id:str,embedding_model:str)-> list[memoryVector]:
+        """
+        查询指定智能体的向量
+        """
+        return self.session.query(memoryVector).filter_by(agent_id = agent_id , embedding_model = embedding_model).all()

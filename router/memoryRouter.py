@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from common.requestSchema.searchRequest import searchRequest
 from common.requestSchema.storeRequest import storeRequest
 from common.result import Result
 from service.dependencies import get_memory_service
@@ -7,9 +8,18 @@ from service.dependencies import get_memory_service
 router=APIRouter()
 
 @router.post("/MiniMemo/memory/add")
-async def add_memory(store_request:storeRequest,store_service=Depends(get_memory_service)):
+async def add_memory(store_request:storeRequest,memory_service=Depends(get_memory_service)):
     """
     为指定的智能体添加记忆
     """
-    store_service.add_memory(store_request)
-    return Result()
+    memory_service.add_memory(store_request)
+    return Result.success()
+
+@router.post("/MiniMemo/memory/search")
+async def search_memory(search_request:searchRequest,memory_service=Depends(get_memory_service)):
+    """
+    搜索指定智能体的记忆
+    """
+    memories=memory_service.search_memory(search_request)
+    return Result(response=memories)
+
