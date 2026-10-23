@@ -2,6 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from config.data import settings
+
 
 class modelConfig(BaseModel):
     model_name:str
@@ -10,8 +12,8 @@ class modelConfig(BaseModel):
 
 
 class modelPool(BaseModel):
-    embedding:modelConfig
-    chat:modelConfig
+    embedding:modelConfig=modelConfig(model_name=settings.DEFAULT_MODEL,base_url=settings.DEFAULT_BASE_URL,api_key=settings.DEFAULT_API_KEY)
+    chat:modelConfig=modelConfig(model_name=settings.DEFAULT_EMBEDDING_MODEL,base_url=settings.DEFAULT_BASE_URL,api_key=settings.DEFAULT_API_KEY)
 
 _model_pool: Optional[modelPool] = None
 

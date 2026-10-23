@@ -9,7 +9,7 @@ class agentRepository:
 
 
 
-    def register_agent(self,agent:Agent) -> None:
+    async def register_agent(self,agent:Agent) -> None:
         # Check if the agent already exists
         existing_agent = self.session.query(Agent).filter_by(id=agent.id).first()
         if existing_agent:
@@ -23,7 +23,7 @@ class agentRepository:
         self.session.commit()
 
 
-    def get_agents(self):
+    async def get_agents(self):
         """
         获取所有被记忆接管的智能体列表
         """

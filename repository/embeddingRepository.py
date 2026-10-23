@@ -1,7 +1,11 @@
+import heapq
 
+import numpy as np
 from sqlalchemy.orm import Session
 
+from config.data import settings
 from models.memoryVector import memoryVector
+from tools import numpyTool
 
 
 class embeddingRepository:
@@ -19,8 +23,19 @@ class embeddingRepository:
         self.session.commit()
 
 
-    def query_vectors(self,agent_id:str,embedding_model:str)-> list[memoryVector]:
+
+    def query_vectors(self,query:list[float],agent_id:str,embedding_model:str)-> list[memoryVector]:
         """
         查询指定智能体的向量
         """
-        return self.session.query(memoryVector).filter_by(agent_id = agent_id , embedding_model = embedding_model).all()
+        vector_list = self.session.query(memoryVector).filter_by(agent_id=agent_id, embedding_model=embedding_model).all()
+        scored = [
+            (numpyTool.cosine_similarity(query, np.frombuffer(v.embedding, dtype=np.float32).tolist()), v)
+            for v in vector_list
+        ]
+        top = heapq.nlargest(settings.TOP_K, scored, key=lambda x: x[0])
+        return [v for _, v in top]  # 返回前top_k条的memoryVector对象列表，按相似度从高到低排序
+
+
+
+

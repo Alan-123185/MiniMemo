@@ -14,6 +14,8 @@ class Settings(BaseSettings):
 
     DEFAULT_API_KEY:str=""
 
+    DEFAULT_EMBEDDING_MODEL:str=""
+
     DB_PATH:str="sqlite:///./identifier.sqlite"
 
 
@@ -23,6 +25,10 @@ class Settings(BaseSettings):
     SIMILARITY_THRESHOLD:float=0.85  #相似度阈值，超过该阈值的记忆将被认为是重复的
 
     TOP_K:int=5    #搜索记忆时的最大返回条数
+
+    SIM_TO_THROW:float=0.95  #相似度超过该阈值的记忆将被丢弃，不再存储
+
+
 
 
     negative_words:list[str]=["不", "没", "无", "别", "勿", "非", "未", "莫", "甭", "不要", "没有"]  #负面词汇列表，用于过滤记忆中的负面内容

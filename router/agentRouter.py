@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from common.result import Result
+from models import Agent
 from repository.dependencies import get_agent_repo
 
 router = APIRouter()
@@ -19,7 +20,7 @@ async def register_agent(agent_id: str,agent_rep=Depends(get_agent_repo)):
     注册一个智能体到记忆接管系统
     带唯一标识符
     """
-    agent_rep.register_agent(agent_id)
+    await agent_rep.register_agent(Agent(agent_id))
     return Result.success()
 
 

@@ -15,4 +15,4 @@ class Memory(Base):
     content: Mapped[str]=mapped_column(nullable=False)
     create_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now)
     update_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now)
-    origin_content_id: Mapped[str] = mapped_column(ForeignKey("origin_content.id"), nullable=True)
+    origin_content_id: Mapped[str|None] = mapped_column(ForeignKey("origin_content.id"), nullable=True)

@@ -32,9 +32,9 @@ class memoryService:
                 负面判断，判断是否有负面内容，如果有则删除
                 """
                 for negative_word in settings.negative_words:
-                    if (negative_word in memory1 and negative_word in memory2) or (negative_word not in memory1 and negative_word not in memory2):
-                        return True
-                return False
+                    if (negative_word in memory1 and negative_word not in memory2) or (negative_word not in memory1 and negative_word in memory2):
+                        return False
+                return True
 
             list_to_remove=[]
             for i in range(len(memories)):
@@ -43,12 +43,32 @@ class memoryService:
                         similarity=cosine_similarity(memories[i]["embedding"],memories[j]["embedding"])
                         if similarity>settings.SIMILARITY_THRESHOLD and _nagative_common(memories[i]["content"],memories[j]["content"]):
                             list_to_remove.append(j)
-            memories = [m for idx, m in enumerate(memories) if idx not in list_to_remove]
-            return memories
 
+            memories = [m for idx, m in enumerate(memories) if idx not in list_to_remove]
+            list_should_remove=[]
+            for memo in memories:
+                need_to_judge = []
+                vector_list=self.embedding_repository.query_vectors(agent_id=store_request.agent_id,embedding_model=memo["embedding_model"],query=memo["embedding"])
+                for vector in vector_list:
+                    similarity = cosine_similarity(vector.embedding, memo["embedding"])
+                    if similarity>=settings.SIM_TO_THROW:
+                        # 如果相似度超过阈值，则从记忆列表中移除该记忆
+                        list_should_remove.append(memo)
+                        break
+                    elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
+                        # 如果相似度在阈值范围内，交给大模型判断
+                        need_to_judge.append(vector)
+                if need_to_judge:
+                   memo_list= self.memory_repository.search_memory(vector_list=need_to_judge)
+                   pan= modelService.judge_similarity(fact1=memo["content"],fact2=[m.content for m in memo_list], model=get_pool().chat)
+                   if not pan:
+                       # 如果大模型判断为不相似，则从记忆列表中移除该记忆
+                       list_should_remove.append(memo)
+            return [m for m in memories if m not in list_should_remove]
 
         kwargs=store_request.additional_kwargs
-        origin_content=originContent(agent_id=store_request.agent_id,
+        origin_content=originContent(
+                      agent_id=store_request.agent_id,
                       content=store_request.origin_content,
                       additional_kwargs=store_request.additional_kwargs
                       )
@@ -59,7 +79,7 @@ class memoryService:
         model=get_pool()
         chat_model=model.chat
         embedding_model=model.embedding
-        memories_list=modelService.chat(origin_content=origin_content.content, model=chat_model, additional_kwargs=kwargs)
+        memories_list=modelService.to_memory(origin_content=origin_content.content, model=chat_model, additional_kwargs=kwargs)
         for memory in memories_list:
             embedding=modelService.embedding(memory["content"],embedding_model)
             memory["embedding"]=np.asarray(embedding).astype(np.float32).tobytes()
@@ -76,7 +96,8 @@ class memoryService:
         model=get_pool()
         embedding_model = model.embedding
         query_embedding=modelService.embedding(search_request.query,embedding_model)
-        memory_list=self.memory_repository.search_memory(agent_id=search_request.agent_id,query=query_embedding,embedding_model=embedding_model.model_name)
+        vector_list=self.embedding_repository.query_vectors(agent_id=search_request.agent_id,embedding_model=embedding_model.model_name,query=query_embedding)
+        memory_list=self.memory_repository.search_memory(vector_list=vector_list)
         return [memory.content for memory in memory_list]
 
 

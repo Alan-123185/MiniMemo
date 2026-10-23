@@ -5,7 +5,9 @@ from config.data import settings
 from config.modelConfig import modelConfig
 from openai import OpenAI
 from loguru import logger
+
 from prompt.makeMemoryPrompt import MEMORY_PROMPT
+from prompt.similarityJudgePrompt import similarity_judge_prompt
 from tools.processJSON import json_to_dict
 
 
@@ -13,10 +15,8 @@ class modelService:
 
 
 
-
-
     @staticmethod
-    def chat(origin_content:str,model:modelConfig,additional_kwargs:dict|None=None) -> list:
+    def to_memory(origin_content:str,model:modelConfig,additional_kwargs:dict|None=None) -> list:
         client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
         prompt=MEMORY_PROMPT+"\n"+origin_content
         if additional_kwargs:
@@ -41,6 +41,31 @@ class modelService:
         raise RuntimeError("记忆格式化失败")
 
 
+
+    @staticmethod
+    def judge_similarity(fact1:str,fact2:list[str],model:modelConfig) -> bool:
+        client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
+        prompt=similarity_judge_prompt.format(fact=fact1,existing_memories=fact2)
+        for i in range(settings.MAX_RETRY_TIMES):
+            try:
+                res=client.chat.completions.create(
+                    model=model.model_name,
+                    messages=[{"role": "user", "content":prompt}],
+                )
+                output = res.choices[0].message.content
+                if int(output)==1 :
+                    return True
+                elif int(output)==0:
+                    return False
+                else:
+                    raise ValueError(f"Unexpected output: {output}")
+            except Exception as e:
+                logger.info(f"记忆相似度判断失败({i+1}/{settings.MAX_RETRY_TIMES})")
+                if i==settings.MAX_RETRY_TIMES-1:
+                    logger.error(f"记忆相似度判断失败，错误信息：{e}")
+                    raise e
+                time.sleep(2 ** i)
+        raise RuntimeError("记忆相似度判断失败")
 
 
 
