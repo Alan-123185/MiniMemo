@@ -1,15 +1,15 @@
 import numpy as np
 
-from common.requestSchema.searchRequest import searchRequest
-from common.requestSchema.storeRequest import storeRequest
-from config.data import settings
-from config.modelConfig import get_pool
-from models import originContent, Memory
-from repository.embeddingRepository import embeddingRepository
-from repository.memoryRepository import memoryRepository
-from repository.originContentRepository import originContentRepository
-from service.modelService import modelService
-from tools.numpyTool import cosine_similarity
+from  minimemo.common.requestSchema.searchRequest import searchRequest
+from  minimemo.common.requestSchema.storeRequest import storeRequest
+from  minimemo.config.data import settings
+from  minimemo.config.modelConfig import get_pool
+from  minimemo.models import originContent, Memory
+from  minimemo.repository.embeddingRepository import embeddingRepository
+from  minimemo.repository.memoryRepository import memoryRepository
+from  minimemo.repository.originContentRepository import originContentRepository
+from  minimemo.service.modelService import modelService
+from  minimemo.tools.numpyTool import cosine_similarity
 
 
 class memoryService:

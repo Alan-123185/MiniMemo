@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy import LargeBinary, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from db.Base import Base
+from  minimemo.db.Base import Base
 
 
 class memoryVector(Base):

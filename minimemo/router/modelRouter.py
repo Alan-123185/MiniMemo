@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from common.result import Result
-from config.modelConfig import modelPool
-from config import modelConfig
+from  minimemo.common.result import Result
+from  minimemo.config.modelConfig import modelPool
+from  minimemo.config import modelConfig
 
 router=APIRouter()
 

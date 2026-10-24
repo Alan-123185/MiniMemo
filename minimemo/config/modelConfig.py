@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from config.data import settings
+from minimemo.config.data import settings
 
 
 class modelConfig(BaseModel):
@@ -12,8 +12,8 @@ class modelConfig(BaseModel):
 
 
 class modelPool(BaseModel):
-    embedding:modelConfig=modelConfig(model_name=settings.DEFAULT_MODEL,base_url=settings.DEFAULT_BASE_URL,api_key=settings.DEFAULT_API_KEY)
-    chat:modelConfig=modelConfig(model_name=settings.DEFAULT_EMBEDDING_MODEL,base_url=settings.DEFAULT_BASE_URL,api_key=settings.DEFAULT_API_KEY)
+    embedding:modelConfig=modelConfig(model_name=settings.DEFAULT_EMBEDDING_MODEL,base_url=settings.DEFAULT_BASE_URL,api_key=settings.DEFAULT_API_KEY)
+    chat:modelConfig=modelConfig(model_name=settings.DEFAULT_MODEL,base_url=settings.DEFAULT_BASE_URL,api_key=settings.DEFAULT_API_KEY)
 
 _model_pool: Optional[modelPool] = None
 
@@ -22,6 +22,7 @@ def get_pool() -> modelPool:
         raise RuntimeError("模型池未初始化")
     return _model_pool
 
-def set_pool(pool: modelPool):
+def set_pool(pool: modelPool=modelPool()):
     global _model_pool
     _model_pool = pool
+

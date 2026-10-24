@@ -6,7 +6,7 @@ from sqlalchemy import DateTime, ForeignKey, JSON, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column
 
-from db.Base import Base
+from  minimemo.db.Base import Base
 
 
 class originContent(Base):

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models.agent import Agent
+from  minimemo.models.agent import Agent
 
 
 class agentRepository:

@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
-from common.requestSchema.storeRequest import storeRequest
-from models import originContent
+from  minimemo.models import originContent
 
 
 class originContentRepository:

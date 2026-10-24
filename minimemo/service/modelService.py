@@ -1,14 +1,14 @@
 import time
 from functools import lru_cache
 
-from config.data import settings
-from config.modelConfig import modelConfig
+from  minimemo.config.data import settings
+from  minimemo.config.modelConfig import modelConfig
 from openai import OpenAI
 from loguru import logger
 
-from prompt.makeMemoryPrompt import MEMORY_PROMPT
-from prompt.similarityJudgePrompt import similarity_judge_prompt
-from tools.processJSON import json_to_dict
+from  minimemo.prompt.makeMemoryPrompt import MEMORY_PROMPT
+from  minimemo.prompt.similarityJudgePrompt import similarity_judge_prompt
+from  minimemo.tools.processJSON import json_to_dict
 
 
 class modelService:

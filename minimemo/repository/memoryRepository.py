@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy.orm import Session
-from models import Memory
-from models.memoryVector import memoryVector
+from  minimemo.models import Memory
+from  minimemo.models.memoryVector import memoryVector
 
 
 class memoryRepository:

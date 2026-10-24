@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 
-from common.requestSchema.searchRequest import searchRequest
-from common.requestSchema.storeRequest import storeRequest
-from common.result import Result
-from service.dependencies import get_memory_service
+from  minimemo.common.requestSchema.searchRequest import searchRequest
+from  minimemo.common.requestSchema.storeRequest import storeRequest
+from  minimemo.common.result import Result
+from  minimemo.service.dependencies import get_memory_service
 
 router=APIRouter()
 

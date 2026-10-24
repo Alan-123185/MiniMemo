@@ -3,9 +3,9 @@ import heapq
 import numpy as np
 from sqlalchemy.orm import Session
 
-from config.data import settings
-from models.memoryVector import memoryVector
-from tools import numpyTool
+from  minimemo.config.data import settings
+from  minimemo.models.memoryVector import memoryVector
+from  minimemo.tools import numpyTool
 
 
 class embeddingRepository:

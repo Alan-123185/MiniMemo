@@ -1,0 +1,32 @@
+[project]
+name = "minimemo"
+version = "0.1.0"
+description = "面向智能体的记忆系统：从原始内容中提取记忆、向量化存储并支持语义检索"
+requires-python = ">=3.11"
+
+# 版本下限取当前虚拟环境中实际验证过的版本
+dependencies = [
+    "fastapi>=0.146.0",
+    "uvicorn>=0.54.0",
+    "sqlalchemy>=2.1.0",
+    "pydantic>=2.14.0",   # 代码同时使用 pydantic v2 BaseModel 与 pydantic.v1.BaseSettings
+    "openai>=3.35.0",
+    "numpy>=2.5.0",
+    "loguru>=0.7.3",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# 根目录的 main.py 是应用入口，作为顶层模块单独打包
+py-modules = ["main"]
+
+[tool.setuptools.packages.find]
+# 业务代码已统一收拢到 minimemo/ 下。
+# 该包除 models/ 与根 __init__.py 外，子目录均无 __init__.py，
+# 因此必须开启命名空间包发现，否则会被静默漏掉。
+# __pycache__ 由 setuptools 内置规则排除，无需手写。
+namespaces = true
+include = ["minimemo*"]

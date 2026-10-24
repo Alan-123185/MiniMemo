@@ -1,9 +1,7 @@
 from pathlib import Path
+from pydantic_settings import BaseSettings
 
-from pydantic.v1 import BaseSettings
-
-
-ENV_FILE=Path(__file__).resolve().parent / ".env"
+ENV_FILE=Path(__file__).resolve().parent.parent / ".env"
 
 class Settings(BaseSettings):
     model_config = {"env_file": str(ENV_FILE), "env_file_encoding": "utf-8"}
@@ -16,7 +14,7 @@ class Settings(BaseSettings):
 
     DEFAULT_EMBEDDING_MODEL:str=""
 
-    DB_PATH:str="sqlite:///./identifier.sqlite"
+    DB_PATH:str="sqlite:///"+"D:/IDEA文件/python文件/MiniMemo/identifier.sqlite"
 
 
     MAX_RETRY_TIMES:int=3   #大模型请求失败最大重试次数

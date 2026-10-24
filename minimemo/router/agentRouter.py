@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from common.result import Result
-from models import Agent
-from repository.dependencies import get_agent_repo
+from minimemo.common.result import Result
+from minimemo.models import Agent
+from minimemo.repository.dependencies import get_agent_repo
 
 router = APIRouter()
 

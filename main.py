@@ -1,10 +1,10 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from db.Base import Base
-from db.session import engine
-from router.agentRouter import router as agent_router
-from router.modelRouter import router as model_router
-from router.memoryRouter import router as memory_router
+from minimemo.db.Base import Base
+from minimemo.db.session import engine
+from minimemo.router.agentRouter import router as agent_router
+from minimemo.router.modelRouter import router as model_router
+from minimemo.router.memoryRouter import router as memory_router
 
 app = FastAPI()
 
