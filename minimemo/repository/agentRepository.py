@@ -1,3 +1,4 @@
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from  minimemo.models.agent import Agent
@@ -9,11 +10,12 @@ class agentRepository:
 
 
 
-    async def register_agent(self,agent:Agent) -> None:
+    def register_agent(self,agent:Agent) -> None:
         # Check if the agent already exists
         existing_agent = self.session.query(Agent).filter_by(id=agent.id).first()
         if existing_agent:
-            raise ValueError(f"Agent with ID {agent.id} already exists.")
+            logger.info(f"Agent with id {agent.id} already exists. Skipping registration.")
+            return
 
         # Create a new agent instance
         new_agent = Agent(id=agent.id)

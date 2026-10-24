@@ -6,7 +6,7 @@ from  minimemo.config.modelConfig import modelConfig
 from openai import OpenAI
 from loguru import logger
 
-from  minimemo.prompt.makeMemoryPrompt import MEMORY_PROMPT
+from  minimemo.prompt.makeMemoryPrompt import MAKE_MEMORY_PROMPT
 from  minimemo.prompt.similarityJudgePrompt import similarity_judge_prompt
 from  minimemo.tools.processJSON import json_to_dict
 
@@ -18,7 +18,7 @@ class modelService:
     @staticmethod
     def to_memory(origin_content:str,model:modelConfig,additional_kwargs:dict|None=None) -> list:
         client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
-        prompt=MEMORY_PROMPT+"\n"+origin_content
+        prompt=MAKE_MEMORY_PROMPT+"\n"+origin_content
         if additional_kwargs:
             prompt+= "\n此外，用户还输入了少量附加信息:"
             for key, value in additional_kwargs.items():

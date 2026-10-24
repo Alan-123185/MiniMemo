@@ -24,3 +24,4 @@ async def register_agent(agent_id: str,agent_rep=Depends(get_agent_repo)):
     return Result.success()
 
 
+

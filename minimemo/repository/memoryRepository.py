@@ -10,7 +10,6 @@ class memoryRepository:
         self.session=session
 
 
-
     def add_memory(self,memories:list[dict],agent_id:str,origin_content_id:str|None=None) -> None:
         for memory in memories:
             memo=Memory(
@@ -18,6 +17,8 @@ class memoryRepository:
                 content=memory["content"],
                 agent_id=agent_id,
                 origin_content_id=origin_content_id,
+                type=memory["type"],
+                status=memory["status"]
             )
             self.session.add(memo)
             memory_id=memo.id
@@ -40,11 +41,17 @@ class memoryRepository:
 
 
 
+
     def remove_memory(self, memory_id:str) -> None:
         #删除记忆
         self.session.query(Memory).filter(Memory.id==memory_id).delete()
         self.session.query(memoryVector).filter(memoryVector.memory_id==memory_id).delete()
         self.session.commit()
+
+
+
+
+
 
 
 

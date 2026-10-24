@@ -1,9 +1,7 @@
 import datetime
 import uuid
-
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
-
 from  minimemo.db.Base import Base
 
 
@@ -16,3 +14,6 @@ class Memory(Base):
     create_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now)
     update_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now)
     origin_content_id: Mapped[str|None] = mapped_column(ForeignKey("origin_content.id"), nullable=True)
+    type:Mapped[str] = mapped_column(nullable=False)
+    status:Mapped[str] = mapped_column(nullable=False)
+

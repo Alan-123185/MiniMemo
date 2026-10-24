@@ -1,10 +1,10 @@
 import numpy as np
-
 from  minimemo.common.requestSchema.searchRequest import searchRequest
 from  minimemo.common.requestSchema.storeRequest import storeRequest
 from  minimemo.config.data import settings
 from  minimemo.config.modelConfig import get_pool
-from  minimemo.models import originContent, Memory
+from minimemo.models import originContent, Memory
+from minimemo.prompt.memoryPrompt import MEMORY_PROMPT
 from  minimemo.repository.embeddingRepository import embeddingRepository
 from  minimemo.repository.memoryRepository import memoryRepository
 from  minimemo.repository.originContentRepository import originContentRepository
@@ -89,7 +89,7 @@ class memoryService:
 
 
 
-    def search_memory(self, search_request:searchRequest) -> list[str]:
+    def search_memory(self, search_request:searchRequest) -> list[Memory]:
         """
         搜索指定智能体的记忆
         """
@@ -98,7 +98,19 @@ class memoryService:
         query_embedding=modelService.embedding(search_request.query,embedding_model)
         vector_list=self.embedding_repository.query_vectors(agent_id=search_request.agent_id,embedding_model=embedding_model.model_name,query=query_embedding)
         memory_list=self.memory_repository.search_memory(vector_list=vector_list)
-        return [memory.content for memory in memory_list]
+        return [memory for memory in memory_list]
+
+
+    #自动装载记忆
+    def load_memory(self, search_request:searchRequest) -> str:
+        """
+        加载指定智能体的所有记忆
+        """
+        memory_list=self.search_memory(search_request)
+        return MEMORY_PROMPT+"\n".join([memory.content for memory in memory_list])
+
+
+
 
 
 
