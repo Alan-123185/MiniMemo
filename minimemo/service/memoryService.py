@@ -1,3 +1,5 @@
+import asyncio
+
 import numpy as np
 from  minimemo.common.requestSchema.searchRequest import searchRequest
 from  minimemo.common.requestSchema.storeRequest import storeRequest
@@ -19,15 +21,15 @@ class memoryService:
         self.origin_content_repository = origin_content_repository
         self.embedding_repository = embedding_repository
 
-    def add_memory(self, store_request: storeRequest):
+    async def add_memory(self, store_request: storeRequest):
         """
         为指定的智能体添加记忆，这里也是添加记忆的核心逻辑
         """
         # 这里可以实现将记忆存储到数据库或其他存储介质的逻辑
 
-        def _process_similarity(memories:list) -> list:
+        async def _process_similarity(memories:list) -> list:
 
-            def _nagative_common(memory1:str,memory2:str) -> bool:
+            async def _negative_common(memory1:str,memory2:str) -> bool:
                 """
                 负面判断，判断是否有负面内容，如果有则删除
                 """
@@ -41,7 +43,7 @@ class memoryService:
                 for j in range(i+1,len(memories)):
                     if memories[i]["embedding"] and memories[j]["embedding"]:
                         similarity=cosine_similarity(memories[i]["embedding"],memories[j]["embedding"])
-                        if similarity>settings.SIMILARITY_THRESHOLD and _nagative_common(memories[i]["content"],memories[j]["content"]):
+                        if similarity>settings.SIMILARITY_THRESHOLD and await _negative_common(memories[i]["content"],memories[j]["content"]):
                             list_to_remove.append(j)
 
             memories = [m for idx, m in enumerate(memories) if idx not in list_to_remove]
@@ -59,7 +61,7 @@ class memoryService:
                         # 如果相似度在阈值范围内，交给大模型判断
                         need_to_judge.append(vector)
                 if need_to_judge:
-                   memo_list= self.memory_repository.search_memory(vector_list=need_to_judge)
+                   memo_list=await asyncio.to_thread(self.memory_repository.search_memory, vector_list=need_to_judge)
                    pan= modelService.judge_similarity(fact1=memo["content"],fact2=[m.content for m in memo_list], model=get_pool().chat)
                    if not pan:
                        # 如果大模型判断为不相似，则从记忆列表中移除该记忆
@@ -79,34 +81,34 @@ class memoryService:
         model=get_pool()
         chat_model=model.chat
         embedding_model=model.embedding
-        memories_list=modelService.to_memory(origin_content=origin_content.content, model=chat_model, additional_kwargs=kwargs)
+        memories_list=await asyncio.to_thread(modelService.to_memory,origin_content=origin_content.content, model=chat_model, additional_kwargs=kwargs)
         for memory in memories_list:
-            embedding=modelService.embedding(memory["content"],embedding_model)
+            embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
             memory["embedding"]=np.asarray(embedding).astype(np.float32).tobytes()
             memory["embedding_model"]=embedding_model.model_name
-        memories_list=_process_similarity(memories_list)  #处理相似内容
+        memories_list=await _process_similarity(memories_list)  #处理相似内容
         self.memory_repository.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_id=origin_content_id)
 
 
 
-    def search_memory(self, search_request:searchRequest) -> list[Memory]:
+    async def search_memory(self, search_request:searchRequest) -> list[Memory]:
         """
         搜索指定智能体的记忆
         """
         model=get_pool()
         embedding_model = model.embedding
-        query_embedding=modelService.embedding(search_request.query,embedding_model)
+        query_embedding=await asyncio.to_thread(modelService.embedding,search_request.query,embedding_model)
         vector_list=self.embedding_repository.query_vectors(agent_id=search_request.agent_id,embedding_model=embedding_model.model_name,query=query_embedding)
         memory_list=self.memory_repository.search_memory(vector_list=vector_list)
         return [memory for memory in memory_list]
 
 
     #自动装载记忆
-    def load_memory(self, search_request:searchRequest) -> str:
+    async def load_memory(self, search_request:searchRequest) -> str:
         """
         加载指定智能体的所有记忆
         """
-        memory_list=self.search_memory(search_request)
+        memory_list=await self.search_memory(search_request)
         return MEMORY_PROMPT+"\n".join([memory.content for memory in memory_list])
 
 

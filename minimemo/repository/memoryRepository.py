@@ -18,7 +18,7 @@ class memoryRepository:
                 agent_id=agent_id,
                 origin_content_id=origin_content_id,
                 type=memory["type"],
-                status=memory["status"]
+                is_alive=memory["is_alive"]
             )
             self.session.add(memo)
             memory_id=memo.id

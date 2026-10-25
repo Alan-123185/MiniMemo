@@ -15,5 +15,5 @@ class Memory(Base):
     update_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now)
     origin_content_id: Mapped[str|None] = mapped_column(ForeignKey("origin_content.id"), nullable=True)
     type:Mapped[str] = mapped_column(nullable=False)
-    status:Mapped[str] = mapped_column(nullable=False)
+    is_alive:Mapped[bool] = mapped_column(default=True, nullable=False)
 

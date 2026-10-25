@@ -12,7 +12,7 @@ async def add_memory(store_request:storeRequest,memory_service=Depends(get_memor
     """
     为指定的智能体添加记忆
     """
-    memory_service.add_memory(store_request)
+    await memory_service.add_memory(store_request)
     return Result.success()
 
 @router.post("/MiniMemo/memory/search")
@@ -20,6 +20,6 @@ async def search_memory(search_request:searchRequest,memory_service=Depends(get_
     """
     搜索指定智能体的记忆
     """
-    memories=memory_service.search_memory(search_request)
+    memories=await memory_service.search_memory(search_request)
     return Result(response=memories)
 
