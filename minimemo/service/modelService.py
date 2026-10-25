@@ -1,6 +1,7 @@
 import time
 from functools import lru_cache
 
+from minimemo.common.existFact import existFact
 from  minimemo.config.data import settings
 from  minimemo.config.modelConfig import modelConfig
 from openai import OpenAI
@@ -43,22 +44,17 @@ class modelService:
 
 
     @staticmethod
-    def judge_similarity(fact1:str,fact2:list[str],model:modelConfig) -> bool:
+    def judge_similarity(fact1:str,fact2:list[existFact],model:modelConfig) -> dict:
         client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
-        prompt=similarity_judge_prompt.format(fact=fact1,existing_memories=fact2)
+        prompt=similarity_judge_prompt.format(fact=fact1,existing_memories=[f"[ID: {fact.memory_id}] {fact.content}" for fact in fact2])
         for i in range(settings.MAX_RETRY_TIMES):
             try:
                 res=client.chat.completions.create(
                     model=model.model_name,
                     messages=[{"role": "user", "content":prompt}],
                 )
-                output = res.choices[0].message.content
-                if int(output)==1 :
-                    return True
-                elif int(output)==0:
-                    return False
-                else:
-                    raise ValueError(f"Unexpected output: {output}")
+                output =  json_to_dict(res.choices[0].message.content)
+                return output
             except Exception as e:
                 logger.info(f"记忆相似度判断失败({i+1}/{settings.MAX_RETRY_TIMES})")
                 if i==settings.MAX_RETRY_TIMES-1:

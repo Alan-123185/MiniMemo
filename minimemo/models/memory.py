@@ -12,7 +12,11 @@ class Memory(Base):
     agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"))
     content: Mapped[str]=mapped_column(nullable=False)
     create_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now)
-    update_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now)
+    update_time: Mapped[datetime.datetime] = mapped_column(
+        DateTime,
+        default=lambda: datetime.datetime.now(),
+        onupdate=lambda: datetime.datetime.now(),
+    )
     origin_content_id: Mapped[str|None] = mapped_column(ForeignKey("origin_content.id"), nullable=True)
     type:Mapped[str] = mapped_column(nullable=False)
     is_alive:Mapped[bool] = mapped_column(default=True, nullable=False)

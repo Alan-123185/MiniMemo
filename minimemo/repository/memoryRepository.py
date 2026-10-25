@@ -49,8 +49,17 @@ class memoryRepository:
         self.session.commit()
 
 
+    def kill_memory(self, memory_id:str) -> None:
+        #标记记忆为死亡
+        self.session.query(Memory).filter(Memory.id==memory_id).update({"is_alive":False})
+        self.session.commit()
 
 
+    def update_memory(self, memory_id:str, content:str,new_embedding:bytes) -> None:
+        #更新记忆内容
+        self.session.query(Memory).filter(Memory.id==memory_id).update({"content":content})
+        self.session.query(memoryVector).filter(memoryVector.memory_id==memory_id).update({"embedding":new_embedding})
+        self.session.commit()
 
 
 

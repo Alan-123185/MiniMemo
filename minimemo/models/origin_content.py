@@ -18,5 +18,9 @@ class originContent(Base):
    additional_kwargs: Mapped[dict[str, Any] | None] = mapped_column(
       MutableDict.as_mutable(JSON)
    )
+   update_time: Mapped[datetime.datetime] = mapped_column(
+      DateTime,
+      default=lambda: datetime.datetime.now(),
+      onupdate=lambda: datetime.datetime.now(),
+   )
    create_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now )
-   update_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)

@@ -1,6 +1,8 @@
 import asyncio
 
 import numpy as np
+
+from minimemo.common.existFact import existFact
 from  minimemo.common.requestSchema.searchRequest import searchRequest
 from  minimemo.common.requestSchema.storeRequest import storeRequest
 from  minimemo.config.data import settings
@@ -29,24 +31,30 @@ class memoryService:
 
         async def _process_similarity(memories:list) -> list:
 
-            async def _negative_common(memory1:str,memory2:str) -> bool:
-                """
-                负面判断，判断是否有负面内容，如果有则删除
-                """
-                for negative_word in settings.negative_words:
-                    if (negative_word in memory1 and negative_word not in memory2) or (negative_word not in memory1 and negative_word in memory2):
-                        return False
-                return True
+            """
+            10.25
+            我突然觉得这些策略不是很合理
+            """
+            # async def _negative_common(memory1:str,memory2:str) -> bool:
+            #     """
+            #     负面判断，判断是否有负面内容，如果有则删除
+            #     """
+            #     for negative_word in settings.negative_words:
+            #         if (negative_word in memory1 and negative_word not in memory2) or (negative_word not in memory1 and negative_word in memory2):
+            #             return False
+            #     return True
+            #
+            # list_to_remove=[]
+            # for i in range(len(memories)):
+            #     for j in range(i+1,len(memories)):
+            #         if memories[i]["embedding"] and memories[j]["embedding"]:
+            #             similarity=cosine_similarity(memories[i]["embedding"],memories[j]["embedding"])
+            #             if similarity>settings.SIMILARITY_THRESHOLD :
+            #                 list_to_remove.append(j)
 
-            list_to_remove=[]
-            for i in range(len(memories)):
-                for j in range(i+1,len(memories)):
-                    if memories[i]["embedding"] and memories[j]["embedding"]:
-                        similarity=cosine_similarity(memories[i]["embedding"],memories[j]["embedding"])
-                        if similarity>settings.SIMILARITY_THRESHOLD and await _negative_common(memories[i]["content"],memories[j]["content"]):
-                            list_to_remove.append(j)
+            #             memories = [m for idx, m in enumerate(memories) if idx not in list_to_remove]
 
-            memories = [m for idx, m in enumerate(memories) if idx not in list_to_remove]
+
             list_should_remove=[]
             for memo in memories:
                 need_to_judge = []
@@ -62,10 +70,20 @@ class memoryService:
                         need_to_judge.append(vector)
                 if need_to_judge:
                    memo_list=await asyncio.to_thread(self.memory_repository.search_memory, vector_list=need_to_judge)
-                   pan= modelService.judge_similarity(fact1=memo["content"],fact2=[m.content for m in memo_list], model=get_pool().chat)
-                   if not pan:
-                       # 如果大模型判断为不相似，则从记忆列表中移除该记忆
+                   pan_dict= modelService.judge_similarity(fact1=memo["content"],fact2=[existFact(content=m.content, memory_id=m.id) for m in memo_list], model=get_pool().chat)
+                   #评测逻辑
+                   if pan_dict["action"] == "ADD":
+                       pass
+                   elif pan_dict["action"] == "UPDATE":
+                       target=pan_dict["target_id"]
+                       self.memory_repository.update_memory(memory_id=target, content=memo["content"], new_embedding=memo["embedding"])
                        list_should_remove.append(memo)
+                   elif pan_dict["action"] == "DELETE":
+                       target=pan_dict["target_id"]
+                       self.memory_repository.kill_memory(memory_id=target)
+                   elif pan_dict["action"] == "NONE":
+                       list_should_remove.append(memo)
+
             return [m for m in memories if m not in list_should_remove]
 
         kwargs=store_request.additional_kwargs
