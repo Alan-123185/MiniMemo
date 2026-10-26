@@ -12,5 +12,5 @@ class Result(BaseModel, Generic[T]):
 
 
     @classmethod
-    def success(self):
-        return Result(message="success")
+    def success(cls):
+        return cls(message="success")

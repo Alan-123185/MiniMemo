@@ -1,3 +1,5 @@
+import json
+import re
 import time
 from functools import lru_cache
 
@@ -72,7 +74,7 @@ class modelService:
     query 改写
     """
     @staticmethod
-    def sort_question(query:list[str],model:modelConfig) -> str:
+    def sort_question(query:list[str],model:modelConfig) -> list[str]:
         client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
         prompt=QUERY_CHANGE_PROMPT.format(history_text="\n".join(query))
         for i in range(settings.MAX_RETRY_TIMES):
@@ -82,7 +84,10 @@ class modelService:
                     messages=[{"role": "user", "content":prompt}],
                 )
                 output = res.choices[0].message.content
-                return output
+                output = re.sub(r'```json\s*|\s*```', '', output).strip()
+                ret=json.loads(output)
+                if isinstance(ret,list) and all(isinstance(item,str) for item in ret):
+                    return ret
             except Exception as e:
                 logger.info(f"对话排序失败({i+1}/{settings.MAX_RETRY_TIMES})")
                 if i==settings.MAX_RETRY_TIMES-1:
@@ -125,24 +130,3 @@ class modelService:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-    model_service = modelService()
-    model_service.chat(
-        "这是一个测试内容",
-        modelConfig(
-        model_name="DeepSeek",
-        base_url="https://api.chat.csu.edu.cn/v1",
-        api_key="sk-JsCtaPDtaGo8eSkgJRcyMETFgWc1yRYmdK0fGCrxJZ7uJpfy"
-    ))

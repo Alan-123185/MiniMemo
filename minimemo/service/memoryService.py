@@ -115,7 +115,10 @@ class memoryService:
         model=get_pool()
         embedding_model = model.embedding
         question=modelService.sort_question(search_request.query,model=model.chat)
-        query_embedding=await asyncio.to_thread(modelService.embedding,question,embedding_model)
+        query_embedding=set()
+        for q in question:
+            query_=await asyncio.to_thread(modelService.embedding,q,embedding_model)
+            query_embedding.add(query_)
         vector_list=self.embedding_repository.query_vectors(agent_id=search_request.agent_id,embedding_model=embedding_model.model_name,query=query_embedding)
         memory_list=self.memory_repository.search_memory(vector_list=vector_list)
         logger.info(f"检索出来的记忆:{[memory.content for memory in memory_list]}")
