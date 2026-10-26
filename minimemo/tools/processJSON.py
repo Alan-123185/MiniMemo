@@ -12,7 +12,13 @@ def json_to_dict(json_string:str) -> dict:
     """
 
     try:
-        return json.loads(json_string)
+        ret= json.loads(json_string)
+        for r in ret.get("memories", []):
+            if r.get("is_alive") == "True":
+                r["is_alive"]=True
+            elif r.get("is_alive") == "False":
+                r["is_alive"]=False
+        return ret
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid JSON string: {e}")
 

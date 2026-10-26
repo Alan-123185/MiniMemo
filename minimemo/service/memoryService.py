@@ -1,7 +1,6 @@
 import asyncio
-
 import numpy as np
-
+from loguru import logger
 from minimemo.common.existFact import existFact
 from  minimemo.common.requestSchema.searchRequest import searchRequest
 from  minimemo.common.requestSchema.storeRequest import storeRequest
@@ -115,9 +114,11 @@ class memoryService:
         """
         model=get_pool()
         embedding_model = model.embedding
-        query_embedding=await asyncio.to_thread(modelService.embedding,search_request.query,embedding_model)
+        question=modelService.sort_question(search_request.query,model=model.chat)
+        query_embedding=await asyncio.to_thread(modelService.embedding,question,embedding_model)
         vector_list=self.embedding_repository.query_vectors(agent_id=search_request.agent_id,embedding_model=embedding_model.model_name,query=query_embedding)
         memory_list=self.memory_repository.search_memory(vector_list=vector_list)
+        logger.info(f"检索出来的记忆:{[memory.content for memory in memory_list]}")
         return [memory for memory in memory_list]
 
 
