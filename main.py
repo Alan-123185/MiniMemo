@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from minimemo.db.Base import Base
+from minimemo.db.Base import init_tables
 from minimemo.db.session import engine
 from minimemo.router.agentRouter import router as agent_router
 from minimemo.router.modelRouter import router as model_router
@@ -11,7 +11,7 @@ app = FastAPI()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup code here
-    Base.metadata.create_all(bind=engine)
+    init_tables(engine)
     yield
     # Shutdown code here
 

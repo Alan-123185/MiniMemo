@@ -6,25 +6,31 @@ from  minimemo.common.requestSchema.searchRequest import searchRequest
 from  minimemo.common.requestSchema.storeRequest import storeRequest
 from  minimemo.config.data import settings
 from  minimemo.config.modelConfig import get_pool
-from minimemo.models import originContent, Memory
+from minimemo.models import originContent
+from minimemo.models.memoryModel.memory import Memory
 from minimemo.prompt.memoryPrompt import MEMORY_PROMPT
 from  minimemo.repository.embeddingRepository import embeddingRepository
-from  minimemo.repository.memoryRepository import memoryRepository
+from minimemo.repository.episodicMemoryRepository import episodicMemoryRepository
 from  minimemo.repository.originContentRepository import originContentRepository
+from minimemo.repository.semanticMemoryRepository import semanticMemoryRepository
 from  minimemo.service.modelService import modelService
 from  minimemo.tools.numpyTool import cosine_similarity
 
 
 class memoryService:
 
-    def __init__(self, memory_repository: memoryRepository, embedding_repository: embeddingRepository, origin_content_repository: originContentRepository):
-        self.memory_repository = memory_repository
+    def __init__(self, semantic_memory_repository:semanticMemoryRepository,episodic_memory_repository:episodicMemoryRepository, embedding_repository: embeddingRepository, origin_content_repository: originContentRepository):
+        self.semantic_memory_repository = semantic_memory_repository
+        self.episodic_memory_repository = episodic_memory_repository
         self.origin_content_repository = origin_content_repository
         self.embedding_repository = embedding_repository
 
     async def add_memory(self, store_request: storeRequest):
         """
         为指定的智能体添加记忆，这里也是添加记忆的核心逻辑
+        10.27
+        这个方法暂时只能添加情景记忆 无法添加语义记忆 先不管
+        TODO: 需要添加语义记忆的逻辑
         """
         # 这里可以实现将记忆存储到数据库或其他存储介质的逻辑
 
@@ -68,18 +74,18 @@ class memoryService:
                         # 如果相似度在阈值范围内，交给大模型判断
                         need_to_judge.append(vector)
                 if need_to_judge:
-                   memo_list=await asyncio.to_thread(self.memory_repository.search_memory, vector_list=need_to_judge)
+                   memo_list=await asyncio.to_thread(self.episodic_memory_repository.search_memory, vector_list=[need.memory_id for need in need_to_judge])
                    pan_dict= modelService.judge_similarity(fact1=memo["content"],fact2=[existFact(content=m.content, memory_id=m.id) for m in memo_list], model=get_pool().chat)
                    #评测逻辑
                    if pan_dict["action"] == "ADD":
                        pass
                    elif pan_dict["action"] == "UPDATE":
                        target=pan_dict["target_id"]
-                       self.memory_repository.update_memory(memory_id=target, content=memo["content"], new_embedding=memo["embedding"])
+                       self.episodic_memory_repository.update_memory(memory_id=target, content=memo["content"], new_embedding=memo["embedding"])
                        list_should_remove.append(memo)
                    elif pan_dict["action"] == "DELETE":
                        target=pan_dict["target_id"]
-                       self.memory_repository.kill_memory(memory_id=target)
+                       self.episodic_memory_repository.kill_memory(memory_id=target)
                    elif pan_dict["action"] == "NONE":
                        list_should_remove.append(memo)
 
@@ -104,7 +110,7 @@ class memoryService:
             memory["embedding"]=np.asarray(embedding).astype(np.float32).tobytes()
             memory["embedding_model"]=embedding_model.model_name
         memories_list=await _process_similarity(memories_list)  #处理相似内容
-        self.memory_repository.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_id=origin_content_id)
+        self.episodic_memory_repository.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_id=origin_content_id)
 
 
 
@@ -115,12 +121,17 @@ class memoryService:
         model=get_pool()
         embedding_model = model.embedding
         question=modelService.sort_question(search_request.query,model=model.chat)
-        query_embedding=set()
+        vector_lists=[]
+        """
+        多路查询之后，去重，然后组成向量列表，传给memoryRepository去查询
+        """
         for q in question:
-            query_=await asyncio.to_thread(modelService.embedding,q,embedding_model)
-            query_embedding.add(query_)
-        vector_list=self.embedding_repository.query_vectors(agent_id=search_request.agent_id,embedding_model=embedding_model.model_name,query=query_embedding)
-        memory_list=self.memory_repository.search_memory(vector_list=vector_list)
+            query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
+            vector_lists.append(self.embedding_repository.query_vectors(agent_id=search_request.agent_id,embedding_model=embedding_model.model_name,query=query_embedding))
+            #先把所有查询出来的向量都添加进来
+        episodic_memory_list=self.episodic_memory_repository.search_memory(vector_list=list(vector_lists))
+        semantic_memory_list=self.semantic_memory_repository.search_memory(vector_list=list(vector_lists))
+        memory_list=episodic_memory_list+semantic_memory_list
         logger.info(f"检索出来的记忆:{[memory.content for memory in memory_list]}")
         return [memory for memory in memory_list]
 

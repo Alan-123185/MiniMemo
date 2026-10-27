@@ -6,7 +6,7 @@ from  minimemo.db.Base import Base
 
 
 class Memory(Base):
-    __tablename__ = "memory"
+    __abstract__ = True  # ← 关键：不建表，只给子类继承字段
 
     id:Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"))
@@ -17,7 +17,5 @@ class Memory(Base):
         default=lambda: datetime.datetime.now(),
         onupdate=lambda: datetime.datetime.now(),
     )
-    origin_content_id: Mapped[str|None] = mapped_column(ForeignKey("origin_content.id"), nullable=True)
-    type:Mapped[str] = mapped_column(nullable=False)
-    is_alive:Mapped[bool] = mapped_column(default=True, nullable=False)
+    is_delete:Mapped[bool] = mapped_column(default=False, nullable=False)
 
