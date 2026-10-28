@@ -3,12 +3,13 @@ import numpy as np
 from loguru import logger
 from minimemo.common.existFact import existFact
 from  minimemo.common.requestSchema.searchRequest import searchRequest
-from  minimemo.common.requestSchema.storeRequest import storeRequest
+from minimemo.common.requestSchema.storeRequest import storeRequest, episodeStoreRequest
 from  minimemo.config.data import settings
 from  minimemo.config.modelConfig import get_pool
 from minimemo.models import originContent
 from minimemo.models.memoryModel.memory import Memory
-from minimemo.prompt.memoryPrompt import MEMORY_PROMPT
+from minimemo.prompt.memoryPromptHEAD import MEMORY_PROMPT_HEAD
+
 from  minimemo.repository.embeddingRepository import embeddingRepository
 from minimemo.repository.episodicMemoryRepository import episodicMemoryRepository
 from  minimemo.repository.originContentRepository import originContentRepository
@@ -25,7 +26,7 @@ class memoryService:
         self.origin_content_repository = origin_content_repository
         self.embedding_repository = embedding_repository
 
-    async def add_memory(self, store_request: storeRequest):
+    async def add_semantic_memory(self, store_request: storeRequest):
         """
         为指定的智能体添加记忆，这里也是添加记忆的核心逻辑
         10.27
@@ -60,7 +61,7 @@ class memoryService:
             #             memories = [m for idx, m in enumerate(memories) if idx not in list_to_remove]
 
             # 用 id 记录待丢弃的记忆，dict 不可哈希不能直接放进 set
-            list_should_remove:set[str] = set()
+            list_should_remove:set[int] = set()
             for index,memo in enumerate(memories):
                 need_to_judge = []
                 vector_list=self.embedding_repository.query_vectors(agent_id=store_request.agent_id,embedding_model=memo["embedding_model"],query=memo["embedding"])
@@ -114,6 +115,18 @@ class memoryService:
 
 
 
+    async def add_episodic_memory(self, store_request:episodeStoreRequest):
+        """
+        添加情景记忆   无脑添加原文消息
+        """
+        #这个存的本来是原文，所以不需要存origin_content了
+        model=get_pool()
+        embedding_model=model.embedding
+        self.episodic_memory_repository.add_memory([{"content":store_request.origin_content,"embedding":embedding,"embedding_model":embedding_model.model_name}],agent_id=store_request.agent_id,origin_content_id=origin_content_id)
+
+
+
+
     async def search_memory(self, search_request:searchRequest) -> list[Memory]:
         """
         搜索指定智能体的记忆
@@ -150,4 +163,4 @@ class memoryService:
         加载指定智能体的所有记忆
         """
         memory_list=await self.search_memory(search_request)
-        return MEMORY_PROMPT+"\n".join([memory.content for memory in memory_list])
+        return MEMORY_PROMPT_HEAD+"\n".join([memory.content for memory in memory_list])

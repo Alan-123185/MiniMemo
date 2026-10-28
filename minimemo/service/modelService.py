@@ -2,14 +2,12 @@ import json
 import re
 import time
 from functools import lru_cache
-
 from minimemo.common.existFact import existFact
 from  minimemo.config.data import settings
 from  minimemo.config.modelConfig import modelConfig
 from openai import OpenAI
 from loguru import logger
-
-from  minimemo.prompt.makeMemoryPrompt import MAKE_MEMORY_PROMPT
+from minimemo.prompt.memoryPrompt.episodeMemoryPrompt import EPISODE_MEMORY_PROMPT
 from minimemo.prompt.queryChangePrompt import QUERY_CHANGE_PROMPT
 from  minimemo.prompt.similarityJudgePrompt import similarity_judge_prompt
 from  minimemo.tools.processJSON import json_to_dict
@@ -22,7 +20,7 @@ class modelService:
     @staticmethod
     def to_memory(origin_content:str,model:modelConfig,additional_kwargs:dict|None=None) -> list:
         client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
-        prompt=MAKE_MEMORY_PROMPT+"\n"+origin_content
+        prompt=EPISODE_MEMORY_PROMPT+"\n"+origin_content
         if additional_kwargs:
             prompt+= "\n此外，用户还输入了少量附加信息:"
             for key, value in additional_kwargs.items():
@@ -38,6 +36,7 @@ class modelService:
                 return output["memories"]
             except Exception as e:
                 logger.info(f"记忆格式化失败({i+1}/{settings.MAX_RETRY_TIMES})")
+                logger.info(f"对话排序失败，错误信息：{e}")
                 if i==settings.MAX_RETRY_TIMES-1:
                     logger.error(f"记忆格式化失败，错误信息：{e}")
                     raise e
@@ -61,6 +60,7 @@ class modelService:
                 return output
             except Exception as e:
                 logger.info(f"记忆相似度判断失败({i+1}/{settings.MAX_RETRY_TIMES})")
+                logger.info(f"对话排序失败，错误信息：{e}")
                 if i==settings.MAX_RETRY_TIMES-1:
                     logger.error(f"记忆相似度判断失败，错误信息：{e}")
                     raise e
@@ -90,6 +90,7 @@ class modelService:
                     return ret
             except Exception as e:
                 logger.info(f"对话排序失败({i+1}/{settings.MAX_RETRY_TIMES})")
+                logger.info(f"对话排序失败，错误信息：{e}")
                 if i==settings.MAX_RETRY_TIMES-1:
                     logger.error(f"对话排序失败，错误信息：{e}")
                     raise e

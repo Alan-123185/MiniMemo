@@ -7,7 +7,7 @@ from minimemo.repository.memoryRepository import memoryRepository
 
 class semanticMemoryRepository(memoryRepository):
     kind = "semantics"
-    model = semanticMemory
+    model = semanticMemory  #指定对应的ORM类
 
     def _alive_conditions(self) -> list[Any]:
         """
