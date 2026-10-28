@@ -11,7 +11,8 @@ class Base(DeclarativeBase):
 """
 全文索引 FTS5，绑 memory 表
 memory 是 joined 继承的父表，content 已上提到这里，
-所以情景记忆和语义记忆的内容都会自动进入同一张索引。
+原文、情景记忆、语义记忆都是它的子类，
+所以三者的内容会自动进入同一张索引，不需要各建各的。
 
 memory.id 是 UUID 字符串，而 fts5 的 rowid 必须是整数，
 因此走 external content 模式，content_rowid 指向 memory 的隐式整数 rowid，
@@ -72,6 +73,16 @@ def create_fts_tables(connection):
         connection.execute(text(ddl))
     if is_new:
         connection.execute(text("INSERT INTO memory_fts(memory_fts) VALUES('rebuild')"))
+
+
+def drop_fts_tables(connection):
+    """
+    拆掉 FTS 虚拟表与触发器，downgrade 时用
+    先删触发器再删虚拟表，否则虚拟表的影子表会留下
+    """
+    for suffix in ("ai", "ad", "au"):
+        connection.execute(text(f"DROP TRIGGER IF EXISTS memory_{suffix}"))
+    connection.execute(text("DROP TABLE IF EXISTS memory_fts"))
 
 
 @event.listens_for(Base.metadata, "after_create")

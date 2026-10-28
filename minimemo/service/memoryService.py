@@ -93,18 +93,24 @@ class memoryService:
             return [m for idx, m in enumerate(memories) if idx not in list_should_remove]
 
         kwargs=store_request.additional_kwargs
+        model=get_pool()
+        chat_model=model.chat
+        embedding_model=model.embedding
+        # 原文自己也要进向量库，检索时才能按语义把整段原始输入捞回来
+        origin_embedding=await asyncio.to_thread(modelService.embedding,store_request.origin_content,embedding_model)
         origin_content=originContent(
                       agent_id=store_request.agent_id,
                       content=store_request.origin_content,
                       additional_kwargs=store_request.additional_kwargs
                       )
         self.origin_content_repository.add_content(
-           origin_content
+           origin_content,
+           {
+               "embedding":np.asarray(origin_embedding).astype(np.float32).tobytes(),
+               "embedding_model":embedding_model.model_name,
+           },
         )
         origin_content_id=origin_content.id
-        model=get_pool()
-        chat_model=model.chat
-        embedding_model=model.embedding
         memories_list=await asyncio.to_thread(modelService.to_memory,origin_content=origin_content.content, model=chat_model, additional_kwargs=kwargs)
         for memory in memories_list:
             embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
@@ -119,10 +125,16 @@ class memoryService:
         """
         添加情景记忆   无脑添加原文消息
         """
-        #这个存的本来是原文，所以不需要存origin_content了
+        #这里存的就是原文，不需要再回指 origin_content
         model=get_pool()
         embedding_model=model.embedding
-        self.episodic_memory_repository.add_memory([{"content":store_request.origin_content,"embedding":embedding,"embedding_model":embedding_model.model_name}],agent_id=store_request.agent_id,origin_content_id=origin_content_id)
+        embedding=await asyncio.to_thread(modelService.embedding,store_request.origin_content,embedding_model)
+        memory={
+            "content":store_request.origin_content,
+            "embedding":np.asarray(embedding).astype(np.float32).tobytes(),
+            "embedding_model":embedding_model.model_name,
+        }
+        self.episodic_memory_repository.add_memory([memory],agent_id=store_request.agent_id)
 
 
 
@@ -155,6 +167,34 @@ class memoryService:
         memory_list=[merged[memory_id] for memory_id in memory_ids if memory_id in merged]
         logger.info(f"检索出来的记忆:{[memory.content for memory in memory_list]}")
         return memory_list
+
+
+    async def search_origin_content(self, search_request:searchRequest) -> list:
+        """
+        检索原文
+        原文也是记忆，向量同样挂在 memory_vector 上，
+        所以召回路径和 search_memory 完全一样，
+        区别只是最后按 origin_content 这个子类去取
+        """
+        model=get_pool()
+        embedding_model = model.embedding
+        question=modelService.sort_question(search_request.query,model=model.chat)
+        memory_ids:list[str]=[]
+        seen:set[str]=set()
+        for q in question:
+            query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
+            vector_list=self.embedding_repository.query_vectors(
+                agent_id=search_request.agent_id,
+                embedding_model=embedding_model.model_name,
+                query=query_embedding,
+            )
+            for vector in vector_list:
+                if vector.memory_id not in seen:
+                    seen.add(vector.memory_id)
+                    memory_ids.append(vector.memory_id)
+        content_list=self.origin_content_repository.search_memory(memory_ids)
+        logger.info(f"检索出来的原文:{[content.content for content in content_list]}")
+        return content_list
 
 
     #自动装载记忆
