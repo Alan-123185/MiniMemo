@@ -59,22 +59,22 @@ class memoryService:
 
             #             memories = [m for idx, m in enumerate(memories) if idx not in list_to_remove]
 
-
-            list_should_remove=[]
-            for memo in memories:
+            # 用 id 记录待丢弃的记忆，dict 不可哈希不能直接放进 set
+            list_should_remove:set[str] = set()
+            for index,memo in enumerate(memories):
                 need_to_judge = []
                 vector_list=self.embedding_repository.query_vectors(agent_id=store_request.agent_id,embedding_model=memo["embedding_model"],query=memo["embedding"])
                 for vector in vector_list:
                     similarity = cosine_similarity(vector.embedding, memo["embedding"])
                     if similarity>=settings.SIM_TO_THROW:
                         # 如果相似度超过阈值，则从记忆列表中移除该记忆
-                        list_should_remove.append(memo)
+                        list_should_remove.add(index)
                         break
                     elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
                         # 如果相似度在阈值范围内，交给大模型判断
                         need_to_judge.append(vector)
                 if need_to_judge:
-                   memo_list=await asyncio.to_thread(self.episodic_memory_repository.search_memory, vector_list=[need.memory_id for need in need_to_judge])
+                   memo_list=self.episodic_memory_repository.search_memory([need.memory_id for need in need_to_judge])
                    pan_dict= modelService.judge_similarity(fact1=memo["content"],fact2=[existFact(content=m.content, memory_id=m.id) for m in memo_list], model=get_pool().chat)
                    #评测逻辑
                    if pan_dict["action"] == "ADD":
@@ -82,14 +82,14 @@ class memoryService:
                    elif pan_dict["action"] == "UPDATE":
                        target=pan_dict["target_id"]
                        self.episodic_memory_repository.update_memory(memory_id=target, content=memo["content"], new_embedding=memo["embedding"])
-                       list_should_remove.append(memo)
+                       list_should_remove.add(index)
                    elif pan_dict["action"] == "DELETE":
                        target=pan_dict["target_id"]
                        self.episodic_memory_repository.kill_memory(memory_id=target)
                    elif pan_dict["action"] == "NONE":
-                       list_should_remove.append(memo)
+                       list_should_remove.add(index)
 
-            return [m for m in memories if m not in list_should_remove]
+            return [m for idx, m in enumerate(memories) if idx not in list_should_remove]
 
         kwargs=store_request.additional_kwargs
         origin_content=originContent(
@@ -121,19 +121,27 @@ class memoryService:
         model=get_pool()
         embedding_model = model.embedding
         question=modelService.sort_question(search_request.query,model=model.chat)
-        vector_lists=[]
         """
-        多路查询之后，去重，然后组成向量列表，传给memoryRepository去查询
+        多路查询之后，去重，然后组成向量列表，传给 repository 去查询
+        每个 query 都会召回一批向量，这里按召回顺序汇总 memory_id 并去重，
+        顺序本身代表了相似度高低，不能打乱
         """
+        memory_ids:list[str]=[]
+        seen:set[str]=set()
         for q in question:
             query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
-            vector_lists.append(self.embedding_repository.query_vectors(agent_id=search_request.agent_id,embedding_model=embedding_model.model_name,query=query_embedding))
-            #先把所有查询出来的向量都添加进来
-        episodic_memory_list=self.episodic_memory_repository.search_memory(vector_list=list(vector_lists))
-        semantic_memory_list=self.semantic_memory_repository.search_memory(vector_list=list(vector_lists))
-        memory_list=episodic_memory_list+semantic_memory_list
+            vector_list=self.embedding_repository.query_vectors(agent_id=search_request.agent_id,embedding_model=embedding_model.model_name,query=query_embedding)
+            for vector in vector_list:
+                if vector.memory_id not in seen:
+                    seen.add(vector.memory_id)
+                    memory_ids.append(vector.memory_id)
+        episodic_memory_list=self.episodic_memory_repository.search_memory(memory_ids)
+        semantic_memory_list=self.semantic_memory_repository.search_memory(memory_ids)
+        # 两路召回的顺序由 memory_ids 决定，这里统一按 memory_ids 重排一次
+        merged={memory.id:memory for memory in episodic_memory_list+semantic_memory_list}
+        memory_list=[merged[memory_id] for memory_id in memory_ids if memory_id in merged]
         logger.info(f"检索出来的记忆:{[memory.content for memory in memory_list]}")
-        return [memory for memory in memory_list]
+        return memory_list
 
 
     #自动装载记忆
@@ -143,11 +151,3 @@ class memoryService:
         """
         memory_list=await self.search_memory(search_request)
         return MEMORY_PROMPT+"\n".join([memory.content for memory in memory_list])
-
-
-
-
-
-
-
-

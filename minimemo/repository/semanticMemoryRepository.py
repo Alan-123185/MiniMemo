@@ -1,51 +1,45 @@
 import uuid
-from minimemo.models import memoryVector
-from minimemo.models.memoryModel.memory import Memory
+from typing import Any
+
 from minimemo.models.memoryModel.semanticMemory import semanticMemory
 from minimemo.repository.memoryRepository import memoryRepository
 
 
 class semanticMemoryRepository(memoryRepository):
-    def kill_memory(self, memory_id: str) -> None:
-        self.session.query(semanticMemory).filter(semanticMemory.id==memory_id).update({"is_alive": False})
-        self.session.commit()
+    kind = "semantics"
+    model = semanticMemory
 
-    def remove_memory(self, memory_id: str) -> None:
-        pass
+    def _alive_conditions(self) -> list[Any]:
+        """
+        语义记忆除了没被软删除，还要求这条事实当前仍然成立
+        """
+        return super()._alive_conditions() + [semanticMemory.is_alive.is_(True)]
 
-    kind="semantics"
-
-
-    def add_memory(self,memories:list[dict],agent_id:str) -> None:
+    def add_memory(
+        self,
+        memories: list[dict],
+        agent_id: str,
+        origin_content_id: str | None = None,
+    ) -> None:
+        """
+        批量新增语义记忆，模型给出的 type / is_alive 一并落库
+        """
         for memory in memories:
             memo = semanticMemory(
                 id=str(uuid.uuid4()),
                 content=memory["content"],
                 agent_id=agent_id,
-                is_alive=memory["is_alive"],
+                type=memory.get("type") or "fact",
+                is_alive=memory.get("is_alive", True),
             )
-            self.session.add(memo)
-            memory_id = memo.id
-            self.session.add(memoryVector(memory_id=memory_id,
-                                          embedding=memory["embedding"],
-                                          embedding_model=memory["embedding_model"],
-                                          agent_id=agent_id
-                                          ))
+            self._add_with_vector(memo, agent_id, memory)
         self.session.commit()
 
-
-
-    def search_memory(self,vector_list: list[str]) -> list[Memory]:
-        memory_vectors = self.session.query(memoryVector).filter(memoryVector.id.in_(vector_list)).all()
-        memory_ids = [v.memory_id for v in memory_vectors]
-        memories = self.session.query(semanticMemory).filter(semanticMemory.id.in_(memory_ids)).all()
-        return memories
-
-
-
-    def update_memory(self, memory_id: str, content: str, new_embedding: bytes) -> None:
-        self.session.query(semanticMemory).filter(semanticMemory.id==memory_id).update({"content":content})
-        self.session.query(memoryVector).filter(memoryVector.memory_id==memory_id).update({"embedding":new_embedding})
-        self.session.commit()
-
-
+    def kill_memory(self, memory_id: str) -> None:
+        """
+        语义记忆的“作废”是双重语义：事实不再成立，同时也从检索中隐去
+        """
+        self.session.query(semanticMemory).filter(
+            semanticMemory.id == memory_id
+        ).update({"is_alive": False}, synchronize_session=False)
+        super().kill_memory(memory_id)

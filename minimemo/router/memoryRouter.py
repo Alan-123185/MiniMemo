@@ -21,5 +21,5 @@ async def search_memory(search_request:searchRequest,memory_service=Depends(get_
     搜索指定智能体的记忆
     """
     memories=await memory_service.search_memory(search_request)
-    return Result(response=memories)
+    return Result(response=[{"id": memory.id, "content": memory.content} for memory in memories])
 
