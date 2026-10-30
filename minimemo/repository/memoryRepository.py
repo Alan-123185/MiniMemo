@@ -2,6 +2,7 @@ from __future__ import annotations
 import datetime
 from typing import Any
 from sqlalchemy.orm import Session
+from minimemo.common.memoryInfo import memoryInfo
 from minimemo.models.memoryModel.memory import Memory
 from minimemo.models.memoryVector import memoryVector
 
@@ -34,7 +35,7 @@ class memoryRepository:
 
     def add_memory(
         self,
-        memories: list[dict],
+        memories: list[memoryInfo],
         agent_id: str
     ) -> None:
         """
@@ -118,7 +119,7 @@ class memoryRepository:
 
 
 
-    def _add_with_vector(self, memory: Memory, agent_id: str, payload: dict) -> None:
+    def _add_with_vector(self, memory: Memory, agent_id: str, memory_info:memoryInfo) -> None:
         """
         新增一条记忆并挂上向量
         """
@@ -128,8 +129,8 @@ class memoryRepository:
         self.session.add(
             memoryVector(
                 memory_id=memory.id,
-                embedding=payload["embedding"],
-                embedding_model=payload["embedding_model"],
+                embedding=memory_info.embedding,
+                embedding_model=memory_info.embedding_model,
                 agent_id=agent_id,
             )
         )

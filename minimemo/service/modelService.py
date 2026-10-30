@@ -18,14 +18,9 @@ class modelService:
 
 
     @staticmethod
-    def to_memory(origin_content:str,model:modelConfig,additional_kwargs:dict|None=None) -> list:
+    def to_episodeic_memory(origin_content:str,model:modelConfig) -> list:
         client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
         prompt=EPISODE_MEMORY_PROMPT+"\n"+origin_content
-        if additional_kwargs:
-            prompt+= "\n此外，用户还输入了少量附加信息:"
-            for key, value in additional_kwargs.items():
-                prompt += f"\n{key}: {value}"
-
         for i in range(settings.MAX_RETRY_TIMES):
             try:
                 res=client.chat.completions.create(

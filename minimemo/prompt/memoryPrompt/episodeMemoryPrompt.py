@@ -49,7 +49,7 @@ EPISODE_MEMORY_PROMPT:str = """
   "memories": [
     {
       "content": "一段自然语言描述的经历，包含发生了什么、结果如何。",
-      "source": "能够追溯这段经历的简短原文依据，不要大段复制原文",
+      "origin_content_id": "",
     }
   ]
 }

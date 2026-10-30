@@ -1,9 +1,10 @@
 import asyncio
 import numpy as np
 from loguru import logger
+from minimemo.common.memoryInfo import memoryInfo
 from minimemo.common.existFact import existFact
 from  minimemo.common.requestSchema.searchRequest import searchRequest
-from minimemo.common.requestSchema.storeRequest import originContentStoreRequest,storeRequest,episodeStoreRequest
+from minimemo.common.requestSchema.storeRequest import originContentStoreRequest,episodeStoreRequest, storeRequest
 from  minimemo.config.data import settings
 from  minimemo.config.modelConfig import get_pool
 from minimemo.models import originContent
@@ -65,65 +66,8 @@ class memoryService:
         TODO: 需要制定添加情景记忆和语义记忆的策略和时机
         """
 
-        async def _process_similarity(memories:list) -> list:
-            """
-            10.25
-            我突然觉得这些策略不是很合理
-            """
-            # 用 id 记录待丢弃的记忆，dict 不可哈希不能直接放进 set
-            list_should_remove:set[int] = set()
-            for index,memo in enumerate(memories):
-                need_to_judge = []
-                vector_list=self.embedding_repository.query_vectors(agent_id=store_request.agent_id,embedding_model=memo["embedding_model"],query=memo["embedding"])
-                for vector in vector_list:
-                    similarity = cosine_similarity(vector.embedding, memo["embedding"])
-                    if similarity>=settings.SIM_TO_THROW:
-                        # 如果相似度超过阈值，则从记忆列表中移除该记忆
-                        list_should_remove.add(index)
-                        break
-                    elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
-                        # 如果相似度在阈值范围内，交给大模型判断
-                        need_to_judge.append(vector)
-                if need_to_judge:
-                   memo_list=self.episodic_memory_repository.search_memory([need.memory_id for need in need_to_judge])
-                   pan_dict= modelService.judge_similarity(fact1=memo["content"],fact2=[existFact(content=m.content, memory_id=m.id) for m in memo_list], model=get_pool().chat)
-                   #评测逻辑
-                   if pan_dict["action"] == "ADD":
-                       pass
-                   elif pan_dict["action"] == "UPDATE":
-                       target=pan_dict["target_id"]
-                       self.episodic_memory_repository.update_memory(memory_id=target, content=memo["content"], new_embedding=memo["embedding"])
-                       list_should_remove.add(index)
-                   elif pan_dict["action"] == "DELETE":
-                       target=pan_dict["target_id"]
-                       self.episodic_memory_repository.kill_memory(memory_id=target)
-                   elif pan_dict["action"] == "NONE":
-                       list_should_remove.add(index)
-
-            return [m for idx, m in enumerate(memories) if idx not in list_should_remove]
-        #因为参数传入是多态访问的，这里直接用 store_request 的 additional_kwargs 就行，episodeStoreRequest 也有这个属性
-        model=get_pool()
-        chat_model=model.chat
-        embedding_model=model.embedding
-        # 原文自己也要进向量库，检索时才能按语义把整段原始输入捞回来
-
-        self.episodic_memory_repository.add_memory(
-           origin_content,
-           {
-               "embedding":np.asarray(origin_embedding).astype(np.float32).tobytes(),
-               "embedding_model":embedding_model.model_name,
-           },
-        )
-        origin_content_id=origin_content.id
-        memories_list=await asyncio.to_thread(modelService.to_memory,origin_content=origin_content.content, model=chat_model, additional_kwargs=kwargs)
-        for memory in memories_list:
-            embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
-            memory["embedding"]=np.asarray(embedding).astype(np.float32).tobytes()
-            memory["embedding_model"]=embedding_model.model_name
-        memories_list=await _process_similarity(memories_list)  #处理相似内容
-        self.episodic_memory_repository.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_id=origin_content_id)
-
-
+       
+       
 
 
     async def search_memory(self, search_request:searchRequest) -> list[Memory]:
@@ -191,3 +135,139 @@ class memoryService:
         """
         memory_list=await self.search_memory(search_request)
         return MEMORY_PROMPT_HEAD+"\n".join([memory.content for memory in memory_list])
+
+
+
+
+    async def before_add_episodeic_memory_L1(self,store_request: originContentStoreRequest):
+                """
+                10.29
+                第一层判断 只看某次添加原始内容之后积攒的未处理条数
+                这个函数是用来判断需不需要进行情景记忆抽取，如果需要，返回待抽取的原文列表
+                """
+                pan=self.origin_content_repository.get_not_archived_content(agent_id=store_request.agent_id)
+                #按会话拆分，每个会话各自攒各自的水位
+                session_groups:dict[str,list[originContent]]={}
+                for content in pan:
+                    session_groups.setdefault(content.session, []).append(content)
+                #哪个会话攒够了阈值，就把那个会话的原文拿去抽取
+                for group in session_groups.items():
+                    if len(group) >= settings.MAX_UNARCHIVED:
+                        yield group
+
+
+
+
+    async def add_episodeic_memory_L1(self, memory_list: list[originContent],store_request: originContentStoreRequest):
+        """
+        10.29
+        第一层抽取情景记忆的逻辑  处理相似性 
+        积累量超过阈值
+        """
+
+        async def _process_origin_content(memory_list: list[originContent]) -> str:
+            """
+            10.29
+            处理单条原文组装成输入
+            """
+            ret=[]
+            for memory in memory_list:
+                ret.append(f"{memory.role}:{memory.content}")
+            self.origin_content_repository.mark_archived([memory.id for memory in memory_list]) #标记已经存档
+            return "\n".join(ret)
+
+                
+
+
+
+
+
+
+        model=get_pool()
+        chat_model=model.chat
+        embedding_model=model.embedding
+        origin_content_id=
+
+        need_process_content=await _process_origin_content(memory_list)
+        #关键调用 ；制作情景记忆   TODO 怎么才能存储orign_content_id 关联到情景记忆上呢？  10.30
+        memories_list=await asyncio.to_thread(modelService.to_episodeic_memory,origin_content=need_process_content, model=chat_model)
+
+        for memory in memories_list:
+            embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
+            memory["embedding"]=np.asarray(embedding).astype(np.float32).tobytes()
+            memory["embedding_model"]=embedding_model.model_name
+
+        memories_list=await self._process_similarity(memories_list,store_request)  #处理相似内容
+
+        self.episodic_memory_repository.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_id=origin_content_id)
+
+
+
+
+        
+
+        
+
+
+
+    async def episodeic_memory_L1(self, store_request: originContentStoreRequest):
+        """
+        10.29
+        第一层抽取情景记忆的逻辑
+        积累量超过阈值
+        """
+        group=[g async for session_id , g in  self.before_add_episodeic_memory_L1(store_request)]
+        await asyncio.gather(*[self.add_episodeic_memory_L1(g,store_request.agent_id) for g in group])
+
+
+
+
+
+
+
+
+
+
+      
+        
+    
+
+    async def _process_similarity(self,memories:list[memoryInfo],store_request:storeRequest) -> list:
+            """
+            10.30 episodeMemory的三层去重策略
+            """
+            # 用 id 记录待丢弃的记忆，dict 不可哈希不能直接放进 set
+            list_should_remove:set[int] = set()
+            for index,memo in enumerate(memories):
+                need_to_judge = []
+                vector_list=self.embedding_repository.query_vectors(
+                    agent_id=store_request.agent_id,
+                    embedding_model=memo.embedding_model,
+                    query=np.frombuffer(memo.embedding, dtype=np.float32).tolist()
+                    )
+                for vector in vector_list:
+                    similarity = cosine_similarity(vector.embedding, memo.embedding)
+                    if similarity>=settings.SIM_TO_THROW:
+                        # 如果相似度超过阈值，则从记忆列表中移除该记忆
+                        list_should_remove.add(index)
+                        break
+                    elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
+                        # 如果相似度在阈值范围内，交给大模型判断
+                        need_to_judge.append(vector)
+                if need_to_judge:
+                    memo_list=self.episodic_memory_repository.search_memory([need.memory_id for need in need_to_judge])
+                    pan_dict= modelService.judge_similarity(fact1=memo.content,fact2=[existFact(content=m.content, memory_id=m.id) for m in memo_list], model=get_pool().chat)
+                    #评测逻辑
+                    if pan_dict["action"] == "ADD":
+                        pass
+                    elif pan_dict["action"] == "UPDATE":
+                        target=pan_dict["target_id"]
+                        self.episodic_memory_repository.update_memory(memory_id=target, content=memo.content, new_embedding=memo.embedding)
+                        list_should_remove.add(index)
+                    elif pan_dict["action"] == "DELETE":
+                        target=pan_dict["target_id"]
+                        self.episodic_memory_repository.kill_memory(memory_id=target)
+                    elif pan_dict["action"] == "NONE":
+                        list_should_remove.add(index)
+
+            return [m for idx, m in enumerate(memories) if idx not in list_should_remove]

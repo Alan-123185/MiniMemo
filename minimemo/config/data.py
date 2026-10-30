@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     SIM_TO_THROW:float=0.95  #相似度超过该阈值的记忆将被丢弃，不再存储
 
-
+    MAX_UNARCHIVED:int=10    #一个会话内未归档的原文最大数量，超过该数量将触发自动归档
 
 
     negative_words:list[str]=["不", "没", "无", "别", "勿", "非", "未", "莫", "甭", "不要", "没有"]  #负面词汇列表，用于过滤记忆中的负面内容

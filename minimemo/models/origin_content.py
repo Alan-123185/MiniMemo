@@ -1,7 +1,6 @@
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, String
-from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from minimemo.models.memoryModel.memory import Memory
@@ -22,6 +21,7 @@ class originContent(Memory):
     id: Mapped[str] = mapped_column(ForeignKey("memory.id"), primary_key=True)
     role: Mapped[str] = mapped_column(String(20), default="system")  # 消息类型 用户还是智能体，系统
     session:Mapped[str] = mapped_column(nullable=True,default="default")  # 会话id
+    is_archive: Mapped[bool] = mapped_column(nullable=True,default=False)  # 是否归档进情景记忆
     __mapper_args__ = {
         "polymorphic_identity": "origin",
     }

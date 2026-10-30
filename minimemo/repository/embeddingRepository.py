@@ -30,7 +30,7 @@ class embeddingRepository:
         scored = [
             (
                 numpyTool.cosine_similarity(
-                    query, np.frombuffer(v.embedding, dtype=np.float32).tolist()
+                    query,v.embedding
                 ),
                 v,
             )

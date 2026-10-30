@@ -1,5 +1,6 @@
 import uuid
 
+from minimemo.common.memoryInfo import memoryInfo
 from minimemo.models.memoryModel.episodicMemory import episodicMemory
 from minimemo.repository.memoryRepository import memoryRepository
 
@@ -10,7 +11,7 @@ class episodicMemoryRepository(memoryRepository):
 
     def add_memory(
         self,
-        memories: list[dict],
+        memories: list[memoryInfo],
         agent_id: str,
         origin_content_id: str | None = None,
     ) -> None:
@@ -20,7 +21,7 @@ class episodicMemoryRepository(memoryRepository):
         for memory in memories:
             memo = episodicMemory(
                 id=str(uuid.uuid4()),
-                content=memory["content"],
+                content=memory.content,
                 agent_id=agent_id,
                 origin_content_id=origin_content_id,
             )
