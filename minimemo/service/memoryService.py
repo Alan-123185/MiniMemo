@@ -3,13 +3,12 @@ import numpy as np
 from loguru import logger
 from minimemo.common.existFact import existFact
 from  minimemo.common.requestSchema.searchRequest import searchRequest
-from minimemo.common.requestSchema.storeRequest import storeRequest, episodeStoreRequest
+from minimemo.common.requestSchema.storeRequest import originContentStoreRequest,storeRequest,episodeStoreRequest
 from  minimemo.config.data import settings
 from  minimemo.config.modelConfig import get_pool
 from minimemo.models import originContent
 from minimemo.models.memoryModel.memory import Memory
 from minimemo.prompt.memoryPromptHEAD import MEMORY_PROMPT_HEAD
-
 from  minimemo.repository.embeddingRepository import embeddingRepository
 from minimemo.repository.episodicMemoryRepository import episodicMemoryRepository
 from  minimemo.repository.originContentRepository import originContentRepository
@@ -26,40 +25,51 @@ class memoryService:
         self.origin_content_repository = origin_content_repository
         self.embedding_repository = embedding_repository
 
-    async def add_semantic_memory(self, store_request: storeRequest):
+
+    """
+    添加第一层记忆  原始内容
+    """
+    async def add_origin_content(self, store_request: originContentStoreRequest):
         """
-        为指定的智能体添加记忆，这里也是添加记忆的核心逻辑
-        10.27
-        这个方法暂时只能添加情景记忆 无法添加语义记忆 先不管
-        TODO: 需要添加语义记忆的逻辑
+        为指定的智能体添加原始内容，非常简陋
         """
-        # 这里可以实现将记忆存储到数据库或其他存储介质的逻辑
+        model=get_pool()
+        embedding_model=model.embedding
+        embedding=await asyncio.to_thread(modelService.embedding,store_request.origin_content,embedding_model)
+        memory={
+            "content":store_request.origin_content,
+            "embedding":np.asarray(embedding).astype(np.float32).tobytes(),
+            "embedding_model":embedding_model.model_name,
+            "role":store_request.role,
+            "session_id":store_request.session_id
+        }
+        self.origin_content_repository.add_memory([memory],agent_id=store_request.agent_id)
+
+
+
+
+    """
+    治理添加情景记忆的策略
+
+    10.29 
+    - 条数水位：同一 agent 攒够 N 条未抽取原文（N 取 6~12，看你的对话密度）
+    - 时间水位：距最后一条原文超过 T 分钟（10~30 分钟），说明这段对话告一段落
+    - 显式水位：调用方主动说「这里结束了一段」
+    - 上限保护：未抽取原文攒到 M 条（比如 50）强制抽一次，兜住长期不触发的极端情况
+    """
+    async def add_episodeic_memory(self, store_request: episodeStoreRequest):
+        """
+        10.29
+        暂时先写个函数
+        这个方法用于按批处理添加情景记忆 
+        TODO: 需要制定添加情景记忆和语义记忆的策略和时机
+        """
 
         async def _process_similarity(memories:list) -> list:
-
             """
             10.25
             我突然觉得这些策略不是很合理
             """
-            # async def _negative_common(memory1:str,memory2:str) -> bool:
-            #     """
-            #     负面判断，判断是否有负面内容，如果有则删除
-            #     """
-            #     for negative_word in settings.negative_words:
-            #         if (negative_word in memory1 and negative_word not in memory2) or (negative_word not in memory1 and negative_word in memory2):
-            #             return False
-            #     return True
-            #
-            # list_to_remove=[]
-            # for i in range(len(memories)):
-            #     for j in range(i+1,len(memories)):
-            #         if memories[i]["embedding"] and memories[j]["embedding"]:
-            #             similarity=cosine_similarity(memories[i]["embedding"],memories[j]["embedding"])
-            #             if similarity>settings.SIMILARITY_THRESHOLD :
-            #                 list_to_remove.append(j)
-
-            #             memories = [m for idx, m in enumerate(memories) if idx not in list_to_remove]
-
             # 用 id 记录待丢弃的记忆，dict 不可哈希不能直接放进 set
             list_should_remove:set[int] = set()
             for index,memo in enumerate(memories):
@@ -91,19 +101,13 @@ class memoryService:
                        list_should_remove.add(index)
 
             return [m for idx, m in enumerate(memories) if idx not in list_should_remove]
-
-        kwargs=store_request.additional_kwargs
+        #因为参数传入是多态访问的，这里直接用 store_request 的 additional_kwargs 就行，episodeStoreRequest 也有这个属性
         model=get_pool()
         chat_model=model.chat
         embedding_model=model.embedding
         # 原文自己也要进向量库，检索时才能按语义把整段原始输入捞回来
-        origin_embedding=await asyncio.to_thread(modelService.embedding,store_request.origin_content,embedding_model)
-        origin_content=originContent(
-                      agent_id=store_request.agent_id,
-                      content=store_request.origin_content,
-                      additional_kwargs=store_request.additional_kwargs
-                      )
-        self.origin_content_repository.add_content(
+
+        self.episodic_memory_repository.add_memory(
            origin_content,
            {
                "embedding":np.asarray(origin_embedding).astype(np.float32).tobytes(),
@@ -118,23 +122,6 @@ class memoryService:
             memory["embedding_model"]=embedding_model.model_name
         memories_list=await _process_similarity(memories_list)  #处理相似内容
         self.episodic_memory_repository.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_id=origin_content_id)
-
-
-
-    async def add_episodic_memory(self, store_request:episodeStoreRequest):
-        """
-        添加情景记忆   无脑添加原文消息
-        """
-        #这里存的就是原文，不需要再回指 origin_content
-        model=get_pool()
-        embedding_model=model.embedding
-        embedding=await asyncio.to_thread(modelService.embedding,store_request.origin_content,embedding_model)
-        memory={
-            "content":store_request.origin_content,
-            "embedding":np.asarray(embedding).astype(np.float32).tobytes(),
-            "embedding_model":embedding_model.model_name,
-        }
-        self.episodic_memory_repository.add_memory([memory],agent_id=store_request.agent_id)
 
 
 

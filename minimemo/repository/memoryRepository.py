@@ -1,10 +1,7 @@
 from __future__ import annotations
-
 import datetime
 from typing import Any
-
 from sqlalchemy.orm import Session
-
 from minimemo.models.memoryModel.memory import Memory
 from minimemo.models.memoryVector import memoryVector
 
@@ -23,6 +20,9 @@ class memoryRepository:
     def __init__(self, session: Session):
         self.session = session
 
+
+
+
     def _alive_conditions(self) -> list[Any]:
         """
         判定一条记忆是否“活着”的条件
@@ -30,16 +30,20 @@ class memoryRepository:
         """
         return [Memory.is_delete.is_(False)]
 
+
+
     def add_memory(
         self,
         memories: list[dict],
-        agent_id: str,
-        origin_content_id: str | None = None,
+        agent_id: str
     ) -> None:
         """
         批量新增记忆，并同步写入对应的向量
         """
         raise NotImplementedError
+
+
+
 
     def search_memory(self, memory_ids: list[str]) -> list[Memory]:
         """
@@ -55,6 +59,9 @@ class memoryRepository:
         )
         by_id = {row.id: row for row in rows}
         return [by_id[memory_id] for memory_id in memory_ids if memory_id in by_id]
+
+
+
 
     def remove_memory(self, memory_id: str) -> None:
         """
@@ -72,6 +79,9 @@ class memoryRepository:
         self.session.delete(memory)
         self.session.commit()
 
+
+
+
     def kill_memory(self, memory_id: str) -> None:
         """
         软删除一条记忆，只打标记不删数据
@@ -84,6 +94,9 @@ class memoryRepository:
             synchronize_session=False,
         )
         self.session.commit()
+
+
+
 
     def update_memory(self, memory_id: str, content: str, new_embedding: bytes) -> None:
         """
@@ -102,6 +115,8 @@ class memoryRepository:
             memoryVector.memory_id == memory_id
         ).update({"embedding": new_embedding}, synchronize_session=False)
         self.session.commit()
+
+
 
     def _add_with_vector(self, memory: Memory, agent_id: str, payload: dict) -> None:
         """

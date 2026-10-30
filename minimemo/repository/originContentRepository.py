@@ -17,35 +17,23 @@ class originContentRepository(memoryRepository):
     def add_memory(
         self,
         memories: list[dict],
-        agent_id: str,
-        origin_content_id: str | None = None,
+        agent_id: str
     ) -> None:
         """
         批量新增原文
-        origin_content_id 对原文自身没有意义（它就是原文本体），签名保留只是为了和基类一致
+        10.29  包含角色来源 会话id  I will crack
         """
         for memory in memories:
             memo = originContent(
                 content=memory["content"],
                 agent_id=agent_id,
-                additional_kwargs=memory.get("additional_kwargs"),
+                role=memory.get("role", "system"),
+                session_id=memory.get("session_id","default")
             )
             self._add_with_vector(memo, agent_id, memory)
         self.session.commit()
 
-    def add_content(self, content: originContent, payload: dict | None = None) -> None:
-        """
-        单条新增的语法糖，传了 payload 才会挂向量，不传就只存内容
 
-        id 是父表 memory 上的 Python 端默认值，要 flush 之后才会生成，
-        所以这里直接复用基类的 _add_with_vector（内部会 flush），
-        调完之后 content.id 就能读，调用方拿它回填 origin_content_id
-        """
-        if payload and payload.get("embedding"):
-            self._add_with_vector(content, content.agent_id, payload)
-        else:
-            self.session.add(content)
-        self.session.commit()
 
     def search_content(self, content_ids: list[str]) -> list[Memory]:
         """

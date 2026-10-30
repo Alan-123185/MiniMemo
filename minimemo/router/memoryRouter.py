@@ -1,27 +1,18 @@
 from fastapi import APIRouter, Depends
 
 from  minimemo.common.requestSchema.searchRequest import searchRequest
-from  minimemo.common.requestSchema.storeRequest import storeRequest, episodeStoreRequest, semanticStoreRequest
+from  minimemo.common.requestSchema.storeRequest import originContentStoreRequest
 from  minimemo.common.result import Result
 from  minimemo.service.dependencies import get_memory_service
 
 router=APIRouter()
 
-@router.post("/MiniMemo/memory/addSemantic")
-async def add_semantic_memory(store_request:semanticStoreRequest,memory_service=Depends(get_memory_service)):
+@router.post("/MiniMemo/memory/add")
+async def add_semantic_memory(store_request:originContentStoreRequest,memory_service=Depends(get_memory_service)):
     """
-    为指定的智能体添加语义记忆
-    原文会先落 origin_content，再由大模型提炼成事实/偏好
+    外部调用 只能指定添加初始内容记忆
     """
-    await memory_service.add_semantic_memory(store_request)
-    return Result.success()
-
-@router.post("/MiniMemo/memory/addEpisodic")
-async def add_episodic_memory(store_request:episodeStoreRequest,memory_service=Depends(get_memory_service)):
-    """
-    为指定的智能体添加情景记忆，原文原样入库
-    """
-    await memory_service.add_episodic_memory(store_request)
+    await memory_service.add_origin_content(store_request)
     return Result.success()
 
 @router.post("/MiniMemo/memory/search")

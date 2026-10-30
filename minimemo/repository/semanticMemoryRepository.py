@@ -35,6 +35,8 @@ class semanticMemoryRepository(memoryRepository):
             self._add_with_vector(memo, agent_id, memory)
         self.session.commit()
 
+
+
     def kill_memory(self, memory_id: str) -> None:
         """
         语义记忆的“作废”是双重语义：事实不再成立，同时也从检索中隐去
