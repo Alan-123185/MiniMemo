@@ -151,7 +151,7 @@ class memoryService:
                 for content in pan:
                     session_groups.setdefault(content.session, []).append(content)
                 #哪个会话攒够了阈值，就把那个会话的原文拿去抽取
-                for group in session_groups.items():
+                for session_id,group in session_groups.items():
                     if len(group) >= settings.MAX_UNARCHIVED:
                         yield group
 
@@ -181,10 +181,6 @@ class memoryService:
             return "\n".join(ret), id_map
 
                 
-
-
-
-
 
 
         model=get_pool()
@@ -224,14 +220,6 @@ class memoryService:
         """
         group=[g async for session_id , g in  self.before_add_episodeic_memory_L1(store_request)]
         await asyncio.gather(*[self.add_episodeic_memory_L1(g,store_request) for g in group])
-
-
-
-
-
-
-
-
 
 
       

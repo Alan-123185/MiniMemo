@@ -31,7 +31,7 @@ class originContentRepository(memoryRepository[originContentMemoryInfo]):
                 content=memory.content,
                 agent_id=agent_id,
                 role=memory.role,
-                session_id=memory.session_id,
+                session=memory.session_id,
                 #默认没有被归档 不需要管它 不在这里更新
             )
             self._add_with_vector(memo, agent_id, memory)

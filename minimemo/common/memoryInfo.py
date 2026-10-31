@@ -10,7 +10,12 @@ class memoryInfo(BaseModel):
     embedding: bytes
     embedding_model: str
     content:str
-    origin_content_id: Optional[str] = None
+
+
+
+class episodeicMemoryInfo(memoryInfo):
+    origin_content_id: Optional[list[str]] = None
+
 
 
 class originContentMemoryInfo(memoryInfo):
