@@ -12,7 +12,7 @@ from minimemo.models.memoryVector import memoryVector
 """
 
 
-class memoryRepository:
+class memoryRepository[T:memoryInfo]:
     kind: str
 
     # 子类必须指定自己对应的 ORM 类
@@ -35,7 +35,7 @@ class memoryRepository:
 
     def add_memory(
         self,
-        memories: list[memoryInfo],
+        memories: list[T],
         agent_id: str
     ) -> None:
         """

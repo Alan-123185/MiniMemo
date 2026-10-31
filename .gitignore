@@ -25,6 +25,5 @@ __pycache__/
 .ini
 alembic/
 minimemo.egg-info/
-.ini
 test/
 testdatas/

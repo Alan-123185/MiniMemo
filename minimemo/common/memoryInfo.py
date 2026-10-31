@@ -10,7 +10,7 @@ class memoryInfo(BaseModel):
     embedding: bytes
     embedding_model: str
     content:str
-    source: str
+    origin_content_id: Optional[str] = None
 
 
 class originContentMemoryInfo(memoryInfo):

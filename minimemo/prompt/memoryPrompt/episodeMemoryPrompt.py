@@ -49,11 +49,13 @@ EPISODE_MEMORY_PROMPT:str = """
   "memories": [
     {
       "content": "一段自然语言描述的经历，包含发生了什么、结果如何。",
-      "origin_content_id": "",
+      "origin_content_id": [0, 3]
     }
   ]
 }
-source 用于追溯经历的原始依据，不是第二份记忆。
+origin_content_id 是这段经历依据的原文编号列表，取值只能是原始内容前标注的方括号编号，
+不要输出编号以外的任何内容，也不要编造没有出现过的编号。
+origin_content_id 用于追溯经历的原始依据，不是第二份记忆。
 没有值得保存的经历时，返回：
 {"memories": []}
 输出应以未来回忆的价值为优先，其次是时间与情境的准确性。

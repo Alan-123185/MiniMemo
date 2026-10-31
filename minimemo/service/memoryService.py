@@ -1,7 +1,7 @@
 import asyncio
 import numpy as np
 from loguru import logger
-from minimemo.common.memoryInfo import memoryInfo
+from minimemo.common.memoryInfo import memoryInfo, originContentMemoryInfo
 from minimemo.common.existFact import existFact
 from  minimemo.common.requestSchema.searchRequest import searchRequest
 from minimemo.common.requestSchema.storeRequest import originContentStoreRequest,episodeStoreRequest, storeRequest
@@ -37,13 +37,13 @@ class memoryService:
         model=get_pool()
         embedding_model=model.embedding
         embedding=await asyncio.to_thread(modelService.embedding,store_request.origin_content,embedding_model)
-        memory={
-            "content":store_request.origin_content,
-            "embedding":np.asarray(embedding).astype(np.float32).tobytes(),
-            "embedding_model":embedding_model.model_name,
-            "role":store_request.role,
-            "session_id":store_request.session_id
-        }
+        memory=originContentMemoryInfo(
+            content=store_request.origin_content,
+            embedding=np.asarray(embedding).astype(np.float32).tobytes(),
+            embedding_model=embedding_model.model_name,
+            role=store_request.role,
+            session_id=store_request.session_id
+        )
         self.origin_content_repository.add_memory([memory],agent_id=store_request.agent_id)
 
 
@@ -161,20 +161,24 @@ class memoryService:
     async def add_episodeic_memory_L1(self, memory_list: list[originContent],store_request: originContentStoreRequest):
         """
         10.29
-        第一层抽取情景记忆的逻辑  处理相似性 
+        第一层抽取情景记忆的逻辑  处理相似性 这个是分session处理的
         积累量超过阈值
         """
 
-        async def _process_origin_content(memory_list: list[originContent]) -> str:
+        async def _process_origin_content(memory_list: list[originContent]) -> tuple[str, dict[str, str]]:
             """
             10.29
             处理单条原文组装成输入
+            给每条原文标上编号，同时留下编号到真实id的映射，
+            落库时用它把 LLM 报回来的编号换回 origin_content_id
             """
             ret=[]
-            for memory in memory_list:
-                ret.append(f"{memory.role}:{memory.content}")
+            id_map={}
+            for index,memory in enumerate(memory_list):
+                id_map[str(index)]=memory.id
+                ret.append(f"[{index}] {memory.role}:{memory.content}")
             self.origin_content_repository.mark_archived([memory.id for memory in memory_list]) #标记已经存档
-            return "\n".join(ret)
+            return "\n".join(ret), id_map
 
                 
 
@@ -186,9 +190,7 @@ class memoryService:
         model=get_pool()
         chat_model=model.chat
         embedding_model=model.embedding
-        origin_content_id=
-
-        need_process_content=await _process_origin_content(memory_list)
+        need_process_content,id_map=await _process_origin_content(memory_list)
         #关键调用 ；制作情景记忆   TODO 怎么才能存储orign_content_id 关联到情景记忆上呢？  10.30
         memories_list=await asyncio.to_thread(modelService.to_episodeic_memory,origin_content=need_process_content, model=chat_model)
 
@@ -196,10 +198,14 @@ class memoryService:
             embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
             memory["embedding"]=np.asarray(embedding).astype(np.float32).tobytes()
             memory["embedding_model"]=embedding_model.model_name
+        memory_info_list=[memoryInfo(content=memory["content"], 
+                                     origin_content_id=memory.get("origin_content_id"),
+                                     embedding=memory["embedding"],
+                                     embedding_model=memory["embedding_model"]) 
+                                     for memory in memories_list]
+        memories_list=await self._process_similarity(memory_info_list,store_request)  #处理相似内容
 
-        memories_list=await self._process_similarity(memories_list,store_request)  #处理相似内容
-
-        self.episodic_memory_repository.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_id=origin_content_id)
+        self.episodic_memory_repository.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_ids=id_map)
 
 
 
@@ -217,7 +223,7 @@ class memoryService:
         积累量超过阈值
         """
         group=[g async for session_id , g in  self.before_add_episodeic_memory_L1(store_request)]
-        await asyncio.gather(*[self.add_episodeic_memory_L1(g,store_request.agent_id) for g in group])
+        await asyncio.gather(*[self.add_episodeic_memory_L1(g,store_request) for g in group])
 
 
 
@@ -232,7 +238,7 @@ class memoryService:
         
     
 
-    async def _process_similarity(self,memories:list[memoryInfo],store_request:storeRequest) -> list:
+    async def _process_similarity(self,memories:list[memoryInfo],store_request:storeRequest) -> list[memoryInfo]:
             """
             10.30 episodeMemory的三层去重策略
             """

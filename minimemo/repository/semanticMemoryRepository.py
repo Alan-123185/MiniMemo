@@ -1,11 +1,11 @@
 import uuid
 from typing import Any
-from minimemo.common.memoryInfo import memoryInfo
+from minimemo.common.memoryInfo import memoryInfo, semanticMemoryInfo
 from minimemo.models.memoryModel.semanticMemory import semanticMemory
 from minimemo.repository.memoryRepository import memoryRepository
 
 
-class semanticMemoryRepository(memoryRepository):
+class semanticMemoryRepository(memoryRepository[semanticMemoryInfo]):
     kind = "semantics"
     model = semanticMemory  #指定对应的ORM类
 
@@ -17,7 +17,7 @@ class semanticMemoryRepository(memoryRepository):
 
     def add_memory(
         self,
-        memories: list[memoryInfo],  #多态访问 到时候传入semanticMemoryInfo
+        memories: list[semanticMemoryInfo],  #多态访问 到时候传入semanticMemoryInfo
         agent_id: str,
         origin_content_id: str | None = None,
     ) -> None:
@@ -29,8 +29,8 @@ class semanticMemoryRepository(memoryRepository):
                 id=str(uuid.uuid4()),
                 content=memory.content,
                 agent_id=agent_id,
-                type=memory.get("type") or "fact",
-                is_alive=memory.get("is_alive", True),
+                type=memory.type,
+                is_alive=memory.is_alive,
             )
             self._add_with_vector(memo, agent_id, memory)
         self.session.commit()

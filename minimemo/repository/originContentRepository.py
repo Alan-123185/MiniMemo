@@ -1,4 +1,6 @@
-from minimemo.common.memoryInfo import memoryInfo
+
+
+from minimemo.common.memoryInfo import memoryInfo, originContentMemoryInfo
 from minimemo.models.memoryModel.memory import Memory
 from minimemo.models.origin_content import originContent
 from minimemo.repository.memoryRepository import memoryRepository
@@ -11,13 +13,13 @@ from minimemo.repository.memoryRepository import memoryRepository
 """
 
 
-class originContentRepository(memoryRepository):
+class originContentRepository(memoryRepository[originContentMemoryInfo]):
     kind = "origin_content"
     model = originContent
 
     def add_memory(
         self,
-        memories: list[memoryInfo],
+        memories: list[originContentMemoryInfo],
         agent_id: str
     ) -> None:
         """
@@ -28,8 +30,8 @@ class originContentRepository(memoryRepository):
             memo = originContent(
                 content=memory.content,
                 agent_id=agent_id,
-                role=memory.get("role", "system"),
-                session_id=memory.get("session_id","default")
+                role=memory.role,
+                session_id=memory.session_id,
                 #默认没有被归档 不需要管它 不在这里更新
             )
             self._add_with_vector(memo, agent_id, memory)
