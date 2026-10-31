@@ -5,6 +5,8 @@ from minimemo.db.session import engine
 from minimemo.router.agentRouter import router as agent_router
 from minimemo.router.modelRouter import router as model_router
 from minimemo.router.memoryRouter import router as memory_router
+import log
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
