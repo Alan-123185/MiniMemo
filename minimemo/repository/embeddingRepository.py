@@ -4,6 +4,7 @@ import numpy as np
 from sqlalchemy.orm import Session
 
 from  minimemo.config.data import settings
+from  minimemo.models.memoryModel.memory import Memory
 from  minimemo.models.memoryVector import memoryVector
 from  minimemo.tools import numpyTool
 
@@ -20,13 +21,21 @@ class embeddingRepository:
             self.session.add(memory_vector)
         self.session.commit()
 
-    def query_vectors(self, query: list[float], agent_id: str, embedding_model: str) -> list[memoryVector]:
+    def query_vectors(self, query: list[float], agent_id: str, embedding_model: str, memory_type: str | None = None) -> list[memoryVector]:
         """
         查询指定内容相似度最高的前 top_k 条向量
+        memory_type 是 memory 表上的鉴别器取值，传了就只在同等级的记忆之间比较，
+        不传则不加限制，检索时用（要同时召回情景与语义两路）
         """
-        vector_list = self.session.query(memoryVector).filter_by(
-            agent_id=agent_id, embedding_model=embedding_model
-        ).all()
+        vector_query = self.session.query(memoryVector).join(
+            Memory, memoryVector.memory_id == Memory.id
+        ).filter(
+            memoryVector.agent_id == agent_id,
+            memoryVector.embedding_model == embedding_model,
+        )
+        if memory_type is not None:
+            vector_query = vector_query.filter(Memory.memory_type == memory_type)
+        vector_list = vector_query.all()
         scored = [
             (
                 numpyTool.cosine_similarity(

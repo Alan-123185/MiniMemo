@@ -1,18 +1,18 @@
 import uuid
 
-from minimemo.common.memoryInfo import episodeicMemoryInfo
+from minimemo.common.memoryInfo import episodicMemoryInfo
 from minimemo.models.episodeOriginLink import episodeOriginLink
 from minimemo.models.memoryModel.episodicMemory import episodicMemory
 from minimemo.repository.memoryRepository import memoryRepository
 
 
-class episodicMemoryRepository(memoryRepository[episodeicMemoryInfo]):
+class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
     kind = "episodes"
     model = episodicMemory
 
     def add_memory(
         self,
-        memories: list[episodeicMemoryInfo],
+        memories: list[episodicMemoryInfo],
         agent_id: str,
         origin_content_ids: dict[str, str] | None = None,
     ) -> None:

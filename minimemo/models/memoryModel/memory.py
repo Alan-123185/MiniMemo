@@ -1,4 +1,5 @@
 import datetime
+from typing import Literal
 import uuid
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -20,7 +21,8 @@ class Memory(Base):
     is_delete:Mapped[bool] = mapped_column(default=False, nullable=False)
 
 
-    memory_type: Mapped[str] = mapped_column(index=True)   # 鉴别器
+
+    memory_type: Mapped[Literal["origin","episodic","semantic"]] = mapped_column(index=True)   # 鉴别器
 
     __mapper_args__ = {
         "polymorphic_on": "memory_type",

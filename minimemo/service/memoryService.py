@@ -1,7 +1,7 @@
 import asyncio
 import numpy as np
 from loguru import logger
-from minimemo.common.memoryInfo import memoryInfo, originContentMemoryInfo
+from minimemo.common.memoryInfo import memoryInfo, originContentMemoryInfo, episodicMemoryInfo
 from minimemo.common.existFact import existFact
 from  minimemo.common.requestSchema.searchRequest import searchRequest
 from minimemo.common.requestSchema.storeRequest import originContentStoreRequest,episodeStoreRequest, storeRequest
@@ -58,7 +58,7 @@ class memoryService:
     - 显式水位：调用方主动说「这里结束了一段」
     - 上限保护：未抽取原文攒到 M 条（比如 50）强制抽一次，兜住长期不触发的极端情况
     """
-    async def add_episodeic_memory(self, store_request: episodeStoreRequest):
+    async def add_episodic_memory(self, store_request: episodeStoreRequest):
         """
         10.29
         暂时先写个函数
@@ -69,7 +69,10 @@ class memoryService:
        
        
 
-
+    """
+    10.31
+    这个函数到时候需要重写 现在是未重构之前的结构 先不管
+    """
     async def search_memory(self, search_request:searchRequest) -> list[Memory]:
         """
         搜索指定智能体的记忆
@@ -86,7 +89,9 @@ class memoryService:
         seen:set[str]=set()
         for q in question:
             query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
-            vector_list=self.embedding_repository.query_vectors(agent_id=search_request.agent_id,embedding_model=embedding_model.model_name,query=query_embedding)
+            vector_list=self.embedding_repository.query_vectors(
+                agent_id=search_request.agent_id,
+                embedding_model=embedding_model.model_name,query=query_embedding)
             for vector in vector_list:
                 if vector.memory_id not in seen:
                     seen.add(vector.memory_id)
@@ -118,6 +123,7 @@ class memoryService:
                 agent_id=search_request.agent_id,
                 embedding_model=embedding_model.model_name,
                 query=query_embedding,
+                memory_type="origin",  # 限制搜索原文
             )
             for vector in vector_list:
                 if vector.memory_id not in seen:
@@ -139,7 +145,7 @@ class memoryService:
 
 
 
-    async def before_add_episodeic_memory_L1(self,store_request: originContentStoreRequest):
+    async def before_add_episodic_memory_L1(self,store_request: originContentStoreRequest):
                 """
                 10.29
                 第一层判断 只看某次添加原始内容之后积攒的未处理条数
@@ -158,7 +164,8 @@ class memoryService:
 
 
 
-    async def add_episodeic_memory_L1(self, memory_list: list[originContent],store_request: originContentStoreRequest):
+
+    async def add_episodic_memory_L1(self, memory_list: list[originContent],store_request: originContentStoreRequest):
         """
         10.29
         第一层抽取情景记忆的逻辑  处理相似性 这个是分session处理的
@@ -177,7 +184,6 @@ class memoryService:
             for index,memory in enumerate(memory_list):
                 id_map[str(index)]=memory.id
                 ret.append(f"[{index}] {memory.role}:{memory.content}")
-            self.origin_content_repository.mark_archived([memory.id for memory in memory_list]) #标记已经存档
             return "\n".join(ret), id_map
 
                 
@@ -188,19 +194,19 @@ class memoryService:
         embedding_model=model.embedding
         need_process_content,id_map=await _process_origin_content(memory_list)
         #关键调用 ；制作情景记忆   TODO 怎么才能存储orign_content_id 关联到情景记忆上呢？  10.30
-        memories_list=await asyncio.to_thread(modelService.to_episodeic_memory,origin_content=need_process_content, model=chat_model)
+        memories_list=await asyncio.to_thread(modelService.to_episodic_memory,origin_content=need_process_content, model=chat_model)
 
         for memory in memories_list:
             embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
             memory["embedding"]=np.asarray(embedding).astype(np.float32).tobytes()
             memory["embedding_model"]=embedding_model.model_name
-        memory_info_list=[memoryInfo(content=memory["content"], 
+        memory_info_list=[episodicMemoryInfo(content=memory["content"],
                                      origin_content_id=memory.get("origin_content_id"),
                                      embedding=memory["embedding"],
-                                     embedding_model=memory["embedding_model"]) 
+                                     embedding_model=memory["embedding_model"])
                                      for memory in memories_list]
         memories_list=await self._process_similarity(memory_info_list,store_request)  #处理相似内容
-
+        self.origin_content_repository.mark_archived([memory.id for memory in memory_list]) #标记已经存档
         self.episodic_memory_repository.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_ids=id_map)
 
 
@@ -212,21 +218,21 @@ class memoryService:
 
 
 
-    async def episodeic_memory_L1(self, store_request: originContentStoreRequest):
+    async def episodic_memory_L1(self, store_request: originContentStoreRequest):
         """
         10.29
         第一层抽取情景记忆的逻辑
         积累量超过阈值
         """
-        group=[g async for session_id , g in  self.before_add_episodeic_memory_L1(store_request)]
-        await asyncio.gather(*[self.add_episodeic_memory_L1(g,store_request) for g in group])
+        group=[g async for session_id , g in  self.before_add_episodic_memory_L1(store_request)]
+        await asyncio.gather(*[self.add_episodic_memory_L1(g,store_request) for g in group])
 
 
       
         
     
 
-    async def _process_similarity(self,memories:list[memoryInfo],store_request:storeRequest) -> list[memoryInfo]:
+    async def _process_similarity(self,memories:list[episodicMemoryInfo],store_request:storeRequest) -> list[episodicMemoryInfo]:
             """
             10.30 episodeMemory的三层去重策略
             """
@@ -237,7 +243,8 @@ class memoryService:
                 vector_list=self.embedding_repository.query_vectors(
                     agent_id=store_request.agent_id,
                     embedding_model=memo.embedding_model,
-                    query=np.frombuffer(memo.embedding, dtype=np.float32).tolist()
+                    query=np.frombuffer(memo.embedding, dtype=np.float32).tolist(),
+                    memory_type="episodic",  # 只和已有的情景记忆比，避免被同源原文误杀
                     )
                 for vector in vector_list:
                     similarity = cosine_similarity(vector.embedding, memo.embedding)

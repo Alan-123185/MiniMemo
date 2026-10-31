@@ -13,7 +13,8 @@ class memoryInfo(BaseModel):
 
 
 
-class episodeicMemoryInfo(memoryInfo):
+
+class episodicMemoryInfo(memoryInfo):
     origin_content_id: Optional[list[str]] = None
 
 

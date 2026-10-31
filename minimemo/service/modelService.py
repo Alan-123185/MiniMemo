@@ -18,7 +18,7 @@ class modelService:
 
 
     @staticmethod
-    def to_episodeic_memory(origin_content:str,model:modelConfig) -> list:
+    def to_episodic_memory(origin_content:str,model:modelConfig) -> list:
         client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
         prompt=EPISODE_MEMORY_PROMPT+"\n"+origin_content
         for i in range(settings.MAX_RETRY_TIMES):
