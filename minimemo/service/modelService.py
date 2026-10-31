@@ -18,7 +18,7 @@ class modelService:
 
 
     @staticmethod
-    def to_episodic_memory(origin_content:str,model:modelConfig) -> list:
+    def to_episodic_memory(origin_content:str,model:modelConfig) -> tuple[list, int]:
         client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
         prompt=EPISODE_MEMORY_PROMPT+"\n"+origin_content
         for i in range(settings.MAX_RETRY_TIMES):
@@ -28,7 +28,9 @@ class modelService:
                     messages=[{"role": "user", "content":prompt}],
                 )
                 output = json_to_dict(res.choices[0].message.content)
-                return output["memories"]
+                memories=output["memories"]
+                #truncate_from：结尾是否把一件事讲到一半，-1 表示完整，否则是截断开始的原文编号
+                return memories, int(output.get("truncate_from", -1))
             except Exception as e:
                 logger.info(f"记忆格式化失败({i+1}/{settings.MAX_RETRY_TIMES})")
                 logger.info(f"对话排序失败，错误信息：{e}")

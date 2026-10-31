@@ -43,7 +43,7 @@ class memoryService:
             session_id=store_request.session_id
         )
         self.origin_content_repository.add_memory([memory],agent_id=store_request.agent_id)
-        spawn(consolidationService.episodic_memory_L1(store_request))
+        #spawn(consolidationService.episodic_memory_L1(store_request))
 
 
 

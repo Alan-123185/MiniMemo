@@ -52,14 +52,20 @@ class originContentRepository(memoryRepository[originContentMemoryInfo]):
     ]
 
 
-    def get_not_archived_content(self, agent_id: str) -> list[originContent]:
+
+    def get_not_archived_content(self, agent_id: str) -> dict[str, list[originContent]]:
         """
         获取指定智能体的所有未归档原文
         """
-        return self.session.query(originContent).filter(
+        origin_content_list=self.session.query(originContent).filter(
             originContent.agent_id == agent_id,
             *self._unarchived_conditions,
         ).all()
+        #按会话拆分，每个会话各自攒各自的水位
+        session_groups:dict[str,list[originContent]]={}
+        for content in origin_content_list:
+            session_groups.setdefault(content.session, []).append(content)
+        return session_groups
 
 
     # 未归档的公共过滤条件，水位查询与归档标记共用一套

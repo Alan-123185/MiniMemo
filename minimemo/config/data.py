@@ -28,6 +28,10 @@ class Settings(BaseSettings):
 
     MAX_UNARCHIVED:int=10    #一个会话内未归档的原文最大数量，超过该数量将触发自动归档
 
+    MAX_UNARCHIVED_TIME:int=60*30  #一个会话内未归档的原文最大时间，超过该时间将触发自动归档
+
+    EPISODIC_CONSOLIDATION_INTERVAL:int=60*5  #情景记忆归档的时间间隔，单位秒
+
 
     negative_words:list[str]=["不", "没", "无", "别", "勿", "非", "未", "莫", "甭", "不要", "没有"]  #负面词汇列表，用于过滤记忆中的负面内容
 
