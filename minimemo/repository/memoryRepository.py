@@ -83,6 +83,15 @@ class memoryRepository[T:memoryInfo]:
 
 
 
+    def commit(self) -> None:
+        """
+        提交事务
+        更新与软删除不再自行提交，提交时机交给调用方决定，
+        好让一次抽取过程里的多次修改落在同一个事务里
+        """
+        self.session.commit()
+
+
     def kill_memory(self, memory_id: str) -> None:
         """
         软删除一条记忆，只打标记不删数据
@@ -94,7 +103,6 @@ class memoryRepository[T:memoryInfo]:
             },
             synchronize_session=False,
         )
-        self.session.commit()
 
 
 
@@ -115,7 +123,6 @@ class memoryRepository[T:memoryInfo]:
         self.session.query(memoryVector).filter(
             memoryVector.memory_id == memory_id
         ).update({"embedding": new_embedding}, synchronize_session=False)
-        self.session.commit()
 
 
 

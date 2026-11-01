@@ -53,14 +53,14 @@ class originContentRepository(memoryRepository[originContentMemoryInfo]):
 
 
 
-    def get_not_archived_content(self, agent_id: str) -> dict[str, list[originContent]]:
+    def get_unarchived_content(self, agent_id: str) -> dict[str, list[originContent]]:
         """
-        获取指定智能体的所有未归档原文
+        获取指定智能体的所有未归档原文  直接返回按照会话分组的字典 方便
         """
         origin_content_list=self.session.query(originContent).filter(
             originContent.agent_id == agent_id,
             *self._unarchived_conditions,
-        ).all()
+        ).order_by(originContent.create_time.asc()).all()
         #按会话拆分，每个会话各自攒各自的水位
         session_groups:dict[str,list[originContent]]={}
         for content in origin_content_list:
@@ -71,9 +71,9 @@ class originContentRepository(memoryRepository[originContentMemoryInfo]):
     # 未归档的公共过滤条件，水位查询与归档标记共用一套
 
 
-    def fetch_unarchived(self, agent_id: str, session_id: str, limit: int | None = None) -> list[originContent]:
+    def fetch_unarchived_by_session(self, agent_id: str, session_id: str, limit: int | None = None) -> list[originContent]:
         """
-        按时间正序取一个会话内未归档的原文
+        这个方法和上面的不一样，提供了会话id，可以灵活的按照会话取未归档原文
         limit=None 时不限量，供显式归档整段会话用
         """
         query = self.session.query(originContent).filter(

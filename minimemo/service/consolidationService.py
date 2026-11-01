@@ -15,6 +15,7 @@ from minimemo.repository.embeddingRepository import embeddingRepository
 from minimemo.repository.episodicMemoryRepository import episodicMemoryRepository
 from minimemo.repository.originContentRepository import originContentRepository
 from minimemo.service.modelService import modelService
+from minimemo.tools.backgroundTask import spawn
 from minimemo.tools.numpyTool import cosine_similarity
 
 
@@ -23,7 +24,7 @@ class consolidationService:
     """
     状态标记
     """
-    episodic_memory_L1_lock=asyncio.Lock()
+    _loop_tasks: dict[str, asyncio.Task] = {}
 
     """
     治理添加情景记忆的策略
@@ -35,12 +36,30 @@ class consolidationService:
     - 上限保护：未抽取原文攒到 M 条（比如 50）强制抽一次，兜住长期不触发的极端情况
     """
 
+
+
+    @staticmethod
+    async def process_origin_content(memory_list: list[originContent]) -> tuple[str, dict[str, str]]:
+        """
+        特殊内部方法 专门用于主动触发情景记忆的情况下原始prompt的组织
+        """
+        ret=[]
+        id_map={}
+        for index,memory in enumerate(memory_list):
+            id_map[str(index)]=memory.id
+            ret.append(f"[{index}] {memory.role}:{memory.content}")
+        return "\n".join(ret), id_map
+    
+
+
+    
+
     @classmethod
-    async def before_add_episodic_memory(cls,store_request: originContentStoreRequest) -> dict[str, list[originContent]]:
+    async def before_add_episodic_memory(cls,agent_id:str) -> dict[str, list[originContent]]:
             session=create_session()
             try:
                 origin_repo=originContentRepository(session)
-                session_groups=origin_repo.get_not_archived_content(store_request.agent_id)
+                session_groups=origin_repo.get_unarchived_content(agent_id)
             finally:
                 session.close()
             return session_groups
@@ -51,12 +70,12 @@ class consolidationService:
         """
         10.29
         第一层判断 只看某次添加原始内容之后积攒的未处理条数
-        这个函数是用来判断需不需要进行情景记忆抽取，如果需要，返回待抽取的原文列表
+        这个函数是用来判断需不需要进行情景记忆抽取，如果需要，返回待抽取的会话id
         """
         #哪个会话攒够了阈值，就把那个会话的原文拿去抽取
         for session_id,group in session_groups.items():
             if len(group) >= settings.MAX_UNARCHIVED:
-                yield group
+                yield session_id
 
 
     """
@@ -68,38 +87,22 @@ class consolidationService:
         """
         10.31
         第二层判断 看时间
-        这个函数是用来判断需不需要进行情景记忆抽取，如果需要，返回待抽取的原文列表
+        这个函数是用来判断需不需要进行情景记忆抽取，如果需要，返回待抽取的会话id
         """
         #哪个会话攒够了阈值，就把那个会话的原文拿去抽取
         for session_id,group in session_groups.items():
             #取组内最新一条原文的落库时间，距今超过 T 秒就说明这段对话凉了
             if datetime.datetime.now() - max(c.create_time for c in group) >= datetime.timedelta(seconds=settings.MAX_UNARCHIVED_TIME):
-                yield group
+                yield session_id
 
 
     @classmethod
-    async def add_episodic_memory(cls, memory_list: list[originContent],store_request: originContentStoreRequest):
+    async def add_episodic_memory(cls, memory_list: list[originContent],agent_id: str):
         """
         10.29
-        第一层抽取情景记忆的逻辑  处理相似性 这个是分session处理的
+        抽取情景记忆的逻辑  处理相似性 这个是分session处理的
         积累量超过阈值
         """
-
-        async def _process_origin_content(memory_list: list[originContent]) -> tuple[str, dict[str, str]]:
-            """
-            10.29
-            处理单条原文组装成输入
-            给每条原文标上编号，同时留下编号到真实id的映射，
-            落库时用它把 LLM 报回来的编号换回 origin_content_id
-            """
-            ret=[]
-            id_map={}
-            for index,memory in enumerate(memory_list):
-                id_map[str(index)]=memory.id
-                ret.append(f"[{index}] {memory.role}:{memory.content}")
-            return "\n".join(ret), id_map
-
-
         model=get_pool()
         chat_model=model.chat
         embedding_model=model.embedding
@@ -109,7 +112,7 @@ class consolidationService:
             origin_repo = originContentRepository(session)
             episodic_repo = episodicMemoryRepository(session)
             embedding_repo = embeddingRepository(session)
-            need_process_content,id_map=await _process_origin_content(memory_list)
+            need_process_content,id_map=await cls.process_origin_content(memory_list)
             #关键调用 ；制作情景记忆   已解决：怎么才能存储orign_content_id 关联到情景记忆上呢？  10.30
             memories_list,truncate_from=await asyncio.to_thread(modelService.to_episodic_memory,origin_content=need_process_content, model=chat_model)
 
@@ -124,29 +127,35 @@ class consolidationService:
                                          embedding=memory["embedding"],
                                          embedding_model=memory["embedding_model"])
                                          for memory in memories_list]
-            memories_list=await cls._process_similarity(memory_info_list,store_request,embedding_repo,episodic_repo)  #处理相似内容
+            memories_list=await cls._process_similarity(memory_info_list,agent_id,embedding_repo,episodic_repo)  #处理相似内容
             origin_repo.mark_archived([memory.id for memory in archived_list]) #标记已经存档，截断点之后的留给下一轮
-            episodic_repo.add_memory(memories_list,agent_id=store_request.agent_id,origin_content_ids=id_map)
+            episodic_repo.add_memory(memories_list,agent_id=agent_id,origin_content_ids=id_map)
         finally:
             session.close()
 
 
 
 
-    # @classmethod
-    # async def episodic_memory_L1(cls, store_request: originContentStoreRequest):
-    #     """
-    #     10.29
-    #     第一层抽取情景记忆的逻辑
-    #     积累量超过阈值
-    #     这个将被废除 用统一循环放lifespan
-    #     """
-    #     """
-    #     单飞
-    #     """
-    #     async with cls.episodic_memory_L1_lock:
-    #         group=[g async for session_id , g in  cls.before_add_episodic_memory_L1(store_request)]
-    #         await asyncio.gather(*[cls.add_episodic_memory_L1(g,store_request) for g in group])
+    @classmethod
+    async def episodic_memory_consolidation(cls,agent_id:str,session_id:str):
+        """
+        11.1
+        给调用方主动调用接口
+        主动触发情景记忆抽取
+          调用方自己选定session_id和agent_id
+        """
+        session = create_session()
+        try:
+            origin_repo = originContentRepository(session)
+            origin_content_list=origin_repo.fetch_unarchived_by_session(agent_id, session_id)
+            if not origin_content_list:
+                logger.info(f"session_id={session_id} 没有未归档原文，跳过情景记忆抽取")
+                return
+            await cls.add_episodic_memory(origin_content_list,agent_id)
+        finally:
+            session.close() 
+        
+
         
 
    
@@ -154,24 +163,35 @@ class consolidationService:
 
 
     @classmethod
-    async def episodic_memory_consolidation_loop(cls,store_request: originContentStoreRequest):
-        """自动归档情景记忆的循环 交由宿主调用 """
-        while True:
-            try:
-                session_groups = await cls.before_add_episodic_memory(store_request)
-                #两条水位线各扫一遍，拿到的组合起来抽
-                groups = [g async for g in cls.before_add_episodic_memory_L1(session_groups)]
-                groups += [g async for g in cls.before_add_episodic_memory_L2(session_groups)]
-                #同一组可能同时够条数和超时，去重一下
-                await asyncio.gather(*[cls.add_episodic_memory(g, store_request) for g in set(groups)])
-            except Exception as e:
-                logger.error(f"情景记忆循环出错: {e}")
-            await asyncio.sleep(settings.EPISODIC_CONSOLIDATION_INTERVAL)   #睡一段时间间隔
-
+    def start_consolidation_loop(cls,agent_id:str):
+        """
+        10.29
+        自动归档情景记忆的循环 
+        注意：会遍历一个agent的所有会话
+        交由宿主调用
+        """
+        async def episodic_memory_consolidation_loop(agent_id:str):
+            """自动归档情景记忆的循环 交由宿主调用 """
+            while True:
+                try:
+                    session_groups = await cls.before_add_episodic_memory(agent_id)
+                    #两条水位线各扫一遍，拿到的会话号合起来抽
+                    session_ids = [sid async for sid in cls.before_add_episodic_memory_L1(session_groups)]
+                    session_ids += [sid async for sid in cls.before_add_episodic_memory_L2(session_groups)]
+                    #同一会话可能同时够条数和超时，去重一下
+                    await asyncio.gather(*[cls.add_episodic_memory(session_groups[sid], agent_id) for sid in set(session_ids)])
+                except Exception as e:
+                    logger.error(f"情景记忆循环出错: {e}")
+                await asyncio.sleep(settings.EPISODIC_CONSOLIDATION_INTERVAL)   #睡一段时间间隔
+        if agent_id in cls._loop_tasks :
+            logger.warning(f"情景记忆循环已经在运行，请勿重复启动，agent_id={agent_id}")
+            return 
+        cls._loop_tasks[agent_id] = spawn(episodic_memory_consolidation_loop(agent_id))
+    
 
 
     @staticmethod
-    async def _process_similarity(memories:list[episodicMemoryInfo],store_request:storeRequest,embedding_repo:embeddingRepository,episodic_repo:episodicMemoryRepository) -> list[episodicMemoryInfo]:
+    async def _process_similarity(memories:list[episodicMemoryInfo],agent_id:str,embedding_repo:embeddingRepository,episodic_repo:episodicMemoryRepository) -> list[episodicMemoryInfo]:
         """
         10.30 episodeMemory的三层去重策略
         碰库的 repo 从参数传进来：gather 的任务各用各的 session，
@@ -182,7 +202,7 @@ class consolidationService:
         for index,memo in enumerate(memories):
             need_to_judge = []
             vector_list=embedding_repo.query_vectors(
-                agent_id=store_request.agent_id,
+                agent_id=agent_id,
                 embedding_model=memo.embedding_model,
                 query=np.frombuffer(memo.embedding, dtype=np.float32).tolist(),
                 memory_type="episodic",  # 只和已有的情景记忆比，避免被同源原文误杀
