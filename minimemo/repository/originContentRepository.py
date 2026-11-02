@@ -1,9 +1,13 @@
 
 
+import datetime
+
+from minimemo.common.unarchiveSessionStatus import unarchiveSessionStatus
 from minimemo.common.memoryInfo import memoryInfo, originContentMemoryInfo
 from minimemo.models.memoryModel.memory import Memory
 from minimemo.models.origin_content import originContent
 from minimemo.repository.memoryRepository import memoryRepository
+from sqlalchemy import func
 
 
 """
@@ -69,6 +73,23 @@ class originContentRepository(memoryRepository[originContentMemoryInfo]):
 
 
     # 未归档的公共过滤条件，水位查询与归档标记共用一套
+
+
+    def get_unarchived_session_stats(self, agent_id: str) -> list[unarchiveSessionStatus]:
+        """
+        只取每个会话的未归档条数与最新落库时间  供水位判断用
+        判断水位只需要这两个数字，没必要把原文正文整组拉出来
+        返回 {session_id: (条数, 最新落库时间)}
+        """
+        rows=self.session.query(
+            originContent.session,
+            func.count(originContent.id),
+            func.max(originContent.create_time),
+        ).filter(
+            originContent.agent_id == agent_id,
+            *self._unarchived_conditions,
+        ).group_by(originContent.session).all()
+        return [unarchiveSessionStatus(session=row[0], count=row[1], the_latest_create_time=row[2]) for row in rows]
 
 
     def fetch_unarchived_by_session(self, agent_id: str, session_id: str, limit: int | None = None) -> list[originContent]:
