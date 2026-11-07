@@ -1,3 +1,4 @@
+import datetime
 import uuid
 
 from minimemo.common.memoryInfo import episodicMemoryInfo
@@ -9,6 +10,19 @@ from minimemo.repository.memoryRepository import memoryRepository
 class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
     kind = "episodes"
     model = episodicMemory
+
+    def fetch_since(self, agent_id: str, watermark: datetime.datetime | None = None) -> list[episodicMemory]:
+        """
+        取 watermark 之后新增的活着的情景记忆  供语义提炼做增量源
+        watermark 为 None 时取全部，是 agent 第一次提炼
+        """
+        query=self.session.query(episodicMemory).filter(
+            episodicMemory.agent_id == agent_id,
+            *self._alive_conditions(),
+        )
+        if watermark is not None:
+            query=query.filter(episodicMemory.create_time > watermark)
+        return query.order_by(episodicMemory.create_time.asc()).all()
 
     def add_memory(
         self,

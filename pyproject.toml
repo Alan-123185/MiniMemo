@@ -13,6 +13,7 @@ dependencies = [
     "openai>=3.35.0",
     "numpy>=2.5.0",
     "loguru>=0.7.3",
+    "aio-pika>=9.5.0",   # RabbitMQ 异步客户端
 ]
 
 [build-system]
