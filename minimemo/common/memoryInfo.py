@@ -7,7 +7,7 @@ class memoryInfo(BaseModel):
     """
     记忆信息
     """
-    embedding: bytes
+    embedding: list[float]
     embedding_model: str
     content:str
 

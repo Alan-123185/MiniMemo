@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from  minimemo.config.data import settings
 
-engine = create_engine(settings.DB_PATH, connect_args={"check_same_thread": False, "timeout": 30})
+engine = create_engine(settings.DB_DSN, pool_pre_ping=True, pool_size=10, max_overflow=20)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 

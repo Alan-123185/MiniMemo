@@ -132,7 +132,7 @@ class consolidationService:
             archived_list=memory_list if truncate_from<=0 else memory_list[:truncate_from]
             for memory in memories_list:
                 embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
-                memory["embedding"]=np.asarray(embedding).astype(np.float32).tobytes()
+                memory["embedding"]=embedding
                 memory["embedding_model"]=embedding_model.model_name
             memory_info_list=[episodicMemoryInfo(content=memory["content"],
                                          origin_content_id=memory.get("origin_content_id"),
@@ -215,7 +215,7 @@ class consolidationService:
                     content=memory["content"],
                     type=memory.get("type","fact"),
                     is_alive=memory.get("is_alive",True),
-                    embedding=np.asarray(embedding).astype(np.float32).tobytes(),
+                    embedding=embedding,
                     embedding_model=embedding_model.model_name))
             await cls._process_similarity(memory_info_list,agent_id,embedding_repo,semantic_repo,"semantic")
             semantic_repo.add_memory(memory_info_list,agent_id=agent_id)
@@ -299,7 +299,7 @@ class consolidationService:
             vector_list=embedding_repo.query_vectors(
                 agent_id=agent_id,
                 embedding_model=memo.embedding_model,
-                query=np.frombuffer(memo.embedding, dtype=np.float32).tolist(),
+                query=memo.embedding,
                 memory_type=memory_type,  # 只和同类型记忆比，避免被同源原文误杀
                 )
             for vector in vector_list:

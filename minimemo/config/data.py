@@ -14,8 +14,9 @@ class Settings(BaseSettings):
 
     DEFAULT_EMBEDDING_MODEL:str=""
 
-    DB_PATH:str="sqlite:///"+"D:/IDEA文件/python文件/MiniMemo/identifier.sqlite"
+    DB_DSN:str=""   # PostgreSQL 连接串，形如 postgresql+psycopg://user:password@host:5432/dbname  到时候读取环境变量
 
+    EMBEDDING_DIM:int   # embedding 模型输出维度，pgvector 建列必须固定，需与远端模型一致
 
     MAX_RETRY_TIMES:int=3   #大模型请求失败最大重试次数
 
