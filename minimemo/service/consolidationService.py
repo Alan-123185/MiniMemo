@@ -10,7 +10,7 @@ from minimemo.config.data import settings
 from minimemo.config.modelConfig import get_pool
 from minimemo.db.session import create_session
 from minimemo.models.memoryModel.episodicMemory import episodicMemory
-from minimemo.models.origin_content import originContent
+from minimemo.models.memoryModel.origin_content import originContent
 from minimemo.repository.embeddingRepository import embeddingRepository
 from minimemo.repository.episodicMemoryRepository import episodicMemoryRepository
 from minimemo.repository.memoryRepository import memoryRepository

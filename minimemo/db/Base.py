@@ -9,10 +9,9 @@ class Base(DeclarativeBase):
 
 
 """
-全文索引由 memory 表上的生成列 content_tsv 承担：
-content_seg 是应用层用 jieba 切好的词串，
-content_tsv 是 to_tsvector('simple', content_seg) 的 STORED 生成列，
-GIN 索引在模型里声明，由 create_all / 迁移脚本建出来。
+全文索引是 memory 表上的一个 ParadeDB 索引（ix_memory_content_bm25），
+建在 content 列上，用 pdb.jieba 分词器，中文在库内切，
+打分走 BM25（pdb.score），由 pg_search 扩展提供，索引在模型里声明。
 
 原文、情景记忆、语义记忆都是 memory 的子类，content 已上提到父表，
 所以三者共用同一列索引，不需要各建各的。
@@ -24,8 +23,9 @@ def init_tables(engine):
     初始化数据库表
     """
     # 必须先把模型导进来，否则 Base.metadata 是空的，什么表都不会建
-    # vector 类型依赖该扩展，建表前必须就位
+    # vector 是向量列类型，pg_search 提供全文索引与 BM25，两者建表前都要就位
     with engine.begin() as connection:
         connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_search CASCADE"))
 
     Base.metadata.create_all(engine)

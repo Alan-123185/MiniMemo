@@ -1,11 +1,8 @@
 
-
-import datetime
-
 from minimemo.common.unarchiveSessionStatus import unarchiveSessionStatus
 from minimemo.common.memoryInfo import memoryInfo, originContentMemoryInfo
 from minimemo.models.memoryModel.memory import Memory
-from minimemo.models.origin_content import originContent
+from minimemo.models.memoryModel.origin_content import originContent
 from minimemo.repository.memoryRepository import memoryRepository
 from sqlalchemy import func
 

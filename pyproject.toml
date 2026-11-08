@@ -16,7 +16,6 @@ dependencies = [
     "aio-pika>=9.5.0",   # RabbitMQ 异步客户端
     "psycopg[binary]>=3.2.0",   # PostgreSQL 同步驱动
     "pgvector>=0.4.0",   # 向量类型与近邻检索
-    "jieba>=0.42.1",   # 中文分词，PG 的 simple 配置切不动中文
 ]
 
 [build-system]

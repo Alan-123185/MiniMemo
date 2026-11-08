@@ -25,6 +25,11 @@ class Settings(BaseSettings):
 
     TOP_K:int=3    #搜索记忆时的最大返回条数
 
+    # BM25 参数，写进索引 DDL，改了必须重建索引才生效，不是查询时参数
+    BM25_K1:float=1.2   #词频饱和
+
+    BM25_B:float=0.75   #长度归一化
+
     SIM_TO_THROW:float=0.95  #相似度超过该阈值的记忆将被丢弃，不再存储
 
     MAX_UNARCHIVED:int=10    #一个会话内未归档的原文最大数量，超过该数量将触发自动归档

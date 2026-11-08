@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from minimemo.common.memoryInfo import memoryInfo
 from minimemo.models.memoryModel.memory import Memory
 from minimemo.models.memoryVector import memoryVector
-from minimemo.tools.textSegment import segment
 
 """
 记忆仓库基类
@@ -113,12 +112,10 @@ class memoryRepository[T:memoryInfo]:
         更新记忆的内容与向量，大模型判定为 UPDATE 之后调用
         content 在父表 memory 上，查基类就能改到
         onupdate 只在 ORM flush 时生效，批量 update 需要手动写时间
-        content_seg 也要一起改：批量 update 不经过模型的 validates，不写它全文索引就停在旧内容上
         """
         self.session.query(Memory).filter(Memory.id == memory_id).update(
             {
                 "content": content,
-                "content_seg": segment(content),      #
                 "update_time": datetime.datetime.now(),
             },
             synchronize_session=False,
