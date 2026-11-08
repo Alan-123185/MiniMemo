@@ -1,18 +1,19 @@
 import asyncio
 import datetime
-from math import e
 from loguru import logger
-import numpy as np
 from minimemo.common.existFact import existFact
-from minimemo.common.memoryInfo import episodicMemoryInfo
+from minimemo.common.memoryInfo import episodicMemoryInfo, memoryInfo, semanticMemoryInfo
 from minimemo.common.unarchiveSessionStatus import unarchiveSessionStatus
 from minimemo.config.data import settings
 from minimemo.config.modelConfig import get_pool
 from minimemo.db.session import create_session
-from minimemo.models.origin_content import originContent
+from minimemo.models.memoryModel.episodicMemory import episodicMemory
+from minimemo.models.memoryModel.origin_content import originContent
 from minimemo.repository.embeddingRepository import embeddingRepository
 from minimemo.repository.episodicMemoryRepository import episodicMemoryRepository
+from minimemo.repository.memoryRepository import memoryRepository
 from minimemo.repository.originContentRepository import originContentRepository
+from minimemo.repository.semanticMemoryRepository import semanticMemoryRepository
 from minimemo.service.modelService import modelService
 from minimemo.tools.backgroundTask import spawn
 from minimemo.tools.numpyTool import cosine_similarity
@@ -27,6 +28,13 @@ class consolidationService:
 
     # 抽取的互斥粒度是会话：同一 agent 下不同会话可以并发抽
     _session_locks: dict[tuple[str, str], asyncio.Lock] = {}
+
+    # 语义提炼的互斥粒度是 agent：提炼跨会话的事实
+    _semantic_locks: dict[str, asyncio.Lock] = {}
+
+    # 语义提炼的进度：agent_id -> 上次提炼到的情景记忆时间
+    # 只存内存，宿主重启丢了顶多把同一批情景记忆再提炼一遍，三层去重兜住
+    _episodic_watermark: dict[str, datetime.datetime] = {}
 
     """
     治理添加情景记忆的策略
@@ -122,14 +130,14 @@ class consolidationService:
             archived_list=memory_list if truncate_from<=0 else memory_list[:truncate_from]
             for memory in memories_list:
                 embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
-                memory["embedding"]=np.asarray(embedding).astype(np.float32).tobytes()
+                memory["embedding"]=embedding
                 memory["embedding_model"]=embedding_model.model_name
             memory_info_list=[episodicMemoryInfo(content=memory["content"],
                                          origin_content_id=memory.get("origin_content_id"),
                                          embedding=memory["embedding"],
                                          embedding_model=memory["embedding_model"])
                                          for memory in memories_list]
-            memories_list=await cls._process_similarity(memory_info_list,agent_id,embedding_repo,episodic_repo)  #处理相似内容
+            memories_list=await cls._process_similarity(memory_info_list,agent_id,embedding_repo,episodic_repo,"episodic")  #处理相似内容
             origin_repo.mark_archived([memory.id for memory in archived_list]) #标记已经存档，截断点之后的留给下一轮
             episodic_repo.add_memory(memories_list,agent_id=agent_id,origin_content_ids=id_map)
         finally:
@@ -146,14 +154,80 @@ class consolidationService:
         主动触发情景记忆抽取
           调用方自己选定session_id和agent_id
         """
-        await cls.consolidate_session(agent_id, session_id)
+        await cls.consolidate_episodics(agent_id, session_id)
+
+
+    @classmethod
+    async def semantic_memory_consolidation(cls,agent_id:str):
+        """
+        11.2
+        给调用方主动调用接口
+        主动触发语义记忆提炼，调用方自己选定agent_id
+        """
+        await cls.consolidate_semantics(agent_id)
+
+
+    @classmethod
+    async def consolidate_semantics(cls,agent_id:str):
+        """
+        11.2
+        语义提炼的唯一入口：把上次提炼之后新增的情景记忆提炼成语义记忆
+        循环与主动调用都走这里
+        互斥粒度是 agent：语义事实本来就是跨会话的
+        """
+        lock=cls._semantic_locks.setdefault(agent_id, asyncio.Lock())
+        async with lock:
+            session = create_session()
+            try:
+                episodic_repo = episodicMemoryRepository(session)
+                watermark=cls._episodic_watermark.get(agent_id)
+                source_list=episodic_repo.fetch_since(agent_id, watermark)
+            finally:
+                session.close()
+            if not source_list:
+                logger.info(f"agent_id={agent_id} 没有新的情景记忆，跳过语义记忆提炼")
+                return
+            await cls.add_semantic_memory(source_list,agent_id)
+
+
+    @classmethod
+    async def add_semantic_memory(cls, memory_list: list[episodicMemory],agent_id: str):
+        """
+        11.2
+        把一批情景记忆提炼成语义记忆
+        失败整批不推进水位线，下轮重来
+        """
+        model=get_pool()
+        chat_model=model.chat
+        embedding_model=model.embedding
+        session = create_session()
+        try:
+            semantic_repo = semanticMemoryRepository(session)
+            embedding_repo = embeddingRepository(session)
+            need_process_content="\n".join(f"- {memory.content}" for memory in memory_list)
+            memories_list=await asyncio.to_thread(modelService.to_semantic_memory,episodic_memories=need_process_content, model=chat_model)
+            memory_info_list=[]
+            for memory in memories_list:
+                embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
+                memory_info_list.append(semanticMemoryInfo(
+                    content=memory["content"],
+                    type=memory.get("type","fact"),
+                    is_alive=memory.get("is_alive",True),
+                    embedding=embedding,
+                    embedding_model=embedding_model.model_name))
+            await cls._process_similarity(memory_info_list,agent_id,embedding_repo,semantic_repo,"semantic")
+            semantic_repo.add_memory(memory_info_list,agent_id=agent_id)
+            #语义记忆落库成功了才推进水位线，失败的话下轮整批重来
+            cls._episodic_watermark[agent_id]=memory_list[-1].create_time
+        finally:
+            session.close()
 
 
 
 
 
     @classmethod
-    async def consolidate_session(cls,agent_id:str,session_id:str):
+    async def consolidate_episodics(cls,agent_id:str,session_id:str):
         """
         11.1
         抽取的唯一入口：把一个会话的未归档原文抽成情景记忆
@@ -197,7 +271,7 @@ class consolidationService:
                     session_ids = [sid async for sid in cls.before_add_episodic_memory_L1(session_stats)]
                     session_ids += [sid async for sid in cls.before_add_episodic_memory_L2(session_stats)]
                     #同一会话可能同时够条数和超时，去重一下
-                    await asyncio.gather(*[cls.consolidate_session(agent_id, sid) for sid in set(session_ids)])
+                    await asyncio.gather(*[cls.consolidate_episodics(agent_id, sid) for sid in set(session_ids)])
                 except Exception as e:
                     logger.error(f"情景记忆循环出错: {e}")
                 await asyncio.sleep(settings.EPISODIC_CONSOLIDATION_INTERVAL)   #睡一段时间间隔
@@ -209,11 +283,12 @@ class consolidationService:
 
 
     @staticmethod
-    async def _process_similarity(memories:list[episodicMemoryInfo],agent_id:str,embedding_repo:embeddingRepository,episodic_repo:episodicMemoryRepository) -> list[episodicMemoryInfo]:
+    async def _process_similarity[T:memoryInfo](memories:list[T],agent_id:str,embedding_repo:embeddingRepository,existing_repo:memoryRepository,memory_type:str) -> list[T]:
         """
         10.30 episodeMemory的三层去重策略
         碰库的 repo 从参数传进来：gather 的任务各用各的 session，
         不能挂 self 上（self 是所有任务共享的）
+        情景和语义的提炼都走这里，参数决定和哪类已有记忆比
         """
         # 用 id 记录待丢弃的记忆，dict 不可哈希不能直接放进 set
         list_should_remove:set[int] = set()
@@ -222,8 +297,8 @@ class consolidationService:
             vector_list=embedding_repo.query_vectors(
                 agent_id=agent_id,
                 embedding_model=memo.embedding_model,
-                query=np.frombuffer(memo.embedding, dtype=np.float32).tolist(),
-                memory_type="episodic",  # 只和已有的情景记忆比，避免被同源原文误杀
+                query=memo.embedding,
+                memory_type=memory_type,  # 只和同类型记忆比，避免被同源原文误杀
                 )
             for vector in vector_list:
                 similarity = cosine_similarity(vector.embedding, memo.embedding)
@@ -235,22 +310,28 @@ class consolidationService:
                     # 如果相似度在阈值范围内，交给大模型判断
                     need_to_judge.append(vector)
             if need_to_judge:
-                memo_list=episodic_repo.search_memory([need.memory_id for need in need_to_judge])
+                memo_list=existing_repo.search_memory([need.memory_id for need in need_to_judge])
                 pan_dict= modelService.judge_similarity(fact1=memo.content,fact2=[existFact(content=m.content, memory_id=m.id) for m in memo_list], model=get_pool().chat)
                 #评测逻辑
                 if pan_dict["action"] == "ADD":
                     pass
                 elif pan_dict["action"] == "UPDATE":
                     target=pan_dict["target_id"]
-                    episodic_repo.update_memory(memory_id=target, content=memo.content, new_embedding=memo.embedding)
+                    existing_repo.update_memory(memory_id=target, content=memo.content, new_embedding=memo.embedding)
                     list_should_remove.add(index)
                 elif pan_dict["action"] == "DELETE":
                     target=pan_dict["target_id"]
-                    episodic_repo.kill_memory(memory_id=target)
+                    existing_repo.kill_memory(memory_id=target)
                 elif pan_dict["action"] == "NONE":
                     list_should_remove.add(index)
 
         return [m for idx, m in enumerate(memories) if idx not in list_should_remove]
+
+
+
+
+
+    
 
     
 

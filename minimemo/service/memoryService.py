@@ -1,7 +1,6 @@
 import asyncio
-import numpy as np
 from loguru import logger
-from minimemo.common.memoryInfo import memoryInfo, originContentMemoryInfo
+from minimemo.common.memoryInfo import originContentMemoryInfo
 from  minimemo.common.requestSchema.searchRequest import searchRequest
 from minimemo.common.requestSchema.storeRequest import originContentStoreRequest
 from  minimemo.config.modelConfig import get_pool
@@ -11,7 +10,6 @@ from  minimemo.repository.embeddingRepository import embeddingRepository
 from minimemo.repository.episodicMemoryRepository import episodicMemoryRepository
 from  minimemo.repository.originContentRepository import originContentRepository
 from minimemo.repository.semanticMemoryRepository import semanticMemoryRepository
-from minimemo.service.consolidationService import consolidationService
 from  minimemo.service.modelService import modelService
 from minimemo.tools.backgroundTask import spawn
 
@@ -37,7 +35,7 @@ class memoryService:
         embedding=await asyncio.to_thread(modelService.embedding,store_request.origin_content,embedding_model)
         memory=originContentMemoryInfo(
             content=store_request.origin_content,
-            embedding=np.asarray(embedding).astype(np.float32).tobytes(),
+            embedding=embedding,
             embedding_model=embedding_model.model_name,
             role=store_request.role,
             session_id=store_request.session_id
