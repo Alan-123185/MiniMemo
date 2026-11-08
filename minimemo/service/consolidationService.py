@@ -1,8 +1,6 @@
 import asyncio
 import datetime
-from math import e
 from loguru import logger
-import numpy as np
 from minimemo.common.existFact import existFact
 from minimemo.common.memoryInfo import episodicMemoryInfo, memoryInfo, semanticMemoryInfo
 from minimemo.common.unarchiveSessionStatus import unarchiveSessionStatus
