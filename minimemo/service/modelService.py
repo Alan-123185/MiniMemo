@@ -8,6 +8,7 @@ from  minimemo.config.modelConfig import modelConfig
 from openai import OpenAI
 from loguru import logger
 from minimemo.prompt.memoryPrompt.episodeMemoryPrompt import EPISODE_MEMORY_PROMPT
+from minimemo.prompt.memoryPrompt.semanticMemoryPrompt import SEMANTIC_MEMORY_PROMPT
 from minimemo.prompt.queryChangePrompt import QUERY_CHANGE_PROMPT
 from  minimemo.prompt.similarityJudgePrompt import similarity_judge_prompt
 from  minimemo.tools.processJSON import json_to_dict
@@ -39,6 +40,29 @@ class modelService:
                     raise e
                 time.sleep(2 ** i)
         raise RuntimeError("记忆格式化失败")
+
+
+
+    @staticmethod
+    def to_semantic_memory(episodic_memories:str,model:modelConfig) -> list:
+        client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
+        prompt=SEMANTIC_MEMORY_PROMPT+"\n"+episodic_memories
+        for i in range(settings.MAX_RETRY_TIMES):
+            try:
+                res=client.chat.completions.create(
+                    model=model.model_name,
+                    messages=[{"role": "user", "content":prompt}],
+                )
+                output = json_to_dict(res.choices[0].message.content)
+                return output["memories"]
+            except Exception as e:
+                logger.info(f"语义记忆提炼失败({i+1}/{settings.MAX_RETRY_TIMES})")
+                logger.info(f"语义记忆提炼失败，错误信息：{e}")
+                if i==settings.MAX_RETRY_TIMES-1:
+                    logger.error(f"语义记忆提炼失败，错误信息：{e}")
+                    raise e
+                time.sleep(2 ** i)
+        raise RuntimeError("语义记忆提炼失败")
 
 
 

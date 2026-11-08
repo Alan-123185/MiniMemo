@@ -14,8 +14,9 @@ class Settings(BaseSettings):
 
     DEFAULT_EMBEDDING_MODEL:str=""
 
-    DB_PATH:str="sqlite:///"+"D:/IDEA文件/python文件/MiniMemo/identifier.sqlite"
+    DB_DSN:str=""   # PostgreSQL 连接串，形如 postgresql+psycopg://user:password@host:5432/dbname  到时候读取环境变量
 
+    EMBEDDING_DIM:int   # embedding 模型输出维度，pgvector 建列必须固定，需与远端模型一致
 
     MAX_RETRY_TIMES:int=3   #大模型请求失败最大重试次数
 
@@ -23,6 +24,11 @@ class Settings(BaseSettings):
     SIMILARITY_THRESHOLD:float=0.85  #相似度阈值，超过该阈值的记忆将被认为是重复的
 
     TOP_K:int=3    #搜索记忆时的最大返回条数
+
+    # BM25 参数，写进索引 DDL，改了必须重建索引才生效，不是查询时参数
+    BM25_K1:float=1.2   #词频饱和
+
+    BM25_B:float=0.75   #长度归一化
 
     SIM_TO_THROW:float=0.95  #相似度超过该阈值的记忆将被丢弃，不再存储
 

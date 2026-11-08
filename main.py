@@ -7,14 +7,12 @@ from minimemo.router.agentRouter import router as agent_router
 from minimemo.router.modelRouter import router as model_router
 from minimemo.router.memoryRouter import router as memory_router
 import log
-from minimemo.service.consolidationService import consolidationService
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup code here
     init_tables(engine)
-    task=asyncio.create_task(consolidationService.episodic_memory_consolidation_loop())
     yield
     # Shutdown code here
 

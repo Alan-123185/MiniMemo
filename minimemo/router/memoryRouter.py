@@ -8,7 +8,7 @@ from  minimemo.service.dependencies import get_memory_service
 router=APIRouter()
 
 @router.post("/MiniMemo/memory/add")
-async def add_semantic_memory(store_request:originContentStoreRequest,memory_service=Depends(get_memory_service)):
+async def add_memory(store_request:originContentStoreRequest,memory_service=Depends(get_memory_service)):
     """
     外部调用 只能指定添加初始内容记忆
     """
@@ -30,4 +30,7 @@ async def search_origin_content(search_request:searchRequest,memory_service=Depe
     """
     contents=await memory_service.search_origin_content(search_request)
     return Result(response=[{"id": content.id, "content": content.content} for content in contents])
+
+
+
 

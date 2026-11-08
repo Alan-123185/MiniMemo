@@ -107,7 +107,7 @@ class memoryRepository[T:memoryInfo]:
 
 
 
-    def update_memory(self, memory_id: str, content: str, new_embedding: bytes) -> None:
+    def update_memory(self, memory_id: str, content: str, new_embedding: list[float]) -> None:
         """
         更新记忆的内容与向量，大模型判定为 UPDATE 之后调用
         content 在父表 memory 上，查基类就能改到
