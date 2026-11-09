@@ -7,6 +7,7 @@ from minimemo.mq.publisher import get_publisher
 from minimemo.router.agentRouter import router as agent_router
 from minimemo.router.modelRouter import router as model_router
 from minimemo.router.memoryRouter import router as memory_router
+from minimemo.router.sessionRouter import router as session_router
 import log
 
 
@@ -25,6 +26,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(model_router)
 app.include_router(agent_router)
 app.include_router(memory_router)
+app.include_router(session_router)
 
 @app.get("/MiniMemo/hello")
 async def hello():

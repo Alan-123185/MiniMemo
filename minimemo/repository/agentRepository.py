@@ -2,6 +2,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from  minimemo.models.agent import Agent
+from minimemo.models.session import Session as SessionModel
 
 
 class agentRepository:
@@ -22,6 +23,8 @@ class agentRepository:
 
         # Add the new agent to the session and commit
         self.session.add(new_agent)
+        # 注册智能体时顺带建一个 default 会话，与智能体同一个事务落库
+        self.session.add(SessionModel(agent_id=agent_id, session_id="default"))
         self.session.commit()
 
 

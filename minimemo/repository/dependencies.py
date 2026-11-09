@@ -7,10 +7,15 @@ from  minimemo.repository.embeddingRepository import embeddingRepository
 from  minimemo.repository.episodicMemoryRepository import episodicMemoryRepository
 from  minimemo.repository.originContentRepository import originContentRepository
 from  minimemo.repository.semanticMemoryRepository import semanticMemoryRepository
+from minimemo.repository.sessionRepository import sessionRepository
 
 
 def get_agent_repo(session: Session = Depends(get_session)) -> agentRepository:
     return agentRepository(session)
+
+
+def get_session_repo(session: Session = Depends(get_session)) -> sessionRepository:
+    return sessionRepository(session)
 
 
 def get_origin_content_repo(

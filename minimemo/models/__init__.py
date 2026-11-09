@@ -1,4 +1,5 @@
 from .agent import Agent
+from .session import Session
 from .memoryModel.memory import Memory
 from .memoryModel.episodicMemory import episodicMemory
 from .memoryModel.semanticMemory import semanticMemory
@@ -11,6 +12,7 @@ from minimemo.db.Base import Base
 
 __all__ = [
     "Agent",
+    "Session",
     "Memory",
     "episodicMemory",
     "semanticMemory",
