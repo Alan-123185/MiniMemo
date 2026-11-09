@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from minimemo.db.Base import init_tables
 from minimemo.db.session import engine
+from minimemo.mq.publisher import get_publisher
 from minimemo.router.agentRouter import router as agent_router
 from minimemo.router.modelRouter import router as model_router
 from minimemo.router.memoryRouter import router as memory_router
@@ -13,8 +14,11 @@ import log
 async def lifespan(app: FastAPI):
     # Startup code here
     init_tables(engine)
+    # 触发信号的生产者，连不上只告警不阻断：API 没了 MQ 也照样能写库
+    await get_publisher().start()
     yield
     # Shutdown code here
+    await get_publisher().close()
 
 app = FastAPI(lifespan=lifespan)
 

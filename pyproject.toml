@@ -23,8 +23,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-# 根目录的 main.py 是应用入口，作为顶层模块单独打包
-py-modules = ["main"]
+# 根目录的 main.py 是应用入口，worker.py 是记忆抽取的独立进程入口，
+# 两者都作为顶层模块单独打包
+py-modules = ["main", "worker"]
 
 [tool.setuptools.packages.find]
 # 业务代码已统一收拢到 minimemo/ 下。

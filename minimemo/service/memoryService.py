@@ -5,6 +5,7 @@ from  minimemo.common.requestSchema.searchRequest import searchRequest
 from minimemo.common.requestSchema.storeRequest import originContentStoreRequest
 from  minimemo.config.modelConfig import get_pool
 from minimemo.models.memoryModel.memory import Memory
+from minimemo.mq.publisher import get_publisher
 from minimemo.prompt.memoryPromptHEAD import MEMORY_PROMPT_HEAD
 from  minimemo.repository.embeddingRepository import embeddingRepository
 from minimemo.repository.episodicMemoryRepository import episodicMemoryRepository
@@ -41,9 +42,10 @@ class memoryService:
             session_id=store_request.session_id
         )
         self.origin_content_repository.add_memory([memory],agent_id=store_request.agent_id)
-        #spawn(consolidationService.episodic_memory_L1(store_request))
-
-
+        """
+        11.9
+        添加完原始内容之后你不要触发情景记忆 
+        """
 
        
 

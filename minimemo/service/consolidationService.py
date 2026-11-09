@@ -60,8 +60,6 @@ class consolidationService:
             ret.append(f"[{index}] {memory.role}:{memory.content}")
         return "\n".join(ret), id_map
     
-
-
     
 
     @classmethod
@@ -254,31 +252,31 @@ class consolidationService:
 
 
 
-    @classmethod
-    def start_consolidation_loop(cls,agent_id:str):
-        """
-        10.29
-        自动归档情景记忆的循环 
-        注意：会遍历一个agent的所有会话
-        交由宿主调用
-        """
-        async def episodic_memory_consolidation_loop(agent_id:str):
-            """自动归档情景记忆的循环 交由宿主调用 """
-            while True:
-                try:
-                    session_stats = await cls.before_add_episodic_memory(agent_id)
-                    #两条水位线各扫一遍，拿到的会话号合起来抽
-                    session_ids = [sid async for sid in cls.before_add_episodic_memory_L1(session_stats)]
-                    session_ids += [sid async for sid in cls.before_add_episodic_memory_L2(session_stats)]
-                    #同一会话可能同时够条数和超时，去重一下
-                    await asyncio.gather(*[cls.consolidate_episodics(agent_id, sid) for sid in set(session_ids)])
-                except Exception as e:
-                    logger.error(f"情景记忆循环出错: {e}")
-                await asyncio.sleep(settings.EPISODIC_CONSOLIDATION_INTERVAL)   #睡一段时间间隔
-        if agent_id in cls._loop_tasks :
-            logger.warning(f"情景记忆循环已经在运行，请勿重复启动，agent_id={agent_id}")
-            return 
-        cls._loop_tasks[agent_id] = spawn(episodic_memory_consolidation_loop(agent_id))
+    # @classmethod
+    # def start_consolidation_loop(cls,agent_id:str):
+    #     """
+    #     10.29
+    #     自动归档情景记忆的循环 
+    #     注意：会遍历一个agent的所有会话
+    #     交由宿主调用
+    #     """
+    #     async def episodic_memory_consolidation_loop(agent_id:str):
+    #         """自动归档情景记忆的循环 交由宿主调用 """
+    #         while True:
+    #             try:
+    #                 session_stats = await cls.before_add_episodic_memory(agent_id)
+    #                 #两条水位线各扫一遍，拿到的会话号合起来抽
+    #                 session_ids = [sid async for sid in cls.before_add_episodic_memory_L1(session_stats)]
+    #                 session_ids += [sid async for sid in cls.before_add_episodic_memory_L2(session_stats)]
+    #                 #同一会话可能同时够条数和超时，去重一下
+    #                 await asyncio.gather(*[cls.consolidate_episodics(agent_id, sid) for sid in set(session_ids)])
+    #             except Exception as e:
+    #                 logger.error(f"情景记忆循环出错: {e}")
+    #             await asyncio.sleep(settings.EPISODIC_CONSOLIDATION_INTERVAL)   #睡一段时间间隔
+    #     if agent_id in cls._loop_tasks :
+    #         logger.warning(f"情景记忆循环已经在运行，请勿重复启动，agent_id={agent_id}")
+    #         return 
+    #     cls._loop_tasks[agent_id] = spawn(episodic_memory_consolidation_loop(agent_id))
     
 
 
