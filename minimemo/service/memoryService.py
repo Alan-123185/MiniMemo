@@ -59,7 +59,7 @@ class memoryService:
         """
         model=get_pool()
         embedding_model = model.embedding
-        question=modelService.sort_question(search_request.query,model=model.chat)
+        question=await modelService.sort_question(search_request.query,model=model.chat)
         """
         多路查询之后，去重，然后组成向量列表，传给 repository 去查询
         每个 query 都会召回一批向量，这里按召回顺序汇总 memory_id 并去重，
@@ -94,7 +94,7 @@ class memoryService:
         """
         model=get_pool()
         embedding_model = model.embedding
-        question=modelService.sort_question(search_request.query,model=model.chat)
+        question=await modelService.sort_question(search_request.query,model=model.chat)
         memory_ids:list[str]=[]
         seen:set[str]=set()
         for q in question:
@@ -121,4 +121,3 @@ class memoryService:
         """
         memory_list=await self.search_memory(search_request)
         return MEMORY_PROMPT_HEAD+"\n".join([memory.content for memory in memory_list])
-

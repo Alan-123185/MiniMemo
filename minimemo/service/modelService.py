@@ -1,11 +1,12 @@
 import json
 import re
 import time
+import asyncio
 from functools import lru_cache
 from minimemo.common.existFact import existFact
 from  minimemo.config.data import settings
 from  minimemo.config.modelConfig import modelConfig
-from openai import OpenAI
+from openai import AsyncOpenAI, OpenAI
 from loguru import logger
 from minimemo.prompt.memoryPrompt.episodeMemoryPrompt import EPISODE_MEMORY_PROMPT
 from minimemo.prompt.memoryPrompt.semanticMemoryPrompt import SEMANTIC_MEMORY_PROMPT
@@ -95,12 +96,12 @@ class modelService:
     query 改写
     """
     @staticmethod
-    def sort_question(query:list[str],model:modelConfig) -> list[str]:
-        client=modelService.get_client(api_key=model.api_key,base_url=model.base_url)
+    async def sort_question(query:list[str],model:modelConfig) -> list[str]:
+        client=modelService.get_async_client(api_key=model.api_key,base_url=model.base_url)
         prompt=QUERY_CHANGE_PROMPT.format(history_text="\n".join(query))
         for i in range(settings.MAX_RETRY_TIMES):
             try:
-                res=client.chat.completions.create(
+                res=await client.chat.completions.create(
                     model=model.model_name,
                     messages=[{"role": "user", "content":prompt}],
                 )
@@ -115,7 +116,7 @@ class modelService:
                 if i==settings.MAX_RETRY_TIMES-1:
                     logger.error(f"对话排序失败，错误信息：{e}")
                     raise e
-                time.sleep(2 ** i)
+                await asyncio.sleep(2 ** i)
         raise RuntimeError("对话排序失败")
 
 
@@ -148,6 +149,10 @@ class modelService:
     def get_client(api_key: str, base_url: str) -> OpenAI:
         return OpenAI(api_key=api_key, base_url=base_url)
 
+    @staticmethod
+    @lru_cache(maxsize=8)
+    def get_async_client(api_key: str, base_url: str) -> AsyncOpenAI:
+        return AsyncOpenAI(api_key=api_key, base_url=base_url)
 
 
 

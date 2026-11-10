@@ -1,6 +1,5 @@
 from loguru import logger
 from sqlalchemy.orm import Session
-
 from minimemo.models.session import Session as SessionModel
 
 

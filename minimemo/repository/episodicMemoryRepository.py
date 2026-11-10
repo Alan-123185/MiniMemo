@@ -29,6 +29,7 @@ class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
         memories: list[episodicMemoryInfo],
         agent_id: str,
         origin_content_ids: dict[str, str] | None = None,
+        commit: bool = True,
     ) -> None:
         """
         批量新增情景记忆
@@ -51,4 +52,5 @@ class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
                             episode_id=memo.id,
                             origin_content_id=content_id,
                         ))
-        self.session.commit()
+        if commit:
+            self.session.commit()

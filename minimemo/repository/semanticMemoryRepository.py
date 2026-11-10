@@ -20,6 +20,7 @@ class semanticMemoryRepository(memoryRepository[semanticMemoryInfo]):
         memories: list[semanticMemoryInfo],  #多态访问 到时候传入semanticMemoryInfo
         agent_id: str,
         origin_content_id: str | None = None,
+        commit: bool = True,
     ) -> None:
         """
         批量新增语义记忆，模型给出的 type / is_alive 一并落库
@@ -33,7 +34,8 @@ class semanticMemoryRepository(memoryRepository[semanticMemoryInfo]):
                 is_alive=memory.is_alive,
             )
             self._add_with_vector(memo, agent_id, memory)
-        self.session.commit()
+        if commit:
+            self.session.commit()
 
 
 
