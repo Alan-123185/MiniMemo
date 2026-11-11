@@ -1,4 +1,7 @@
+from typing import Literal
+from config.data import settings
 from loguru import logger
+from sqlalchemy import literal
 
 from minimemo.service.consolidationService import consolidationService
 
@@ -13,11 +16,20 @@ consumer 与兜底扫描器共用这一份，保证两条路径的判断口径�
 """
 
 
-async def get_ready_sessions(agent_id: str) -> set[str]:
+
+
+async def get_ready_memory(agent_id: str,mode=settings.getMemoryMode) -> set[str]:
     """
     返回该 agent 下所有已达水位的会话 id：够条数或够时间的都算  注：这是两个水位判断函数唯一被调用到的地方
     """
-    session_stats = await consolidationService.get_unarchive_session_by_agent(agent_id)
-    ready = {sid async for sid in consolidationService.before_add_episodic_memory_L1(session_stats)}
-    ready |= {sid async for sid in consolidationService.before_add_episodic_memory_L2(session_stats)}
+    if mode=="episodic":
+        session_stats = await consolidationService.get_unarchive_session_by_agent(agent_id)
+        ready = {sid async for sid in consolidationService.before_add_memory_L1(session_stats,mode="episodic")}
+        ready |= {sid async for sid in consolidationService.before_add_memory_L2(session_stats,mode="episodic")}
+    elif mode=="semantic":
+        session_stats = await consolidationService.get_unarchive_agent()
+        ready = {sid async for sid in consolidationService.before_add_memory_L1(session_stats,mode="semantic")}
+        ready |= {sid async for sid in consolidationService.before_add_memory_L2(session_stats,mode="semantic")}
     return ready
+
+

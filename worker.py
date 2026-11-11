@@ -9,7 +9,7 @@ from minimemo.db.session import create_session
 from minimemo.mq.consumer import on_episodic_message
 from minimemo.mq.publisher import get_publisher
 from minimemo.mq.topology import EPISODIC, names, setup_topology
-from minimemo.mq.watermark import get_ready_sessions
+from minimemo.mq.watermark import get_ready_memory
 from minimemo.repository.agentRepository import agentRepository
 from minimemo.tools.backgroundTask import spawn
 
@@ -44,7 +44,7 @@ async def run_scanner(stop: asyncio.Event):
             finally:
                 await session.close()
             for agent in agents:
-                for session_id in await get_ready_sessions(agent.id):
+                for session_id in await get_ready_memory(agent.id,mode="episodic"):
                     logger.info(f"扫描器补发触发消息 agent_id={agent.id} session_id={session_id}")
                     await publisher.publish_episodic_trigger(agent.id, session_id, source="scanner")
         except Exception as e:

@@ -1,9 +1,8 @@
-import datetime
-from typing import Sequence
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from minimemo.common.memoryInfo import episodicMemoryInfo
+from minimemo.common.unarchiveSessionStatus import unarchiveAgentStatus
 from minimemo.models.episodeOriginLink import episodeOriginLink
 from minimemo.models.memoryModel.episodicMemory import episodicMemory
 from minimemo.repository.memoryRepository import memoryRepository
@@ -13,20 +12,54 @@ class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
     kind = "episodes"
     model = episodicMemory
 
-    async def fetch_since(self, agent_id: str, watermark: datetime.datetime | None = None) -> Sequence[episodicMemory]:
+
+
+    _unarchived_conditions = [
+        episodicMemory.is_delete.is_(False),
+        episodicMemory.is_archive.is_(False),
+    ]
+
+
+    async def get_unarchived_episodes(self, agent_id: str) -> list[episodicMemory]:
+            """
+            获取指定智能体的所有未归档原文  直接返回按照会话分组的字典 方便
+            """
+            episodic_memory_list=(await self.session.execute(
+                select(episodicMemory).where(
+                    episodicMemory.agent_id == agent_id,
+                    *self._unarchived_conditions,
+                ).order_by(episodicMemory.create_time.asc())
+            )).scalars().all()
+            #按会话拆分，每个会话各自攒各自的水位
+            return episodic_memory_list
+
+
+
+
+    async def get_unarchived_agent_stats(self) -> list[unarchiveAgentStatus]:
         """
-        取 watermark 之后新增的活着的情景记忆  供语义提炼做增量源
-        watermark 为 None 时取全部，是 agent 第一次提炼
+        仿照orginContentRepository获取所有未归档的智能体状态
         """
-        query=select(episodicMemory).where(
-            episodicMemory.agent_id == agent_id,
-            *self._alive_conditions(),
-        )
-        if watermark is not None:
-            query=query.where(episodicMemory.create_time > watermark)
-        return (await self.session.execute(
-            query.order_by(episodicMemory.create_time.asc())
-        )).scalars().all()
+        rows=(await self.session.execute(
+            select(
+                episodicMemory.agent_id,
+                func.max(episodicMemory.create_time),
+            ).where(
+                *self._unarchived_conditions,
+            ).group_by(episodicMemory.agent_id)
+        )).all()
+        return [unarchiveAgentStatus(agent=row[0], count=len(row), the_latest_create_time=row[1]) for row in rows]
+
+
+    async def fetch_unarchived_by_agent(self, agent_id: str) -> list[episodicMemory]:
+        """
+        仿照orginContentRepository获取对应agent_id的情景记忆情况
+        """
+        return await self.get_unarchived_episodes(agent_id)
+
+
+
+
 
     async def add_memory(
         self,

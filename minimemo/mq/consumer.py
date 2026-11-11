@@ -3,7 +3,7 @@ import aio_pika
 from loguru import logger
 from minimemo.config.data import settings
 from minimemo.mq.topology import DEAD_LETTER_EXCHANGE, EPISODIC, names
-from minimemo.mq.watermark import get_ready_sessions
+from minimemo.mq.watermark import get_ready_memory
 from minimemo.service.consolidationService import consolidationService
 
 
@@ -62,7 +62,7 @@ async def on_episodic_message(message: aio_pika.IncomingMessage):
     session_id = payload["session_id"]
 
     try:
-        ready = await get_ready_sessions(agent_id)
+        ready = await get_ready_memory(agent_id,mode="episodic")
         if session_id not in ready:
             logger.info(f"会话未达水位，丢弃触发消息 agent_id={agent_id} session_id={session_id}")
             await message.ack()

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 from pydantic_settings import BaseSettings
 
 ENV_FILE=Path(__file__).resolve().parent.parent / ".env"
@@ -32,13 +33,20 @@ class Settings(BaseSettings):
 
     SIM_TO_THROW:float=0.95  #相似度超过该阈值的记忆将被丢弃，不再存储
 
-    MAX_UNARCHIVED:int=10    #一个会话内未归档的原文最大数量，超过该数量将触发自动归档
+    MAX_UNARCHIVED_EPISODIC:int=10    #一个会话内未归档的情景记忆最大数量，超过该数量将触发自动归档
 
-    MAX_UNARCHIVED_TIME:int=60*30  #一个会话内未归档的原文最大时间，超过该时间将触发自动归档
+    MAX_UNARCHIVED_SEMANTIC:int=20    #一个会话内未归档的语义记忆最大数量，超过该数量将触发自动归档
+
+    MAX_UNARCHIVED_EPISODE:int=20  #一个 agent最大未抽取的情景记忆条数
+
+    MAX_UNARCHIVED_TIME_EPISODIC:int=60*30  #一个会话内未归档的原文最大时间，超过该时间将触发自动归档
+
+    MAX_UNARCHIVED_TIME_SEMANTIC:int=60*60  #一个agent未归档的情景记忆最大时间，超过该时间将触发自动归档
 
     EPISODIC_CONSOLIDATION_INTERVAL:int=60*5  #情景记忆归档的时间间隔，单位秒
 
-
+    getMemoryMode = Literal["episodic", "semantic"]
+    
     # ---------- RabbitMQ 触发链 ----------
     MQ_HOST:str="127.0.0.1"
     # 不能用 localhost：Windows 上它优先解析成 ::1，而 5672 没听 IPv6，

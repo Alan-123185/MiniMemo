@@ -1,9 +1,10 @@
 import asyncio
 import datetime
+from typing import Literal
 from loguru import logger
 from minimemo.common.existFact import existFact
 from minimemo.common.memoryInfo import episodicMemoryInfo, memoryInfo, semanticMemoryInfo
-from minimemo.common.unarchiveSessionStatus import unarchiveSessionStatus
+from minimemo.common.unarchiveSessionStatus import unarchiveAgentStatus, unarchiveSessionStatus
 from minimemo.config.data import settings
 from minimemo.config.modelConfig import get_pool
 from minimemo.db.session import create_session
@@ -64,6 +65,23 @@ class consolidationService:
         return session_stats
 
 
+
+    @classmethod
+    async def get_unarchive_agent(cls) -> list[unarchiveAgentStatus]:
+        """
+        注：意义不明
+        这个函数把未归档的agent状态获取出来 扫episodic_memory表
+        """
+        session=create_session()
+        try:
+            episodic_repo=episodicMemoryRepository(session)
+            agent_stats=await episodic_repo.get_unarchived_agent_stats()
+        finally:
+            await session.close()
+        return agent_stats
+
+
+
     @classmethod
     async def consolidate_semantics(cls,agent_id:str):
         """
@@ -72,19 +90,17 @@ class consolidationService:
         循环与主动调用都走这里
         互斥粒度是 agent：语义事实本来就是跨会话的
         """
-        lock=cls._semantic_locks.setdefault(agent_id, asyncio.Lock())
-        async with lock:
-            session = create_session()
-            try:
-                episodic_repo = episodicMemoryRepository(session)
-                watermark=cls._episodic_watermark.get(agent_id)
-                source_list=await episodic_repo.fetch_since(agent_id, watermark)
-            finally:
-                await session.close()
-            if not source_list:
-                logger.info(f"agent_id={agent_id} 没有新的情景记忆，跳过语义记忆提炼")
-                return
-            await cls.add_semantic_memory(source_list,agent_id)
+        session = create_session()
+        try:
+            episodic_repo = episodicMemoryRepository(session)
+            watermark=cls._episodic_watermark.get(agent_id)
+            source_list=await episodic_repo.fetch_since(agent_id, watermark)
+        finally:
+            await session.close()
+        if not source_list:
+            logger.info(f"agent_id={agent_id} 没有新的情景记忆，跳过语义记忆提炼")
+            return
+        await cls.add_semantic_memory(source_list,agent_id)
 
 
 
@@ -104,7 +120,7 @@ class consolidationService:
             # ---- 到这里说明锁已经在我手里 ----
             try:
                 input=await cls.before_add_episodic_memory(agent_id,session_id)
-                await cls.add_episodic_memory(agent_id,input)
+                await cls.add_episodic_memory(agent_id,input) # type: ignore
             except Exception as e:
                 await lock_session.rollback()   # 释放锁，数据不落
                 logger.exception(f"抽取失败，本轮放弃-------- {e}")
@@ -114,87 +130,23 @@ class consolidationService:
 
     """
     11.10
-    TODO
+    
     先不管这个函数
     这个函数只能暂时这么写   只知道它的功能就是处理相似的记忆
     相似记忆搜索策略有大问题
     数据库事务的范围和原子性一塌糊涂
+    11.11
+    稍微处理了一下 增加了并发能力 暂时先这样
     """
-    # @staticmethod
-    # async def _process_similarity[T:memoryInfo](
-    #     memories:list[T], agent_id:str, memory_type:str
-    # ) -> tuple[list[T], list[tuple[T, dict]]]:
-    #     """
-    #     10.30 episodeMemory的三层去重策略
-    #     数据库查询、模型判断和写回分属不同的 session，模型等待期间不占连接。
-    #     情景和语义的提炼都走这里，参数决定和哪类已有记忆比
-    #     """
-    #     session = create_session()
-    #     try:
-    #         embedding_repo = embeddingRepository(session)
-    #         existing_repo = (
-    #             semanticMemoryRepository(session)
-    #             if memory_type == "semantic"
-    #             else episodicMemoryRepository(session)
-    #         )
-    #         candidates: list[list[existFact]] = [[] for _ in memories]
-    #         list_should_remove:set[int] = set()
-    #         for index,memo in enumerate(memories):
-    #             need_to_judge = []
-    #             #这里已经查出来前k条最接近的向量
-    #             vector_list=await embedding_repo.query_vectors(
-    #                 agent_id=agent_id,
-    #                 embedding_model=memo.embedding_model,
-    #                 query=memo.embedding,
-    #                 memory_type=memory_type,
-    #             )
-    #             for vector, similarity in vector_list:
-    #                 if similarity>=settings.SIM_TO_THROW:
-    #                     list_should_remove.add(index)
-    #                     break
-    #                 elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
-    #                     need_to_judge.append(vector)
-    #             #把需要模型判断的情景记忆通过向量对象里的memory_id查出来，传给模型去判断
-    #             if need_to_judge:
-    #                 memo_list=await existing_repo.search_memory([need.memory_id for need in need_to_judge])
-    #                 candidates[index] = [
-    #                     existFact(content=m.content, memory_id=m.id)
-    #                     for m in memo_list
-    #                 ]
-    #     finally:
-    #         await session.close()
-
-    #     decisions: list[tuple[T, dict]] = []
-    #     for index, memo in enumerate(memories):
-    #         if not candidates[index]:
-    #             continue
-    #         pan_dict=await asyncio.to_thread(
-    #             modelService.judge_similarity,
-    #             fact1=memo.content,
-    #             fact2=candidates[index],
-    #             model=get_pool().chat,
-    #         )
-    #         decisions.append((memo, pan_dict))
-
-    #     # 决策直接携带原始记忆对象，过滤和写回不再依赖列表下标。
-    #     memory_indexes = {id(memo): index for index, memo in enumerate(memories)}
-    #     for memo, pan_dict in decisions:
-    #         if pan_dict["action"] in {"UPDATE", "NONE"}:
-    #             list_should_remove.add(memory_indexes[id(memo)])
-    #     return (
-    #         [m for idx, m in enumerate(memories) if idx not in list_should_remove],
-    #         decisions,
-    #     )
-
-
+    
     @staticmethod
     async def _process_similarity[T: memoryInfo](
         memories: list[T], agent_id: str, memory_type: str
     ) -> tuple[list[T], list[tuple[T, dict]]]:
 
-        async def _process_one_memory[T: memoryInfo](
+        async def _process_one_memory(
             index: int,
-            memo: T,
+            memo:memoryInfo,
             agent_id: str,
             memory_type: str,
             sem: asyncio.Semaphore,
@@ -290,29 +242,33 @@ class consolidationService:
     这个函数是用来判断需不需要进行情景记忆抽取，如果需要，返回待抽取的会话id
     """
     @classmethod
-    async def before_add_episodic_memory_L1(cls,session_stats:list[unarchiveSessionStatus]):
+    async def before_add_memory_L1(cls,stats:list[unarchiveSessionStatus] | list[unarchiveAgentStatus],mode=settings.getMemoryMode):
 
         #哪个会话攒够了阈值，就把那个会话的原文拿去抽取
-        for session in session_stats:
-            if session.count >= settings.MAX_UNARCHIVED:
-                yield session.session
+        for s in stats:
+            if mode == "episodic" and s.count >= settings.MAX_UNARCHIVED_EPISODIC:
+                yield s.session # type: ignore
+            elif mode == "semantic" and s.count >= settings.MAX_UNARCHIVED_SEMANTIC:
+                yield s.agent # type: ignore
 
     """
     10.31
     第二层：时间水位
     """
     @classmethod
-    async def before_add_episodic_memory_L2(cls,session_stats:list[unarchiveSessionStatus]):
+    async def before_add_memory_L2(cls,stats:list[unarchiveSessionStatus] | list[unarchiveAgentStatus],mode=settings.getMemoryMode):
         """
         10.31
         第二层判断 看时间
         这个函数是用来判断需不需要进行情景记忆抽取，如果需要，返回待抽取的会话id
         """
         #哪个会话攒够了阈值，就把那个会话的原文拿去抽取
-        for session in session_stats:
+        for s in stats:
             #距离最新一条原文的落库时间超过 T 秒就说明这段对话凉了
-            if datetime.datetime.now() - session.the_latest_create_time >= datetime.timedelta(seconds=settings.MAX_UNARCHIVED_TIME):
-                yield session.session
+            if mode == "episodic" and datetime.datetime.now() - s.the_latest_create_time >= datetime.timedelta(seconds=settings.MAX_UNARCHIVED_TIME_EPISODIC):
+                yield s.session # type: ignore
+            elif mode == "semantic" and datetime.datetime.now() - s.the_latest_create_time >= datetime.timedelta(seconds=settings.MAX_UNARCHIVED_TIME_SEMANTIC):
+                yield s.agent # type: ignore
 
 
     """
@@ -374,7 +330,7 @@ class consolidationService:
     两个关于语义记忆和情景记忆的添加主函数
     """
     @classmethod
-    async def add_episodic_memory(cls,agent_id:str,episodic_memory_input:tuple[list[episodicMemoryInfo], list[tuple[episodicMemoryInfo, dict]], list[originContent], dict] | None):
+    async def add_episodic_memory(cls,agent_id:str,episodic_memory_input:tuple[list[episodicMemoryInfo], list[tuple[memoryInfo, dict]], list[originContent], dict] | None):
         """
         10.29
         抽取情景记忆的逻辑
