@@ -96,7 +96,7 @@ class originContentRepository(memoryRepository[originContentMemoryInfo]):
 
 
 
-    async def fetch_unarchived_by_session(self, agent_id: str, session_id: str, limit: int | None = None) -> Sequence[originContent]:
+    async def fetch_unarchived_by_session(self, agent_id: str, session_id: str, limit: int | None = None) -> list[originContent]:
         """
         这个方法和上面的不一样，提供了会话id，可以灵活的按照会话取未归档原文
         limit=None 时不限量，供显式归档整段会话用

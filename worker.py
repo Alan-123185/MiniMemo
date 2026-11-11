@@ -1,4 +1,5 @@
 import asyncio
+import sys
 import aio_pika
 import log  # noqa: F401  引入即完成日志配置，worker 的日志要落到和 API 同一个 logs 目录
 from loguru import logger
@@ -89,9 +90,12 @@ async def main():
     finally:
         await connection.close()
 
-
+  
 if __name__ == "__main__":
-    try:
+    import sys
+    import asyncio
+
+    if sys.platform == "win32":
+        asyncio.run(main(), loop_factory=asyncio.SelectorEventLoop)
+    else:
         asyncio.run(main())
-    except KeyboardInterrupt:
-        logger.info("worker 退出")

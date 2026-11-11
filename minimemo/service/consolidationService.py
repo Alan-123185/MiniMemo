@@ -298,7 +298,7 @@ class consolidationService:
             origin_repo = originContentRepository(session)
             episodic_repo = episodicMemoryRepository(session)
             await cls._apply_similarity_decisions(
-                episodic_repo, memory_info_list, similarity_decisions # type: ignore
+                episodic_repo, episodic_memory_list, similarity_decisions # type: ignore
             )
             await origin_repo.mark_archived([memory.id for memory in archived_list])
             await episodic_repo.add_memory(

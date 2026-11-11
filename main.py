@@ -33,6 +33,18 @@ async def hello():
     return {"message": "Hello, World!"}
 
 if __name__ == "__main__":
+    import sys
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="info",reload=True)
-    
+
+    # Windows 开发机上 psycopg async 需要 SelectorEventLoop；
+    # Linux 生产环境默认就是 Selector，走 auto 即可。
+    loop = "asyncio:SelectorEventLoop" if sys.platform == "win32" else "auto"
+
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=8000,
+        log_level="info",
+        reload=True,
+        loop=loop,
+    )
