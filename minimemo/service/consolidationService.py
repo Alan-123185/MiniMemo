@@ -120,69 +120,161 @@ class consolidationService:
     相似记忆搜索策略有大问题
     数据库事务的范围和原子性一塌糊涂
     """
+    # @staticmethod
+    # async def _process_similarity[T:memoryInfo](
+    #     memories:list[T], agent_id:str, memory_type:str
+    # ) -> tuple[list[T], list[tuple[T, dict]]]:
+    #     """
+    #     10.30 episodeMemory的三层去重策略
+    #     数据库查询、模型判断和写回分属不同的 session，模型等待期间不占连接。
+    #     情景和语义的提炼都走这里，参数决定和哪类已有记忆比
+    #     """
+    #     session = create_session()
+    #     try:
+    #         embedding_repo = embeddingRepository(session)
+    #         existing_repo = (
+    #             semanticMemoryRepository(session)
+    #             if memory_type == "semantic"
+    #             else episodicMemoryRepository(session)
+    #         )
+    #         candidates: list[list[existFact]] = [[] for _ in memories]
+    #         list_should_remove:set[int] = set()
+    #         for index,memo in enumerate(memories):
+    #             need_to_judge = []
+    #             #这里已经查出来前k条最接近的向量
+    #             vector_list=await embedding_repo.query_vectors(
+    #                 agent_id=agent_id,
+    #                 embedding_model=memo.embedding_model,
+    #                 query=memo.embedding,
+    #                 memory_type=memory_type,
+    #             )
+    #             for vector, similarity in vector_list:
+    #                 if similarity>=settings.SIM_TO_THROW:
+    #                     list_should_remove.add(index)
+    #                     break
+    #                 elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
+    #                     need_to_judge.append(vector)
+    #             #把需要模型判断的情景记忆通过向量对象里的memory_id查出来，传给模型去判断
+    #             if need_to_judge:
+    #                 memo_list=await existing_repo.search_memory([need.memory_id for need in need_to_judge])
+    #                 candidates[index] = [
+    #                     existFact(content=m.content, memory_id=m.id)
+    #                     for m in memo_list
+    #                 ]
+    #     finally:
+    #         await session.close()
+
+    #     decisions: list[tuple[T, dict]] = []
+    #     for index, memo in enumerate(memories):
+    #         if not candidates[index]:
+    #             continue
+    #         pan_dict=await asyncio.to_thread(
+    #             modelService.judge_similarity,
+    #             fact1=memo.content,
+    #             fact2=candidates[index],
+    #             model=get_pool().chat,
+    #         )
+    #         decisions.append((memo, pan_dict))
+
+    #     # 决策直接携带原始记忆对象，过滤和写回不再依赖列表下标。
+    #     memory_indexes = {id(memo): index for index, memo in enumerate(memories)}
+    #     for memo, pan_dict in decisions:
+    #         if pan_dict["action"] in {"UPDATE", "NONE"}:
+    #             list_should_remove.add(memory_indexes[id(memo)])
+    #     return (
+    #         [m for idx, m in enumerate(memories) if idx not in list_should_remove],
+    #         decisions,
+    #     )
+
+
     @staticmethod
-    async def _process_similarity[T:memoryInfo](
-        memories:list[T], agent_id:str, memory_type:str
-    ) -> tuple[list[T], list[tuple[int, dict]]]:
-        """
-        10.30 episodeMemory的三层去重策略
-        数据库查询、模型判断和写回分属不同的 session，模型等待期间不占连接。
-        情景和语义的提炼都走这里，参数决定和哪类已有记忆比
-        """
-        session = create_session()
-        try:
-            embedding_repo = embeddingRepository(session)
-            existing_repo = (
-                semanticMemoryRepository(session)
-                if memory_type == "semantic"
-                else episodicMemoryRepository(session)
-            )
-            candidates: list[list[existFact]] = []
-            list_should_remove:set[int] = set()
-            for index,memo in enumerate(memories):
-                need_to_judge = []
-                vector_list=await embedding_repo.query_vectors(
-                    agent_id=agent_id,
-                    embedding_model=memo.embedding_model,
-                    query=memo.embedding,
-                    memory_type=memory_type,
+    async def _process_similarity[T: memoryInfo](
+        memories: list[T], agent_id: str, memory_type: str
+    ) -> tuple[list[T], list[tuple[T, dict]]]:
+
+        async def _process_one_memory[T: memoryInfo](
+            index: int,
+            memo: T,
+            agent_id: str,
+            memory_type: str,
+            sem: asyncio.Semaphore,
+        ) -> tuple[int, str, dict | None]:
+            """处理单条记忆，返回 (index, action, pan_dict)
+
+            action:
+                "THROW"  -> 向量相似度超高，直接丢弃
+                "KEEP"   -> 无候选，保留，不调模型
+                "JUDGED" -> 调了模型，pan_dict 是模型决策
+            """
+            async with sem:                              # 控制并发，别打爆连接池和 LLM RPM
+                session = create_session()
+                try:
+                    embedding_repo = embeddingRepository(session)
+                    existing_repo = (
+                        semanticMemoryRepository(session)
+                        if memory_type == "semantic"
+                        else episodicMemoryRepository(session)
+                    )
+
+                    vector_list = await embedding_repo.query_vectors(
+                        agent_id=agent_id,
+                        embedding_model=memo.embedding_model,
+                        query=memo.embedding,
+                        memory_type=memory_type,
+                    )
+
+                    need_to_judge = []
+                    for vector, similarity in vector_list:
+                        if similarity >= settings.SIM_TO_THROW:
+                            return (index, "THROW", None)          # 早退，session 由 finally 关
+                        elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
+                            need_to_judge.append(vector)
+
+                    if not need_to_judge:
+                        return (index, "KEEP", None)
+                    
+                    memo_list = await existing_repo.search_memory(
+                        [need.memory_id for need in need_to_judge]
+                    )
+                    candidates = [existFact(content=m.content, memory_id=m.id) for m in memo_list]
+                    if not candidates:
+                        return (index, "KEEP", None) 
+                    
+                finally:
+                    await session.close()                    # 连接已归还，模型等待不占连接
+                    
+                # session 关闭后调模型，to_thread 不堵事件循环
+                pan_dict = await asyncio.to_thread(
+                    modelService.judge_similarity,
+                    fact1=memo.content,
+                    fact2=candidates,
+                    model=get_pool().chat,
                 )
-                for vector in vector_list:
-                    similarity = cosine_similarity(vector.embedding, memo.embedding)
-                    if similarity>=settings.SIM_TO_THROW:
-                        list_should_remove.add(index)
-                        break
-                    elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
-                        need_to_judge.append(vector)
-                if need_to_judge:
-                    memo_list=await existing_repo.search_memory([need.memory_id for need in need_to_judge])
-                    candidates.append([
-                        existFact(content=m.content, memory_id=m.id)
-                        for m in memo_list
-                    ])
-                else:
-                    candidates.append([])
-        finally:
-            await session.close()
+                return (index, "JUDGED", pan_dict)
 
-        decisions: list[tuple[int, dict]] = []
-        for index, memo in enumerate(memories):
-            if not candidates[index]:
-                continue
-            pan_dict=await asyncio.to_thread(
-                modelService.judge_similarity,
-                fact1=memo.content,
-                fact2=candidates[index],
-                model=get_pool().chat,
-            )
-            decisions.append((index, pan_dict))
+        if not memories:
+            return ([], [])
 
-        # 用 id 记录待丢弃的记忆，dict 不可哈希不能直接放进 set
-        for index, pan_dict in decisions:
-            if pan_dict["action"] in {"UPDATE", "NONE"}:
+        sem = asyncio.Semaphore(settings.MAX_SIM_CONCURRENCY)   # 例如 5
+        results = await asyncio.gather(*[
+            _process_one_memory(i, m, agent_id, memory_type, sem)
+            for i, m in enumerate(memories)
+        ])
+
+        list_should_remove: set[int] = set()
+        decisions: list[tuple[T, dict]] = []
+
+        for index, action, pan_dict in results:
+            if action == "THROW":
                 list_should_remove.add(index)
+            elif action == "JUDGED":
+                decisions.append((memories[index], pan_dict))       # type: ignore # 所有过模型的都进 decisions
+                if pan_dict["action"] in {"UPDATE", "NONE"}:        # type: ignore
+                    list_should_remove.add(index)
+            # action == "KEEP"：不动
+
         return (
-            [m for idx, m in enumerate(memories) if idx not in list_should_remove],
+            [m for i, m in enumerate(memories) if i not in list_should_remove],
             decisions,
         )
 
@@ -227,7 +319,7 @@ class consolidationService:
     关于情景记忆抽取的函数 拆分 11.11
     """
     @classmethod
-    async def before_add_episodic_memory(cls,agent_id:str,session_id:str) ->  tuple[list[episodicMemoryInfo], list[tuple[int, dict]], list[originContent], dict] | None:
+    async def before_add_episodic_memory(cls,agent_id:str,session_id:str) ->  tuple[list[episodicMemoryInfo], list[tuple[episodicMemoryInfo, dict]], list[originContent], dict] | None:
         """
         111
         这个函数用于处理session的情景记忆提炼 不做任何数据库操作
@@ -282,7 +374,7 @@ class consolidationService:
     两个关于语义记忆和情景记忆的添加主函数
     """
     @classmethod
-    async def add_episodic_memory(cls,agent_id:str,episodic_memory_input:tuple[list[episodicMemoryInfo], list[tuple[int, dict]], list[originContent], dict] | None):
+    async def add_episodic_memory(cls,agent_id:str,episodic_memory_input:tuple[list[episodicMemoryInfo], list[tuple[episodicMemoryInfo, dict]], list[originContent], dict] | None):
         """
         10.29
         抽取情景记忆的逻辑
@@ -298,7 +390,7 @@ class consolidationService:
             origin_repo = originContentRepository(session)
             episodic_repo = episodicMemoryRepository(session)
             await cls._apply_similarity_decisions(
-                episodic_repo, episodic_memory_list, similarity_decisions # type: ignore
+                episodic_repo, similarity_decisions
             )
             await origin_repo.mark_archived([memory.id for memory in archived_list])
             await episodic_repo.add_memory(
@@ -347,7 +439,7 @@ class consolidationService:
         try:
             semantic_repo = semanticMemoryRepository(session)
             await cls._apply_similarity_decisions(
-                semantic_repo, all_memory_info_list, similarity_decisions
+                semantic_repo, similarity_decisions
             )
             await semantic_repo.add_memory(memory_info_list,agent_id=agent_id,commit=False)
             await session.commit()
@@ -365,15 +457,14 @@ class consolidationService:
     @staticmethod
     async def _apply_similarity_decisions(
         repository: memoryRepository,
-        memories: list[memoryInfo],
-        decisions: list[tuple[int, dict]],
+        decisions: list[tuple[memoryInfo, dict]],
     ) -> None:
-        for index, decision in decisions:
+        for memory, decision in decisions:
             if decision["action"] == "UPDATE":
                 await repository.update_memory(
                     memory_id=decision["target_id"],
-                    content=memories[index].content,
-                    new_embedding=memories[index].embedding,
+                    content=memory.content,
+                    new_embedding=memory.embedding,
                 )
             elif decision["action"] == "DELETE":
                 await repository.kill_memory(memory_id=decision["target_id"])

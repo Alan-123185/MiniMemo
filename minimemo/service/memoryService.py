@@ -72,7 +72,7 @@ class memoryService:
             vector_list=await self.embedding_repository.query_vectors(
                 agent_id=search_request.agent_id,
                 embedding_model=embedding_model.model_name,query=query_embedding)
-            for vector in vector_list:
+            for vector, _ in vector_list:
                 if vector.memory_id not in seen:
                     seen.add(vector.memory_id)
                     memory_ids.append(vector.memory_id)
@@ -105,7 +105,7 @@ class memoryService:
                 query=query_embedding,
                 memory_type="origin",  # 限制搜索原文
             )
-            for vector in vector_list:
+            for vector, _ in vector_list:
                 if vector.memory_id not in seen:
                     seen.add(vector.memory_id)
                     memory_ids.append(vector.memory_id)
