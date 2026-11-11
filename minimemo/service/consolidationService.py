@@ -17,6 +17,7 @@ from minimemo.repository.semanticMemoryRepository import semanticMemoryRepositor
 from minimemo.service.modelService import modelService
 from minimemo.tools.backgroundTask import spawn
 from minimemo.tools.numpyTool import cosine_similarity
+from minimemo.tools.sessionLock import try_session_lock
 
 
 
@@ -49,7 +50,7 @@ class consolidationService:
     
 
     @classmethod
-    async def before_add_episodic_memory(cls,agent_id:str) -> list[unarchiveSessionStatus]:
+    async def get_unarchive_session_by_agent(cls,agent_id:str) -> list[unarchiveSessionStatus]:
         """
         注：意义不明
         这个函数把一个agent下的所有会话的未归档原文统计状态拿出来 以session为单位 扫origin_content表
@@ -93,18 +94,22 @@ class consolidationService:
         """
         11.1
         这个函数目前只被消费者队列调用 轮询循环调用的是消费者队列里的消费方法
+        11.10
+        先给添加情景记忆的函数加个行锁，别的后面再考虑
         """
-        session = create_session()
-        try:
-            origin_repo = originContentRepository(session)
-            origin_content_list=origin_repo.fetch_unarchived_by_session(agent_id, session_id)
-        finally:
-            session.close()
-        if not origin_content_list:
-            logger.info(f"session_id={session_id} 没有未归档原文，跳过情景记忆抽取")
-            return
-        await cls.add_episodic_memory(origin_content_list,agent_id)
-    
+        async with try_session_lock(agent_id, session_id) as lock_session:
+            if lock_session is None:
+                # 别人在抽，或会话不存在 —— 正常跳过，等下轮
+                return
+            # ---- 到这里说明锁已经在我手里 ----
+            try:
+                input=await cls.before_add_episodic_memory(agent_id,session_id)
+                await cls.add_episodic_memory(agent_id,input)
+            except Exception as e:
+                lock_session.rollback()   # 释放锁，数据不落
+                logger.exception(f"抽取失败，本轮放弃-------- {e}")
+                raise
+            
 
     
 
@@ -218,47 +223,76 @@ class consolidationService:
                 yield session.session
 
 
+    """
+    关于情景记忆抽取的函数 拆分 11.11
+    """
+    @classmethod
+    async def before_add_episodic_memory(cls,agent_id:str,session_id:str) ->  tuple[list[episodicMemoryInfo], list[tuple[int, dict]], list[originContent], dict] | None:
+        """
+        111
+        这个函数用于处理session的情景记忆提炼 不做任何数据库操作
+        """
+        #计算待抽取的初始记忆列表
+  
+        session = create_session()
+        model=get_pool()
+        chat_model=model.chat
+        embedding_model=model.embedding
+        try:
+            origin_repo = originContentRepository(session)
+            origin_content_list=origin_repo.fetch_unarchived_by_session(agent_id, session_id)
+        finally:
+            session.close()
+        if not origin_content_list:
+            logger.info(f"session_id={session_id} 没有未归档原文，跳过情景记忆抽取")
+            return
+        
+       
+        #调用模型先把这东西抽成情景记忆    长耗时
+        try:
+            need_process_content,id_map=await cls.sort_prompt_for_add_episodics(origin_content_list)
+            episodic_memory_list,truncate_from=await asyncio.to_thread(
+                modelService.to_episodic_memory,
+                origin_content=need_process_content,
+                model=chat_model,
+            )
+            archived_list=origin_content_list if truncate_from<=0 else origin_content_list[:truncate_from]
+
+
+            #处理相似记忆               长耗时
+            for memory in episodic_memory_list:
+                embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
+                memory["embedding"]=embedding
+                memory["embedding_model"]=embedding_model.model_name
+            memory_info_list=[episodicMemoryInfo(content=memory["content"],
+                                            origin_content_id=memory.get("origin_content_id"),
+                                            embedding=memory["embedding"],
+                                            embedding_model=memory["embedding_model"])
+                                            for memory in episodic_memory_list]
+            episodic_memory_list, similarity_decisions = await cls._process_similarity(
+                memory_info_list, agent_id, "episodic"
+            )
+            return episodic_memory_list, similarity_decisions, archived_list,id_map
+        except Exception as e:
+            logger.exception(f"情景记忆抽取失败:{e}")
+            raise
 
 
     """
     两个关于语义记忆和情景记忆的添加主函数
     """
     @classmethod
-    async def add_episodic_memory(cls, memory_list: list[originContent],agent_id: str):
+    async def add_episodic_memory(cls,agent_id:str,episodic_memory_input:tuple[list[episodicMemoryInfo], list[tuple[int, dict]], list[originContent], dict] | None):
         """
         10.29
-        抽取情景记忆的逻辑  处理相似性 这个是分session处理的
+        抽取情景记忆的逻辑 
+        11.11 集中处理数据库操作 原子事务
         积累量超过阈值
         """
-        model=get_pool()
-        chat_model=model.chat
-        embedding_model=model.embedding
-        #调用模型先把这东西抽成情景记忆
-        need_process_content,id_map=await cls.sort_prompt_for_add_episodics(memory_list)
-        memories_list,truncate_from=await asyncio.to_thread(
-            modelService.to_episodic_memory,
-            origin_content=need_process_content,
-            model=chat_model,
-        )
-        archived_list=memory_list if truncate_from<=0 else memory_list[:truncate_from]
-
-
-        #处理相似记忆
-        for memory in memories_list:
-            embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
-            memory["embedding"]=embedding
-            memory["embedding_model"]=embedding_model.model_name
-        memory_info_list=[episodicMemoryInfo(content=memory["content"],
-                                     origin_content_id=memory.get("origin_content_id"),
-                                     embedding=memory["embedding"],
-                                     embedding_model=memory["embedding_model"])
-                                     for memory in memories_list]
-        memories_list, similarity_decisions = await cls._process_similarity(
-            memory_info_list, agent_id, "episodic"
-        )
-
-
-
+        if not episodic_memory_input:
+            logger.info(f"没有新的情景记忆，跳过落库")
+            return
+        episodic_memory_list, similarity_decisions, archived_list,id_map= episodic_memory_input
         session = create_session()
         try:
             origin_repo = originContentRepository(session)
@@ -268,7 +302,7 @@ class consolidationService:
             )
             origin_repo.mark_archived([memory.id for memory in archived_list])
             episodic_repo.add_memory(
-                memories_list,
+                episodic_memory_list,  
                 agent_id=agent_id,
                 origin_content_ids=id_map,
                 commit=False,

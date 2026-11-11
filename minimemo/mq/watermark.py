@@ -17,7 +17,7 @@ async def get_ready_sessions(agent_id: str) -> set[str]:
     """
     返回该 agent 下所有已达水位的会话 id：够条数或够时间的都算  注：这是两个水位判断函数唯一被调用到的地方
     """
-    session_stats = await consolidationService.before_add_episodic_memory(agent_id)
+    session_stats = await consolidationService.get_unarchive_session_by_agent(agent_id)
     ready = {sid async for sid in consolidationService.before_add_episodic_memory_L1(session_stats)}
     ready |= {sid async for sid in consolidationService.before_add_episodic_memory_L2(session_stats)}
     return ready

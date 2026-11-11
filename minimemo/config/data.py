@@ -51,7 +51,7 @@ class Settings(BaseSettings):
 
     MQ_PASSWORD:str=""   #敏感项，默认空，在 .env 里填
 
-    MQ_PREFETCH:int=1   #不能调大：抽取互斥锁是进程内的，prefetch=1 才能保证同一会话不被并发抽两遍
+    MQ_PREFETCH:int=10   #不能调大：抽取互斥锁是进程内的，prefetch=1 才能保证同一会话不被并发抽两遍
 
     MQ_RETRY_TTL_MS:int=30000   #重试队列消息存活时间，过期经死信回到主队列
 
