@@ -39,9 +39,9 @@ async def run_scanner(stop: asyncio.Event):
         try:
             session = create_session()
             try:
-                agents = agentRepository(session).get_agents()
+                agents = await agentRepository(session).get_agents()
             finally:
-                session.close()
+                await session.close()
             for agent in agents:
                 for session_id in await get_ready_sessions(agent.id):
                     logger.info(f"扫描器补发触发消息 agent_id={agent.id} session_id={session_id}")

@@ -18,14 +18,15 @@ class Base(DeclarativeBase):
 """
 
 
-def init_tables(engine):
+async def init_tables(engine):
     """
     初始化数据库表
     """
     # 必须先把模型导进来，否则 Base.metadata 是空的，什么表都不会建
     # vector 是向量列类型，pg_search 提供全文索引与 BM25，两者建表前都要就位
-    with engine.begin() as connection:
-        connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-        connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_search CASCADE"))
+    async with engine.begin() as connection:
+        await connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        await connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_search CASCADE"))
 
-    Base.metadata.create_all(engine)
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.create_all)

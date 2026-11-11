@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from loguru import logger
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 from minimemo.config.data import settings
 
@@ -30,11 +30,11 @@ from minimemo.config.data import settings
 # 走主池会直接把 pool_size + max_overflow 吃光。
 # NullPool 不缓存连接，取到就是一条新物理连接，close 即断开，
 # 断开必然回滚，行锁随之释放——正好是锁需要的语义。
-lock_engine = create_engine(settings.DB_DSN, poolclass=NullPool)
-LockSessionLocal = sessionmaker(bind=lock_engine, expire_on_commit=False)
+lock_engine = create_async_engine(settings.DB_DSN, poolclass=NullPool)
+LockSessionLocal = async_sessionmaker(bind=lock_engine, expire_on_commit=False)
 
 
-def create_lock_session() -> Session:
+def create_lock_session() -> AsyncSession:
     """
     给分布式锁用的 session，和主池完全隔离
     """
@@ -50,17 +50,17 @@ async def try_session_lock(agent_id: str, session_id: str):
     """
     session = create_lock_session()
     try:
-        row = session.execute(
+        row = (await session.execute(
             text(
                 "SELECT id FROM sessions "
                 "WHERE agent_id = :agent_id AND session_id = :session_id "
                 "FOR UPDATE SKIP LOCKED"
             ),
             {"agent_id": agent_id, "session_id": session_id},
-        ).first()
+        )).first()
         if row is None:
             logger.info(f"会话已被占用或无注册记录，本次跳过 agent_id={agent_id} session_id={session_id}")
         yield session if row is not None else None
     finally:
         # 这里必须在抽取结束之后执行，它同时负责释放行锁
-        session.close()
+        await session.close()

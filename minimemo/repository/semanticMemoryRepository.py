@@ -1,5 +1,6 @@
 import uuid
 from typing import Any
+from sqlalchemy import update
 from minimemo.common.memoryInfo import memoryInfo, semanticMemoryInfo
 from minimemo.models.memoryModel.semanticMemory import semanticMemory
 from minimemo.repository.memoryRepository import memoryRepository
@@ -15,7 +16,7 @@ class semanticMemoryRepository(memoryRepository[semanticMemoryInfo]):
         """
         return super()._alive_conditions() + [semanticMemory.is_alive.is_(True)]
 
-    def add_memory(
+    async def add_memory(
         self,
         memories: list[semanticMemoryInfo],  #多态访问 到时候传入semanticMemoryInfo
         agent_id: str,
@@ -33,17 +34,20 @@ class semanticMemoryRepository(memoryRepository[semanticMemoryInfo]):
                 type=memory.type,
                 is_alive=memory.is_alive,
             )
-            self._add_with_vector(memo, agent_id, memory)
+            await self._add_with_vector(memo, agent_id, memory)
         if commit:
-            self.session.commit()
+            await self.session.commit()
 
 
 
-    def kill_memory(self, memory_id: str) -> None:
+    async def kill_memory(self, memory_id: str) -> None:
         """
         语义记忆的“作废”是双重语义：事实不再成立，同时也从检索中隐去
         """
-        self.session.query(semanticMemory).filter(
-            semanticMemory.id == memory_id
-        ).update({"is_alive": False}, synchronize_session=False)
-        super().kill_memory(memory_id)
+        await self.session.execute(
+            update(semanticMemory)
+            .where(semanticMemory.id == memory_id)
+            .values(is_alive=False)
+            .execution_options(synchronize_session=False)
+        )
+        await super().kill_memory(memory_id)

@@ -1,7 +1,8 @@
 from __future__ import annotations
 import datetime
 from typing import Any
-from sqlalchemy.orm import Session
+from sqlalchemy import delete, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 from minimemo.common.memoryInfo import memoryInfo
 from minimemo.models.memoryModel.memory import Memory
 from minimemo.models.memoryVector import memoryVector
@@ -18,7 +19,7 @@ class memoryRepository[T:memoryInfo]:
     # 子类必须指定自己对应的 ORM 类
     model: type[Memory] = Memory
 
-    def __init__(self, session: Session):
+    def __init__(self, session: AsyncSession):
         self.session = session
 
 
@@ -33,7 +34,7 @@ class memoryRepository[T:memoryInfo]:
 
 
 
-    def add_memory(
+    async def add_memory(
         self,
         memories: list[T],
         agent_id: str
@@ -46,7 +47,7 @@ class memoryRepository[T:memoryInfo]:
 
 
 
-    def search_memory(self, memory_ids: list[str]) -> list[Memory]:
+    async def search_memory(self, memory_ids: list[str]) -> list[Memory]:
         """
         按 id 列表召回记忆，返回顺序与传入顺序一致
         多路召回之后顺序本身就是有价值的信号，不能丢
@@ -54,85 +55,94 @@ class memoryRepository[T:memoryInfo]:
         if not memory_ids:
             return []
         rows = (
-            self.session.query(self.model)
-            .filter(self.model.id.in_(memory_ids), *self._alive_conditions())
-            .all()
-        )
+            await self.session.execute(
+                select(self.model).where(
+                    self.model.id.in_(memory_ids), *self._alive_conditions()
+                )
+            )
+        ).scalars().all()
         by_id = {row.id: row for row in rows}
         return [by_id[memory_id] for memory_id in memory_ids if memory_id in by_id]
 
 
 
 
-    def remove_memory(self, memory_id: str) -> None:
+    async def remove_memory(self, memory_id: str) -> None:
         """
         物理删除一条记忆，连同向量一起清掉
         joined 继承下子表行和父表行是两条记录，
         只有交给 ORM 删对象才会把整条继承链一起清掉，
         query(...).delete() 只删子表那一行，父表会留下垃圾数据
         """
-        memory = self.session.get(self.model, memory_id)
+        memory = await self.session.get(self.model, memory_id)
         if memory is None:
             return
-        self.session.query(memoryVector).filter(
-            memoryVector.memory_id == memory_id
-        ).delete(synchronize_session=False)
-        self.session.delete(memory)
-        self.session.commit()
+        await self.session.execute(
+            delete(memoryVector).where(memoryVector.memory_id == memory_id)
+        )
+        await self.session.delete(memory)
+        await self.session.commit()
 
 
 
 
-    def commit(self) -> None:
+    async def commit(self) -> None:
         """
         提交事务
         更新与软删除不再自行提交，提交时机交给调用方决定，
         好让一次抽取过程里的多次修改落在同一个事务里
         """
-        self.session.commit()
+        await self.session.commit()
 
 
-    def kill_memory(self, memory_id: str) -> None:
+    async def kill_memory(self, memory_id: str) -> None:
         """
         软删除一条记忆，只打标记不删数据
         """
-        self.session.query(Memory).filter(Memory.id == memory_id).update(
-            {
-                "is_delete": True,
-                "update_time": datetime.datetime.now(),
-            },
-            synchronize_session=False,
+        await self.session.execute(
+            update(Memory)
+            .where(Memory.id == memory_id)
+            .values(
+                is_delete=True,
+                update_time=datetime.datetime.now(),
+            )
+            .execution_options(synchronize_session=False)
         )
 
 
 
 
-    def update_memory(self, memory_id: str, content: str, new_embedding: list[float]) -> None:
+    async def update_memory(self, memory_id: str, content: str, new_embedding: list[float]) -> None:
         """
         更新记忆的内容与向量，大模型判定为 UPDATE 之后调用
         content 在父表 memory 上，查基类就能改到
         onupdate 只在 ORM flush 时生效，批量 update 需要手动写时间
         """
-        self.session.query(Memory).filter(Memory.id == memory_id).update(
-            {
-                "content": content,
-                "update_time": datetime.datetime.now(),
-            },
-            synchronize_session=False,
+        await self.session.execute(
+            update(Memory)
+            .where(Memory.id == memory_id)
+            .values(
+                content=content,
+                update_time=datetime.datetime.now(),
+            )
+            .execution_options(synchronize_session=False)
         )
-        self.session.query(memoryVector).filter(
-            memoryVector.memory_id == memory_id
-        ).update({"embedding": new_embedding}, synchronize_session=False)
+        await self.session.execute(
+            update(memoryVector)
+            .where(memoryVector.memory_id == memory_id)
+            .values(embedding=new_embedding)
+            .execution_options(synchronize_session=False)
+        )
 
 
 
-    def _add_with_vector(self, memory: Memory, agent_id: str, memory_info:memoryInfo) -> None:
+    async def _add_with_vector(self, memory: Memory, agent_id: str, memory_info:memoryInfo) -> None:
         """
         新增一条记忆并挂上向量
         """
         self.session.add(memory)
         # flush 一下拿到主键，再建向量
-        self.session.flush()
+        await self.session.flush()
         self.session.add(
             memoryVector(
                 memory_id=memory.id,

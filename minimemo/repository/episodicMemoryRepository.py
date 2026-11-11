@@ -1,6 +1,8 @@
 import datetime
+from typing import Sequence
 import uuid
 
+from sqlalchemy import select
 from minimemo.common.memoryInfo import episodicMemoryInfo
 from minimemo.models.episodeOriginLink import episodeOriginLink
 from minimemo.models.memoryModel.episodicMemory import episodicMemory
@@ -11,20 +13,22 @@ class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
     kind = "episodes"
     model = episodicMemory
 
-    def fetch_since(self, agent_id: str, watermark: datetime.datetime | None = None) -> list[episodicMemory]:
+    async def fetch_since(self, agent_id: str, watermark: datetime.datetime | None = None) -> Sequence[episodicMemory]:
         """
         取 watermark 之后新增的活着的情景记忆  供语义提炼做增量源
         watermark 为 None 时取全部，是 agent 第一次提炼
         """
-        query=self.session.query(episodicMemory).filter(
+        query=select(episodicMemory).where(
             episodicMemory.agent_id == agent_id,
             *self._alive_conditions(),
         )
         if watermark is not None:
-            query=query.filter(episodicMemory.create_time > watermark)
-        return query.order_by(episodicMemory.create_time.asc()).all()
+            query=query.where(episodicMemory.create_time > watermark)
+        return (await self.session.execute(
+            query.order_by(episodicMemory.create_time.asc())
+        )).scalars().all()
 
-    def add_memory(
+    async def add_memory(
         self,
         memories: list[episodicMemoryInfo],
         agent_id: str,
@@ -42,7 +46,7 @@ class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
                 content=memory.content,
                 agent_id=agent_id,
             )
-            self._add_with_vector(memo, agent_id, memory)
+            await self._add_with_vector(memo, agent_id, memory)
             # 编号映射存在才建溯源边，LLM 没报或报了不存在的编号就跳过
             if origin_content_ids and memory.origin_content_id:
                 for number in memory.origin_content_id:
@@ -53,4 +57,4 @@ class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
                             origin_content_id=content_id,
                         ))
         if commit:
-            self.session.commit()
+            await self.session.commit()

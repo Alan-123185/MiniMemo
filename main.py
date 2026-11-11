@@ -14,7 +14,7 @@ import log
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup code here
-    init_tables(engine)
+    await init_tables(engine)
     # 触发信号的生产者，连不上只告警不阻断：API 没了 MQ 也照样能写库
     await get_publisher().start()
     yield

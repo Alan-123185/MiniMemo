@@ -27,7 +27,7 @@ class consolidationService:
     """
     治理添加情景记忆的策略
 
-    10.29 
+    10.29
     - 条数水位：同一 agent 攒够 N 条未抽取原文（N 取 6~12，看你的对话密度）
     - 时间水位：距最后一条原文超过 T 分钟（10~30 分钟），说明这段对话告一段落
     - 显式水位：调用方主动说「这里结束了一段」
@@ -46,8 +46,8 @@ class consolidationService:
             id_map[str(index)]=memory.id
             ret.append(f"[{index}] {memory.role}:{memory.content}")
         return "\n".join(ret), id_map
-    
-    
+
+
 
     @classmethod
     async def get_unarchive_session_by_agent(cls,agent_id:str) -> list[unarchiveSessionStatus]:
@@ -58,11 +58,11 @@ class consolidationService:
         session=create_session()
         try:
             origin_repo=originContentRepository(session)
-            session_stats=origin_repo.get_unarchived_session_stats(agent_id)
+            session_stats=await origin_repo.get_unarchived_session_stats(agent_id)
         finally:
-            session.close()
+            await session.close()
         return session_stats
-    
+
 
     @classmethod
     async def consolidate_semantics(cls,agent_id:str):
@@ -78,9 +78,9 @@ class consolidationService:
             try:
                 episodic_repo = episodicMemoryRepository(session)
                 watermark=cls._episodic_watermark.get(agent_id)
-                source_list=episodic_repo.fetch_since(agent_id, watermark)
+                source_list=await episodic_repo.fetch_since(agent_id, watermark)
             finally:
-                session.close()
+                await session.close()
             if not source_list:
                 logger.info(f"agent_id={agent_id} 没有新的情景记忆，跳过语义记忆提炼")
                 return
@@ -106,12 +106,11 @@ class consolidationService:
                 input=await cls.before_add_episodic_memory(agent_id,session_id)
                 await cls.add_episodic_memory(agent_id,input)
             except Exception as e:
-                lock_session.rollback()   # 释放锁，数据不落
+                await lock_session.rollback()   # 释放锁，数据不落
                 logger.exception(f"抽取失败，本轮放弃-------- {e}")
                 raise
-            
 
-    
+
 
     """
     11.10
@@ -142,7 +141,7 @@ class consolidationService:
             list_should_remove:set[int] = set()
             for index,memo in enumerate(memories):
                 need_to_judge = []
-                vector_list=embedding_repo.query_vectors(
+                vector_list=await embedding_repo.query_vectors(
                     agent_id=agent_id,
                     embedding_model=memo.embedding_model,
                     query=memo.embedding,
@@ -156,7 +155,7 @@ class consolidationService:
                     elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
                         need_to_judge.append(vector)
                 if need_to_judge:
-                    memo_list=existing_repo.search_memory([need.memory_id for need in need_to_judge])
+                    memo_list=await existing_repo.search_memory([need.memory_id for need in need_to_judge])
                     candidates.append([
                         existFact(content=m.content, memory_id=m.id)
                         for m in memo_list
@@ -164,7 +163,7 @@ class consolidationService:
                 else:
                     candidates.append([])
         finally:
-            session.close()
+            await session.close()
 
         decisions: list[tuple[int, dict]] = []
         for index, memo in enumerate(memories):
@@ -187,7 +186,8 @@ class consolidationService:
             decisions,
         )
 
-   
+
+
 
 
     """
@@ -199,7 +199,7 @@ class consolidationService:
     """
     @classmethod
     async def before_add_episodic_memory_L1(cls,session_stats:list[unarchiveSessionStatus]):
-        
+
         #哪个会话攒够了阈值，就把那个会话的原文拿去抽取
         for session in session_stats:
             if session.count >= settings.MAX_UNARCHIVED:
@@ -233,21 +233,21 @@ class consolidationService:
         这个函数用于处理session的情景记忆提炼 不做任何数据库操作
         """
         #计算待抽取的初始记忆列表
-  
+
         session = create_session()
         model=get_pool()
         chat_model=model.chat
         embedding_model=model.embedding
         try:
             origin_repo = originContentRepository(session)
-            origin_content_list=origin_repo.fetch_unarchived_by_session(agent_id, session_id)
+            origin_content_list=await origin_repo.fetch_unarchived_by_session(agent_id, session_id)
         finally:
-            session.close()
+            await session.close()
         if not origin_content_list:
             logger.info(f"session_id={session_id} 没有未归档原文，跳过情景记忆抽取")
             return
-        
-       
+
+
         #调用模型先把这东西抽成情景记忆    长耗时
         try:
             need_process_content,id_map=await cls.sort_prompt_for_add_episodics(origin_content_list)
@@ -285,7 +285,7 @@ class consolidationService:
     async def add_episodic_memory(cls,agent_id:str,episodic_memory_input:tuple[list[episodicMemoryInfo], list[tuple[int, dict]], list[originContent], dict] | None):
         """
         10.29
-        抽取情景记忆的逻辑 
+        抽取情景记忆的逻辑
         11.11 集中处理数据库操作 原子事务
         积累量超过阈值
         """
@@ -297,19 +297,19 @@ class consolidationService:
         try:
             origin_repo = originContentRepository(session)
             episodic_repo = episodicMemoryRepository(session)
-            cls._apply_similarity_decisions(
+            await cls._apply_similarity_decisions(
                 episodic_repo, memory_info_list, similarity_decisions # type: ignore
             )
-            origin_repo.mark_archived([memory.id for memory in archived_list])
-            episodic_repo.add_memory(
-                episodic_memory_list,  
+            await origin_repo.mark_archived([memory.id for memory in archived_list])
+            await episodic_repo.add_memory(
+                episodic_memory_list,
                 agent_id=agent_id,
                 origin_content_ids=id_map,
                 commit=False,
             )
-            session.commit()
+            await session.commit()
         finally:
-            session.close()
+            await session.close()
 
 
 
@@ -346,15 +346,15 @@ class consolidationService:
         session = create_session()
         try:
             semantic_repo = semanticMemoryRepository(session)
-            cls._apply_similarity_decisions(
+            await cls._apply_similarity_decisions(
                 semantic_repo, all_memory_info_list, similarity_decisions
             )
-            semantic_repo.add_memory(memory_info_list,agent_id=agent_id,commit=False)
-            session.commit()
+            await semantic_repo.add_memory(memory_info_list,agent_id=agent_id,commit=False)
+            await session.commit()
             #语义记忆落库成功了才推进水位线，失败的话下轮整批重来
             cls._episodic_watermark[agent_id]=memory_list[-1].create_time
         finally:
-            session.close()
+            await session.close()
 
 
 
@@ -363,18 +363,17 @@ class consolidationService:
     这个函数是用来应用相似性判断的结果的，更新或删除已有记忆
     """
     @staticmethod
-    def _apply_similarity_decisions(
+    async def _apply_similarity_decisions(
         repository: memoryRepository,
         memories: list[memoryInfo],
         decisions: list[tuple[int, dict]],
     ) -> None:
         for index, decision in decisions:
             if decision["action"] == "UPDATE":
-                repository.update_memory(
+                await repository.update_memory(
                     memory_id=decision["target_id"],
                     content=memories[index].content,
                     new_embedding=memories[index].embedding,
                 )
             elif decision["action"] == "DELETE":
-                repository.kill_memory(memory_id=decision["target_id"])
-
+                await repository.kill_memory(memory_id=decision["target_id"])

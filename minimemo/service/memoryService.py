@@ -41,7 +41,7 @@ class memoryService:
             role=store_request.role,
             session_id=store_request.session_id
         )
-        self.origin_content_repository.add_memory([memory],agent_id=store_request.agent_id)
+        await self.origin_content_repository.add_memory([memory],agent_id=store_request.agent_id)
         """
         11.9
         添加完原始内容之后你不要触发情景记忆 
@@ -69,15 +69,15 @@ class memoryService:
         seen:set[str]=set()
         for q in question:
             query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
-            vector_list=self.embedding_repository.query_vectors(
+            vector_list=await self.embedding_repository.query_vectors(
                 agent_id=search_request.agent_id,
                 embedding_model=embedding_model.model_name,query=query_embedding)
             for vector in vector_list:
                 if vector.memory_id not in seen:
                     seen.add(vector.memory_id)
                     memory_ids.append(vector.memory_id)
-        episodic_memory_list=self.episodic_memory_repository.search_memory(memory_ids)
-        semantic_memory_list=self.semantic_memory_repository.search_memory(memory_ids)
+        episodic_memory_list=await self.episodic_memory_repository.search_memory(memory_ids)
+        semantic_memory_list=await self.semantic_memory_repository.search_memory(memory_ids)
         # 两路召回的顺序由 memory_ids 决定，这里统一按 memory_ids 重排一次
         merged={memory.id:memory for memory in episodic_memory_list+semantic_memory_list}
         memory_list=[merged[memory_id] for memory_id in memory_ids if memory_id in merged]
@@ -99,7 +99,7 @@ class memoryService:
         seen:set[str]=set()
         for q in question:
             query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
-            vector_list=self.embedding_repository.query_vectors(
+            vector_list=await self.embedding_repository.query_vectors(
                 agent_id=search_request.agent_id,
                 embedding_model=embedding_model.model_name,
                 query=query_embedding,
@@ -109,7 +109,7 @@ class memoryService:
                 if vector.memory_id not in seen:
                     seen.add(vector.memory_id)
                     memory_ids.append(vector.memory_id)
-        content_list=self.origin_content_repository.search_memory(memory_ids)
+        content_list=await self.origin_content_repository.search_memory(memory_ids)
         logger.info(f"检索出来的原文:{[content.content for content in content_list]}")
         return content_list
 

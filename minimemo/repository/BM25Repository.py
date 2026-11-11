@@ -16,7 +16,7 @@ pdb.score 越大越相关
 内容都落在父表的 content 列上，所以这一个索引覆盖三者，
 检索结果需要按 memory_type 再分流的话，在调用方做
 """
-def fts_search(engine, match_expr: str, k: int = settings.TOP_K) -> list:
+async def fts_search(engine, match_expr: str, k: int = settings.TOP_K) -> list:
     sql = text("""
         SELECT m.id AS id, m.memory_type AS memory_type,
                pdb.score(m.id) AS score
@@ -25,5 +25,5 @@ def fts_search(engine, match_expr: str, k: int = settings.TOP_K) -> list:
         ORDER BY score DESC
         LIMIT :k
     """)
-    with engine.connect() as conn:
-        return conn.execute(sql, {"m": match_expr, "k": k}).fetchall()
+    async with engine.connect() as conn:
+        return (await conn.execute(sql, {"m": match_expr, "k": k})).fetchall()
