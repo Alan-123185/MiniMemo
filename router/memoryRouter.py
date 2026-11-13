@@ -23,13 +23,13 @@ async def search_memory(search_request:searchRequest,memory_service=Depends(get_
     memories=await memory_service.search_memory(search_request)
     return Result(response=[{"id": memory.id, "content": memory.content} for memory in memories])
 
-@router.post("/MiniMemo/memory/searchOriginContent")
-async def search_origin_content(search_request:searchRequest,memory_service=Depends(get_memory_service)):
-    """
-    搜索指定智能体的原文
-    """
-    contents=await memory_service.search_origin_content(search_request)
-    return Result(response=[{"id": content.id, "content": content.content} for content in contents])
+# @router.post("/MiniMemo/memory/searchOriginContent")
+# async def search_origin_content(search_request:searchRequest,memory_service=Depends(get_memory_service)):
+#     """
+#     搜索指定智能体的原文
+#     """
+#     contents=await memory_service.search_origin_content(search_request)
+#     return Result(response=[{"id": content.id, "content": content.content} for content in contents])
 
 
 

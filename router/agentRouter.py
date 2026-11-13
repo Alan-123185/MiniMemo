@@ -13,10 +13,10 @@ async def get_agents(agent_rep=Depends(get_agent_repo)):
     return Result(response=[agent.id for agent in agent_list])
 
 @router.post("/MiniMemo/agent/register")
-async def register_agent(agent_id: str, agent_rep=Depends(get_agent_repo)):
+async def register_agent(agent_id: str, user_id: str, agent_rep=Depends(get_agent_repo)):
     """
     注册一个智能体到记忆接管系统
     带唯一标识符
     """
-    await agent_rep.register_agent(agent_id)
+    await agent_rep.register_agent(agent_id, user_id)
     return Result.success()

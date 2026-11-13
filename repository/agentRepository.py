@@ -14,7 +14,7 @@ class agentRepository:
 
 
 
-    async def register_agent(self,agent_id:str) -> None:
+    async def register_agent(self,agent_id:str,user_id:str) -> None:
         # Check if the agent already exists
         existing_agent = (
             await self.session.execute(select(Agent).filter_by(id=agent_id))
@@ -24,7 +24,7 @@ class agentRepository:
             return
 
         # Create a new agent instance
-        new_agent = Agent(id=agent_id)
+        new_agent = Agent(id=agent_id, user_id=user_id)
 
         # Add the new agent to the session and commit
         self.session.add(new_agent)

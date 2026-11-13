@@ -2,7 +2,6 @@ from typing import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from  config.data import settings
 from  models.memoryModel.memory import Memory
 from  models.memoryVector import memoryVector
