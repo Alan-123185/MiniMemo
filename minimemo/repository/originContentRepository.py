@@ -1,6 +1,4 @@
 
-from typing import Sequence
-
 from minimemo.common.unarchiveSessionStatus import unarchiveSessionStatus
 from minimemo.common.memoryInfo import memoryInfo, originContentMemoryInfo
 from minimemo.models.memoryModel.memory import Memory
@@ -56,25 +54,6 @@ class originContentRepository(memoryRepository[originContentMemoryInfo]):
 
 
 
-    # async def get_unarchived_content(self, agent_id: str) -> dict[str, list[originContent]]:
-    #     """
-    #     获取指定智能体的所有未归档原文  直接返回按照会话分组的字典 方便
-    #     """
-    #     origin_content_list=(await self.session.execute(
-    #         select(originContent).where(
-    #             originContent.agent_id == agent_id,
-    #             *self._unarchived_conditions,
-    #         ).order_by(originContent.create_time.asc())
-    #     )).scalars().all()
-    #     #按会话拆分，每个会话各自攒各自的水位
-    #     session_groups:dict[str,list[originContent]]={}
-    #     for content in origin_content_list:
-    #         session_groups.setdefault(content.session, []).append(content)
-    #     return session_groups
-
-
-    # 未归档的公共过滤条件，水位查询与归档标记共用一套
-
 
     async def get_unarchived_session_stats(self, agent_id: str) -> list[unarchiveSessionStatus]:
         """
@@ -109,6 +88,9 @@ class originContentRepository(memoryRepository[originContentMemoryInfo]):
         if limit is not None:
             query = query.limit(limit)
         return (await self.session.execute(query)).scalars().all()
+
+
+
 
     async def mark_archived(self, content_ids: list[str]) -> None:
         """

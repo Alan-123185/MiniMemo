@@ -1,5 +1,5 @@
-from typing import Literal
-from config.data import settings
+
+from minimemo.config.data import settings
 from loguru import logger
 from sqlalchemy import literal
 

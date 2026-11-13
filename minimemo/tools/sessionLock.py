@@ -64,3 +64,28 @@ async def try_session_lock(agent_id: str, session_id: str):
     finally:
         # 这里必须在抽取结束之后执行，它同时负责释放行锁
         await session.close()
+
+
+@asynccontextmanager
+async def try_agent_lock(agent_id: str):
+    """
+    11.12
+    锁agent表 用于语义记忆的抽取
+    """
+    session = create_lock_session()
+    try:
+        row = (await session.execute(
+            text(
+                "SELECT id FROM agents "
+                "WHERE id = :agent_id "
+                "FOR NO KEY UPDATE SKIP LOCKED"
+            ),
+            {"agent_id": agent_id},
+        )).first()
+        if row is None:
+            logger.info(f"该agent已被占用或无注册记录，本次跳过 agent_id={agent_id}")
+        yield session if row is not None else None
+    finally:
+        # 这里必须在抽取结束之后执行，它同时负责释放行锁
+        await session.close()
+

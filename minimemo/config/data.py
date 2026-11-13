@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal
+from typing import ClassVar, Literal
 from pydantic_settings import BaseSettings
 
 ENV_FILE=Path(__file__).resolve().parent.parent / ".env"
@@ -37,15 +37,14 @@ class Settings(BaseSettings):
 
     MAX_UNARCHIVED_SEMANTIC:int=20    #一个会话内未归档的语义记忆最大数量，超过该数量将触发自动归档
 
-    MAX_UNARCHIVED_EPISODE:int=20  #一个 agent最大未抽取的情景记忆条数
 
     MAX_UNARCHIVED_TIME_EPISODIC:int=60*30  #一个会话内未归档的原文最大时间，超过该时间将触发自动归档
 
-    MAX_UNARCHIVED_TIME_SEMANTIC:int=60*60  #一个agent未归档的情景记忆最大时间，超过该时间将触发自动归档
+    MAX_UNARCHIVED_TIME_SEMANTIC:int=60*60  #一个agent未归档的语义记忆最大时间，超过该时间将触发自动归档
 
     EPISODIC_CONSOLIDATION_INTERVAL:int=60*5  #情景记忆归档的时间间隔，单位秒
 
-    getMemoryMode = Literal["episodic", "semantic"]
+    getMemoryMode: ClassVar[Literal["episodic", "semantic"]] = "episodic"
     
     # ---------- RabbitMQ 触发链 ----------
     MQ_HOST:str="127.0.0.1"
@@ -66,7 +65,6 @@ class Settings(BaseSettings):
     MQ_MAX_RETRY:int=3   #消息被死信的次数上限，超过则转发进死信队列等人工重放
 
     MQ_SCAN_INTERVAL:int=60   #兜底扫描间隔，单位秒，必须远小于 MAX_UNARCHIVED_TIME
-
 
     MAX_SIM_CONCURRENCY :int=5   #相似度判断的最大并发数，过大容易打爆大模型
     

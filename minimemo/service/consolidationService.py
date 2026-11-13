@@ -18,7 +18,7 @@ from minimemo.repository.semanticMemoryRepository import semanticMemoryRepositor
 from minimemo.service.modelService import modelService
 from minimemo.tools.backgroundTask import spawn
 from minimemo.tools.numpyTool import cosine_similarity
-from minimemo.tools.sessionLock import try_session_lock
+from minimemo.tools.sessionLock import try_agent_lock, try_session_lock
 
 
 
@@ -49,6 +49,18 @@ class consolidationService:
         return "\n".join(ret), id_map
 
 
+
+
+
+    @staticmethod
+    async def sort_prompt_for_add_semantics(memory_list: list[episodicMemory]) -> str:
+        """
+        特殊内部方法 专门用于主动触发语义记忆的情况下原始prompt的组织
+        """
+        ret=[]
+        for index,memory in enumerate(memory_list):
+            ret.append(f"[{index}] {memory.content}")
+        return "\n".join(ret)
 
     @classmethod
     async def get_unarchive_session_by_agent(cls,agent_id:str) -> list[unarchiveSessionStatus]:
@@ -89,18 +101,19 @@ class consolidationService:
         语义提炼的唯一入口：把上次提炼之后新增的情景记忆提炼成语义记忆
         循环与主动调用都走这里
         互斥粒度是 agent：语义事实本来就是跨会话的
+        11.12
+        语义记忆上agent表行锁
         """
-        session = create_session()
-        try:
-            episodic_repo = episodicMemoryRepository(session)
-            watermark=cls._episodic_watermark.get(agent_id)
-            source_list=await episodic_repo.fetch_since(agent_id, watermark)
-        finally:
-            await session.close()
-        if not source_list:
-            logger.info(f"agent_id={agent_id} 没有新的情景记忆，跳过语义记忆提炼")
-            return
-        await cls.add_semantic_memory(source_list,agent_id)
+        async with try_agent_lock(agent_id) as lock_session:
+            if lock_session is None:
+                return
+            try:
+                input=await cls.before_add_semantic_memory(agent_id)
+                await cls.add_semantic_memory(input,agent_id) # type: ignore
+            except Exception as e:
+                await lock_session.rollback()   # 释放锁，数据不落
+                logger.exception(f"语义记忆提取失败，本轮放弃-------- {e}")
+                raise
 
 
 
@@ -123,114 +136,8 @@ class consolidationService:
                 await cls.add_episodic_memory(agent_id,input) # type: ignore
             except Exception as e:
                 await lock_session.rollback()   # 释放锁，数据不落
-                logger.exception(f"抽取失败，本轮放弃-------- {e}")
+                logger.exception(f"情景记忆提取失败，本轮放弃-------- {e}")
                 raise
-
-
-
-    """
-    11.10
-    
-    先不管这个函数
-    这个函数只能暂时这么写   只知道它的功能就是处理相似的记忆
-    相似记忆搜索策略有大问题
-    数据库事务的范围和原子性一塌糊涂
-    11.11
-    稍微处理了一下 增加了并发能力 暂时先这样
-    """
-    
-    @staticmethod
-    async def _process_similarity[T: memoryInfo](
-        memories: list[T], agent_id: str, memory_type: str
-    ) -> tuple[list[T], list[tuple[T, dict]]]:
-
-        async def _process_one_memory(
-            index: int,
-            memo:memoryInfo,
-            agent_id: str,
-            memory_type: str,
-            sem: asyncio.Semaphore,
-        ) -> tuple[int, str, dict | None]:
-            """处理单条记忆，返回 (index, action, pan_dict)
-
-            action:
-                "THROW"  -> 向量相似度超高，直接丢弃
-                "KEEP"   -> 无候选，保留，不调模型
-                "JUDGED" -> 调了模型，pan_dict 是模型决策
-            """
-            async with sem:                              # 控制并发，别打爆连接池和 LLM RPM
-                session = create_session()
-                try:
-                    embedding_repo = embeddingRepository(session)
-                    existing_repo = (
-                        semanticMemoryRepository(session)
-                        if memory_type == "semantic"
-                        else episodicMemoryRepository(session)
-                    )
-
-                    vector_list = await embedding_repo.query_vectors(
-                        agent_id=agent_id,
-                        embedding_model=memo.embedding_model,
-                        query=memo.embedding,
-                        memory_type=memory_type,
-                    )
-
-                    need_to_judge = []
-                    for vector, similarity in vector_list:
-                        if similarity >= settings.SIM_TO_THROW:
-                            return (index, "THROW", None)          # 早退，session 由 finally 关
-                        elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
-                            need_to_judge.append(vector)
-
-                    if not need_to_judge:
-                        return (index, "KEEP", None)
-                    
-                    memo_list = await existing_repo.search_memory(
-                        [need.memory_id for need in need_to_judge]
-                    )
-                    candidates = [existFact(content=m.content, memory_id=m.id) for m in memo_list]
-                    if not candidates:
-                        return (index, "KEEP", None) 
-                    
-                finally:
-                    await session.close()                    # 连接已归还，模型等待不占连接
-                    
-                # session 关闭后调模型，to_thread 不堵事件循环
-                pan_dict = await asyncio.to_thread(
-                    modelService.judge_similarity,
-                    fact1=memo.content,
-                    fact2=candidates,
-                    model=get_pool().chat,
-                )
-                return (index, "JUDGED", pan_dict)
-
-        if not memories:
-            return ([], [])
-
-        sem = asyncio.Semaphore(settings.MAX_SIM_CONCURRENCY)   # 例如 5
-        results = await asyncio.gather(*[
-            _process_one_memory(i, m, agent_id, memory_type, sem)
-            for i, m in enumerate(memories)
-        ])
-
-        list_should_remove: set[int] = set()
-        decisions: list[tuple[T, dict]] = []
-
-        for index, action, pan_dict in results:
-            if action == "THROW":
-                list_should_remove.add(index)
-            elif action == "JUDGED":
-                decisions.append((memories[index], pan_dict))       # type: ignore # 所有过模型的都进 decisions
-                if pan_dict["action"] in {"UPDATE", "NONE"}:        # type: ignore
-                    list_should_remove.add(index)
-            # action == "KEEP"：不动
-
-        return (
-            [m for i, m in enumerate(memories) if i not in list_should_remove],
-            decisions,
-        )
-
-
 
 
 
@@ -360,47 +267,80 @@ class consolidationService:
             await session.close()
 
 
+    @classmethod
+    async def before_add_semantic_memory(cls,agent_id:str) -> tuple[list[semanticMemoryInfo], list[tuple[memoryInfo, dict]], list[episodicMemory]] | None:
+        """
+        11.2
+        这个函数用于预处理agent的语义记忆提炼 不做任何数据库操作
+        """
+        session = create_session()
+        model=get_pool()
+        chat_model=model.chat
+        embedding_model=model.embedding
+        try:
+            #先把需要提炼的情景记忆抽出来
+            episodic_repo = episodicMemoryRepository(session)
+            episodic_memories_list=await episodic_repo.fetch_unarchived_by_agent(agent_id)
+        finally:
+            await session.close()
+        if not episodic_memories_list:
+            logger.info(f"agent_id={agent_id} 没有未归档情景记忆，跳过语义记忆提炼")
+            return
+
+
+        #调用模型先把这东西抽成语义记忆    长耗时
+        try:
+            need_process_content=await cls.sort_prompt_for_add_semantics(episodic_memories_list)
+            semantic_memory_list=await asyncio.to_thread(
+                modelService.to_semantic_memory,
+                episodic_memories=need_process_content,
+                model=chat_model,
+            )
+            archived_list=episodic_memories_list
+
+
+            #处理相似记忆               长耗时
+            for memory in semantic_memory_list:
+                embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
+                memory["embedding"]=embedding
+                memory["embedding_model"]=embedding_model.model_name
+            memory_info_list=[semanticMemoryInfo(content=memory["content"],
+                                            type=memory.get("type","fact"),
+                                            is_alive=memory.get("is_alive",True),
+                                            embedding=memory["embedding"],
+                                            embedding_model=memory["embedding_model"])
+                                            for memory in semantic_memory_list]
+            semantic_memory_list, similarity_decisions = await cls._process_similarity(
+                memory_info_list, agent_id, "semantic"
+            )
+            return semantic_memory_list, similarity_decisions, archived_list  # type: ignore
+        except Exception as e:
+            logger.exception(f"语义记忆抽取失败:{e}")
+            raise
+
 
     @classmethod
-    async def add_semantic_memory(cls, memory_list: list[episodicMemory],agent_id: str):
+    async def add_semantic_memory(cls, semantic_memory_input: tuple[list[semanticMemoryInfo], list[tuple[memoryInfo, dict]], list[episodicMemory]] | None, agent_id: str):
         """
         11.2
         把一批情景记忆提炼成语义记忆
         失败整批不推进水位线，下轮重来
         """
-        model=get_pool()
-        chat_model=model.chat
-        embedding_model=model.embedding
-        need_process_content="\n".join(f"- {memory.content}" for memory in memory_list)
-        memories_list=await asyncio.to_thread(
-            modelService.to_semantic_memory,
-            episodic_memories=need_process_content,
-            model=chat_model,
-        )
-        memory_info_list=[]
-        for memory in memories_list:
-            embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
-            memory_info_list.append(semanticMemoryInfo(
-                content=memory["content"],
-                type=memory.get("type","fact"),
-                is_alive=memory.get("is_alive",True),
-                embedding=embedding,
-                embedding_model=embedding_model.model_name))
-        all_memory_info_list = memory_info_list
-        memory_info_list, similarity_decisions = await cls._process_similarity(
-            all_memory_info_list, agent_id, "semantic"
-        )
-
+        if not semantic_memory_input:
+            logger.info(f"没有新的语义记忆，跳过落库")
+            return
+        semantic_memory_list, similarity_decisions, archived_list = semantic_memory_input
         session = create_session()
         try:
+            episodic_repo = episodicMemoryRepository(session)
             semantic_repo = semanticMemoryRepository(session)
             await cls._apply_similarity_decisions(
                 semantic_repo, similarity_decisions
             )
-            await semantic_repo.add_memory(memory_info_list,agent_id=agent_id,commit=False)
+            await episodic_repo.mark_archived([memory.id for memory in archived_list])
+            await semantic_repo.add_memory(semantic_memory_list,agent_id=agent_id,commit=False)
             await session.commit()
             #语义记忆落库成功了才推进水位线，失败的话下轮整批重来
-            cls._episodic_watermark[agent_id]=memory_list[-1].create_time
         finally:
             await session.close()
 
@@ -424,3 +364,111 @@ class consolidationService:
                 )
             elif decision["action"] == "DELETE":
                 await repository.kill_memory(memory_id=decision["target_id"])
+
+
+
+    """
+    11.10
+    
+    先不管这个函数
+    这个函数只能暂时这么写   只知道它的功能就是处理相似的记忆
+    相似记忆搜索策略有大问题
+    数据库事务的范围和原子性一塌糊涂
+    11.11
+    稍微处理了一下 增加了并发能力 暂时先这样
+    """
+    
+    @staticmethod
+    async def _process_similarity[T: memoryInfo](
+        memories: list[T], agent_id: str, memory_type: str
+    ) -> tuple[list[T], list[tuple[T, dict]]]:
+
+        async def _process_one_memory(
+            index: int,
+            memo:memoryInfo,
+            agent_id: str,
+            memory_type: str,
+            sem: asyncio.Semaphore,
+        ) -> tuple[int, str, dict | None]:
+            """处理单条记忆，返回 (index, action, pan_dict)
+
+            action:
+                "THROW"  -> 向量相似度超高，直接丢弃
+                "KEEP"   -> 无候选，保留，不调模型
+                "JUDGED" -> 调了模型，pan_dict 是模型决策
+            """
+            async with sem:                              # 控制并发，别打爆连接池和 LLM RPM
+                session = create_session()
+                try:
+                    embedding_repo = embeddingRepository(session)
+                    existing_repo = (
+                        semanticMemoryRepository(session)
+                        if memory_type == "semantic"
+                        else episodicMemoryRepository(session)
+                    )
+
+                    vector_list = await embedding_repo.query_vectors(
+                        agent_id=agent_id,
+                        embedding_model=memo.embedding_model,
+                        query=memo.embedding,
+                        memory_type=memory_type,
+                    )
+
+                    need_to_judge = []
+                    for vector, similarity in vector_list:
+                        if similarity >= settings.SIM_TO_THROW:
+                            return (index, "THROW", None)          # 早退，session 由 finally 关
+                        elif settings.SIMILARITY_THRESHOLD <= similarity < settings.SIM_TO_THROW:
+                            need_to_judge.append(vector)
+
+                    if not need_to_judge:
+                        return (index, "KEEP", None)
+                    
+                    memo_list = await existing_repo.search_memory(
+                        [need.memory_id for need in need_to_judge]
+                    )
+                    candidates = [existFact(content=m.content, memory_id=m.id) for m in memo_list]
+                    if not candidates:
+                        return (index, "KEEP", None) 
+                    
+                finally:
+                    await session.close()                    # 连接已归还，模型等待不占连接
+                    
+                # session 关闭后调模型，to_thread 不堵事件循环
+                pan_dict = await asyncio.to_thread(
+                    modelService.judge_similarity,
+                    fact1=memo.content,
+                    fact2=candidates,
+                    model=get_pool().chat,
+                )
+                return (index, "JUDGED", pan_dict)
+
+        if not memories:
+            return ([], [])
+
+        sem = asyncio.Semaphore(settings.MAX_SIM_CONCURRENCY)   # 例如 5
+        results = await asyncio.gather(*[
+            _process_one_memory(i, m, agent_id, memory_type, sem)
+            for i, m in enumerate(memories)
+        ])
+
+        list_should_remove: set[int] = set()
+        decisions: list[tuple[T, dict]] = []
+
+        for index, action, pan_dict in results:
+            if action == "THROW":
+                list_should_remove.add(index)
+            elif action == "JUDGED":
+                decisions.append((memories[index], pan_dict))       # type: ignore # 所有过模型的都进 decisions
+                if pan_dict["action"] in {"UPDATE", "NONE"}:        # type: ignore
+                    list_should_remove.add(index)
+            # action == "KEEP"：不动
+
+        return (
+            [m for i, m in enumerate(memories) if i not in list_should_remove],
+            decisions,
+        )
+
+
+
+
