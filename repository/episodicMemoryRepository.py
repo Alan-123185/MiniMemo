@@ -5,7 +5,9 @@ from common.memoryInfo import episodicMemoryInfo
 from common.unarchiveSessionStatus import unarchiveAgentStatus
 from models.episodeOriginLink import episodeOriginLink
 from models.memoryModel.episodicMemory import episodicMemory
+from models.memoryModel.memory import Memory
 from repository.memoryRepository import memoryRepository
+from repository.originContentRepository import originContentRepository
 
 class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
     kind = "episodes"
@@ -68,6 +70,16 @@ class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
         origin_content_ids 是编号到原文id的映射，
         memory.origin_content_id 里放的是 LLM 输出的编号，落库时换回真实id写入关联表
         """
+        if origin_content_ids:
+            referenced_ids = set()
+            for memory in memories:
+                for number in memory.origin_content_id or []:
+                    content_id = origin_content_ids.get(str(number))
+                    if content_id is not None:
+                        referenced_ids.add(content_id)
+            await originContentRepository(self.session)._require_owned_memories(
+                list(referenced_ids), agent_id
+            )
         for memory in memories:
             memo = episodicMemory(
                 id=str(uuid.uuid4()),
@@ -89,16 +101,20 @@ class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
 
 
 
-    async def mark_archived(self, content_ids: list[str]) -> None:
+    async def mark_archived(self, content_ids: list[str], *, agent_id: str) -> None:
             """
             把一批原文标记为已归档，必须和 episodes 落库在同一个事务里提交
             这里为了确保原子性 更新了并未提交事务  后面会锁死
             """
             if not content_ids:
                 return
+            await self._require_owned_memories(content_ids, agent_id)
             await self.session.execute(
                 update(episodicMemory)
-                .where(episodicMemory.id.in_(content_ids))
+                .where(
+                    episodicMemory.id.in_(content_ids),
+                    episodicMemory.id.in_(select(Memory.id).where(Memory.agent_id == agent_id)),
+                )
                 .values(is_archive=True)
                 .execution_options(synchronize_session=False)
             )

@@ -41,7 +41,7 @@ class memoryService:
             role=store_request.role,
             session_id=store_request.session_id
         )
-        await self.origin_content_repository.add_memory([memory],agent_id=store_request.agent_id)
+        await self.origin_content_repository.add_memory([memory], agent_id=store_request.agent_name)
         """
         11.9
         添加完原始内容之后你不要触发情景记忆 
@@ -74,7 +74,7 @@ class memoryService:
         for q in question:
             query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
             vector_list=await self.embedding_repository.query_vectors(
-                agent_id=search_request.agent_id,
+                agent_id=search_request.agent_name,
                 embedding_model=embedding_model.model_name,query=query_embedding)
             for vector, _ in vector_list:
                 if vector.memory_id not in seen:
@@ -104,7 +104,7 @@ class memoryService:
         for q in question:
             query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
             vector_list=await self.embedding_repository.query_vectors(
-                agent_id=search_request.agent_id,
+                agent_id=search_request.agent_name,
                 embedding_model=embedding_model.model_name,
                 query=query_embedding,
                 memory_type="origin",  # 限制搜索原文

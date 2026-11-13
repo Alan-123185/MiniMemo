@@ -1,7 +1,8 @@
 import uuid
 from typing import Any
-from sqlalchemy import update
+from sqlalchemy import select, update
 from common.memoryInfo import memoryInfo, semanticMemoryInfo
+from models.memoryModel.memory import Memory
 from models.memoryModel.semanticMemory import semanticMemory
 from repository.memoryRepository import memoryRepository
 
@@ -40,14 +41,18 @@ class semanticMemoryRepository(memoryRepository[semanticMemoryInfo]):
 
 
 
-    async def kill_memory(self, memory_id: str) -> None:
+    async def kill_memory(self, memory_id: str, *, agent_id: str) -> None:
         """
         语义记忆的“作废”是双重语义：事实不再成立，同时也从检索中隐去
         """
+        await self._require_owned_memories([memory_id], agent_id)
         await self.session.execute(
             update(semanticMemory)
-            .where(semanticMemory.id == memory_id)
+            .where(
+                semanticMemory.id == memory_id,
+                semanticMemory.id.in_(select(Memory.id).where(Memory.agent_id == agent_id)),
+            )
             .values(is_alive=False)
             .execution_options(synchronize_session=False)
         )
-        await super().kill_memory(memory_id)
+        await super().kill_memory(memory_id, agent_id=agent_id)

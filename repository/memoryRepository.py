@@ -67,18 +67,37 @@ class memoryRepository[T:memoryInfo]:
 
 
 
-    async def remove_memory(self, memory_id: str) -> None:
+    async def _require_owned_memories(self, memory_ids: list[str], agent_id: str) -> None:
+        """写入前校验记忆类型及内部 Agent 归属，整批校验失败时禁止继续。"""
+        if not memory_ids:
+            return
+        owned_ids = set((await self.session.execute(
+            select(self.model.id).where(
+                self.model.id.in_(memory_ids), self.model.agent_id == agent_id
+            )
+        )).scalars().all())
+        if owned_ids != set(memory_ids):
+            raise ValueError("记忆不存在或不属于当前 Agent")
+
+
+
+
+
+    async def remove_memory(self, memory_id: str, *, agent_id: str) -> None:
         """
         物理删除一条记忆，连同向量一起清掉
         joined 继承下子表行和父表行是两条记录，
         只有交给 ORM 删对象才会把整条继承链一起清掉，
         query(...).delete() 只删子表那一行，父表会留下垃圾数据
         """
+        await self._require_owned_memories([memory_id], agent_id)
         memory = await self.session.get(self.model, memory_id)
         if memory is None:
             return
         await self.session.execute(
-            delete(memoryVector).where(memoryVector.memory_id == memory_id)
+            delete(memoryVector).where(
+                memoryVector.memory_id == memory_id, memoryVector.agent_id == agent_id
+            )
         )
         await self.session.delete(memory)
         await self.session.commit()
@@ -95,13 +114,14 @@ class memoryRepository[T:memoryInfo]:
         await self.session.commit()
 
 
-    async def kill_memory(self, memory_id: str) -> None:
+    async def kill_memory(self, memory_id: str, *, agent_id: str) -> None:
         """
         软删除一条记忆，只打标记不删数据
         """
+        await self._require_owned_memories([memory_id], agent_id)
         await self.session.execute(
             update(Memory)
-            .where(Memory.id == memory_id)
+            .where(Memory.id == memory_id, Memory.agent_id == agent_id)
             .values(
                 is_delete=True,
                 update_time=datetime.datetime.now(),
@@ -112,15 +132,16 @@ class memoryRepository[T:memoryInfo]:
 
 
 
-    async def update_memory(self, memory_id: str, content: str, new_embedding: list[float]) -> None:
+    async def update_memory(self, memory_id: str, content: str, new_embedding: list[float], *, agent_id: str) -> None:
         """
         更新记忆的内容与向量，大模型判定为 UPDATE 之后调用
         content 在父表 memory 上，查基类就能改到
         onupdate 只在 ORM flush 时生效，批量 update 需要手动写时间
         """
+        await self._require_owned_memories([memory_id], agent_id)
         await self.session.execute(
             update(Memory)
-            .where(Memory.id == memory_id)
+            .where(Memory.id == memory_id, Memory.agent_id == agent_id)
             .values(
                 content=content,
                 update_time=datetime.datetime.now(),
@@ -129,7 +150,7 @@ class memoryRepository[T:memoryInfo]:
         )
         await self.session.execute(
             update(memoryVector)
-            .where(memoryVector.memory_id == memory_id)
+            .where(memoryVector.memory_id == memory_id, memoryVector.agent_id == agent_id)
             .values(embedding=new_embedding)
             .execution_options(synchronize_session=False)
         )
@@ -140,6 +161,8 @@ class memoryRepository[T:memoryInfo]:
         """
         新增一条记忆并挂上向量
         """
+        if memory.agent_id != agent_id:
+            raise ValueError("记忆与向量的 Agent 归属不一致")
         self.session.add(memory)
         # flush 一下拿到主键，再建向量
         await self.session.flush()

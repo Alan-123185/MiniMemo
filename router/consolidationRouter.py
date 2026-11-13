@@ -2,24 +2,29 @@ from fastapi import APIRouter, Depends
 
 from common.result import Result
 from service.consolidationService import consolidationService
+from repository.dependencies import get_agent_repo
+from router.dependencies import resolve_agent_id
 
 router = APIRouter()
 
 
 
 
-@router.post("/MiniMemo/consolidation/add_episodic_memory/{agent_id}/session/{session_id}")
-async def episodic_memory_consolidation(agent_id: str,session_id: str):
+@router.post("/MiniMemo/consolidation/add_episodic_memory/{agent_name}/session/{session_id}")
+async def episodic_memory_consolidation(agent_name: str,session_id: str, user_id: str,
+                                       agent_rep=Depends(get_agent_repo)):
     """
     调用接口主动触发情景记忆抽取
     """
-    await consolidationService.consolidate_episodics(agent_id, session_id)
+    internal_agent_id = await resolve_agent_id(user_id, agent_name, agent_rep)
+    await consolidationService.consolidate_episodics(internal_agent_id, session_id)
     return Result.success()
 
-@router.post("/MiniMemo/consolidation/add_semantinc_memory/{agent_id}")
-async def semantic_memory_consolidation(agent_id: str):
+@router.post("/MiniMemo/consolidation/add_semantinc_memory/{agent_name}")
+async def semantic_memory_consolidation(agent_name: str, user_id: str, agent_rep=Depends(get_agent_repo)):
     """
     调用接口主动触发语义记忆抽取
     """
-    await consolidationService.consolidate_semantics(agent_id)
+    internal_agent_id = await resolve_agent_id(user_id, agent_name, agent_rep)
+    await consolidationService.consolidate_semantics(internal_agent_id)
     return Result.success()

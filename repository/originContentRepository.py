@@ -92,16 +92,20 @@ class originContentRepository(memoryRepository[originContentMemoryInfo]):
 
 
 
-    async def mark_archived(self, content_ids: list[str]) -> None:
+    async def mark_archived(self, content_ids: list[str], agent_id: str) -> None:
         """
         把一批原文标记为已归档，必须和 episodes 落库在同一个事务里提交
         这里为了确保原子性 更新了并未提交事务  后面会锁死
         """
         if not content_ids:
             return
+        await self._require_owned_memories(content_ids, agent_id)
         await self.session.execute(
             update(originContent)
-            .where(originContent.id.in_(content_ids))
+            .where(
+                originContent.id.in_(content_ids),
+                originContent.id.in_(select(Memory.id).where(Memory.agent_id == agent_id)),
+            )
             .values(is_archive=True)
             .execution_options(synchronize_session=False)
         )

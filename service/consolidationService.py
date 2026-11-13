@@ -252,9 +252,9 @@ class consolidationService:
             origin_repo = originContentRepository(session)
             episodic_repo = episodicMemoryRepository(session)
             await cls._apply_similarity_decisions(
-                episodic_repo, similarity_decisions
+                episodic_repo, similarity_decisions, agent_id=agent_id
             )
-            await origin_repo.mark_archived([memory.id for memory in archived_list])
+            await origin_repo.mark_archived([memory.id for memory in archived_list], agent_id=agent_id)
             await episodic_repo.add_memory(
                 episodic_memory_list,
                 agent_id=agent_id,
@@ -334,9 +334,9 @@ class consolidationService:
             episodic_repo = episodicMemoryRepository(session)
             semantic_repo = semanticMemoryRepository(session)
             await cls._apply_similarity_decisions(
-                semantic_repo, similarity_decisions
+                semantic_repo, similarity_decisions, agent_id=agent_id
             )
-            await episodic_repo.mark_archived([memory.id for memory in archived_list])
+            await episodic_repo.mark_archived([memory.id for memory in archived_list], agent_id=agent_id)
             await semantic_repo.add_memory(semantic_memory_list,agent_id=agent_id,commit=False)
             await session.commit()
             #语义记忆落库成功了才推进水位线，失败的话下轮整批重来
@@ -353,6 +353,7 @@ class consolidationService:
     async def _apply_similarity_decisions(
         repository: memoryRepository,
         decisions: list[tuple[memoryInfo, dict]],
+        *, agent_id: str,
     ) -> None:
         for memory, decision in decisions:
             if decision["action"] == "UPDATE":
@@ -360,9 +361,10 @@ class consolidationService:
                     memory_id=decision["target_id"],
                     content=memory.content,
                     new_embedding=memory.embedding,
+                    agent_id=agent_id,
                 )
             elif decision["action"] == "DELETE":
-                await repository.kill_memory(memory_id=decision["target_id"])
+                await repository.kill_memory(memory_id=decision["target_id"], agent_id=agent_id)
 
 
 
