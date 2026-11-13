@@ -23,13 +23,14 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-# 根目录的 main.py 是应用入口，作为顶层模块单独打包
-py-modules = ["main"]
+# 根目录的 main.py 是应用入口，worker.py 是记忆抽取的独立进程入口，
+# 两者都作为顶层模块单独打包
+py-modules = ["main", "worker"]
 
 [tool.setuptools.packages.find]
-# 业务代码已统一收拢到 minimemo/ 下。
-# 该包除 models/ 与根 __init__.py 外，子目录均无 __init__.py，
+# 业务代码按领域目录直接放在项目根目录。
+# 这些目录中的部分子目录没有 __init__.py，
 # 因此必须开启命名空间包发现，否则会被静默漏掉。
 # __pycache__ 由 setuptools 内置规则排除，无需手写。
 namespaces = true
-include = ["minimemo*"]
+include = ["common*", "config*", "db*", "models*", "mq*", "prompt*", "repository*", "router*", "service*", "tools*"]
