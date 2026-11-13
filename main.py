@@ -1,5 +1,14 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException
+from common.exceptions import BusinessException
+from common.exceptionHandlers import (
+    business_exception_handler,
+    http_exception_handler,
+    validation_exception_handler,
+    unhandled_exception_handler,
+)
 from db.Base import init_tables
 from db.session import engine
 from mq.publisher import get_publisher
@@ -21,6 +30,11 @@ async def lifespan(app: FastAPI):
     await get_publisher().close()
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_exception_handler(BusinessException, business_exception_handler) # type: ignore
+app.add_exception_handler(HTTPException, http_exception_handler) # type: ignore
+app.add_exception_handler(RequestValidationError, validation_exception_handler) # type: ignore
+app.add_exception_handler(Exception, unhandled_exception_handler)
 
 app.include_router(model_router)
 app.include_router(agent_router)

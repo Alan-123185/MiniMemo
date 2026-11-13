@@ -1,9 +1,11 @@
 from typing import Sequence
 
+from fastapi import HTTPException
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from common.exceptions import NotFoundException
 from  models.agent import Agent
 from models.session import Session as SessionModel
 
@@ -40,6 +42,8 @@ class agentRepository:
             )
         ).scalars().first()
 
+
+
     async def get_agents(self, user_id: str | None = None) -> Sequence[Agent]:
         """
         指定用户时只获取其 Agent；不传用户供后台扫描全部 Agent。
@@ -48,3 +52,12 @@ class agentRepository:
         if user_id is not None:
             query = query.where(Agent.user_id == user_id)
         return (await self.session.execute(query)).scalars().all()
+
+
+    async def resolve_agent_id(self, user_id: str, agent_name: str) -> str:
+        """将用户下的对外 Agent 名称解析为业务内部使用的主键。"""
+        agent = await self.get_agent(agent_name, user_id)
+        if agent is None:
+            raise NotFoundException(f"Agent not found for user_id={user_id}, agent_name={agent_name}")
+        return agent.id
+
