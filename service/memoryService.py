@@ -52,6 +52,10 @@ class memoryService:
     """
     10.31
     这个函数到时候需要重写 现在是未重构之前的结构 先不管
+    11.13
+    制定记忆搜索召回策略
+    这是记忆召回最终直接调用的函数
+       情景记忆、语义记忆分别做向量与关键词召回，统一融合后，再判断哪些记忆真正有助于回答当前问题。
     """
     async def search_memory(self, search_request:searchRequest) -> list[Memory]:
         """
@@ -114,10 +118,3 @@ class memoryService:
         return content_list
 
 
-    #自动装载记忆
-    async def load_memory(self, search_request:searchRequest) -> str:
-        """
-        加载指定智能体的所有记忆
-        """
-        memory_list=await self.search_memory(search_request)
-        return MEMORY_PROMPT_HEAD+"\n".join([memory.content for memory in memory_list])

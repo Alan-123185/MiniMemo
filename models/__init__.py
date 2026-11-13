@@ -1,3 +1,4 @@
+from .user import User
 from .agent import Agent
 from .session import Session
 from .memoryModel.memory import Memory
@@ -11,6 +12,7 @@ from .episodeOriginLink import episodeOriginLink
 from db.Base import Base
 
 __all__ = [
+    "User",
     "Agent",
     "Session",
     "Memory",
