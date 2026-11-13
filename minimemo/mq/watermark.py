@@ -1,7 +1,7 @@
 
+from typing import Literal
+
 from minimemo.config.data import settings
-from loguru import logger
-from sqlalchemy import literal
 
 from minimemo.service.consolidationService import consolidationService
 
@@ -18,18 +18,28 @@ consumer 与兜底扫描器共用这一份，保证两条路径的判断口径�
 
 
 
-async def get_ready_memory(agent_id: str,mode=settings.getMemoryMode) -> set[str]:
+async def get_ready_memory(
+    agent_id: str | None = None,
+    mode: Literal["episodic", "semantic"] = settings.getMemoryMode,
+) -> set[str]:
     """
-    返回该 agent 下所有已达水位的会话 id：够条数或够时间的都算  注：这是两个水位判断函数唯一被调用到的地方
+    情景模式返回指定 agent 下已达水位的会话 id；语义模式返回 agent id。
+    语义扫描不传 agent_id 时一次统计所有 agent，消费时传入则只判断该 agent。
     """
     if mode=="episodic":
+        if agent_id is None:
+            raise ValueError("情景记忆水位判断需要 agent_id")
         session_stats = await consolidationService.get_unarchive_session_by_agent(agent_id)
         ready = {sid async for sid in consolidationService.before_add_memory_L1(session_stats,mode="episodic")}
         ready |= {sid async for sid in consolidationService.before_add_memory_L2(session_stats,mode="episodic")}
     elif mode=="semantic":
         session_stats = await consolidationService.get_unarchive_agent()
+        if agent_id is not None:
+            session_stats = [s for s in session_stats if s.agent == agent_id]
         ready = {sid async for sid in consolidationService.before_add_memory_L1(session_stats,mode="semantic")}
         ready |= {sid async for sid in consolidationService.before_add_memory_L2(session_stats,mode="semantic")}
+    else:
+        raise ValueError(f"不支持的记忆类型: {mode}")
     return ready
 
 

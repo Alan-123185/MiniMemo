@@ -29,6 +29,7 @@ RETRY_EXCHANGE = "minimemo.rx"
 DEAD_LETTER_EXCHANGE = "minimemo_dlx"
 
 EPISODIC = "episodic"
+SEMANTIC = "semantic"
 
 
 def names(task: str) -> dict[str, str]:
@@ -47,14 +48,12 @@ def names(task: str) -> dict[str, str]:
 
 async def setup_topology(
     channel: aio_pika.abc.AbstractChannel,
-) -> tuple[aio_pika.abc.AbstractExchange, aio_pika.abc.AbstractQueue]:
+) -> tuple[aio_pika.abc.AbstractExchange, dict[str, aio_pika.abc.AbstractQueue]]:
     """
-    幂等声明全部交换机、队列与绑定，返回业务交换机与主队列
+    幂等声明全部交换机、队列与绑定，返回业务交换机与按任务类型分组的主队列
     声明是幂等的，worker 和 API 进程各自启动时都调一遍不会有副作用
     但队列参数必须与 broker 上已存在的一致，否则 RabbitMQ 会直接报 PRECONDITION_FAILED
     """
-    #返回对应记忆的交换机和队列名   这里写死了 情景记忆 f:到时候要改
-    n = names(EPISODIC)
     #声明主交换机  路由策略为 direct
     exchange = await channel.declare_exchange(
         EXCHANGE,
@@ -74,31 +73,34 @@ async def setup_topology(
         durable=True,
     )
 
-    # 主队列：消费失败的消息经重试交换机进重试队列，不直接进死信
-    queue = await channel.declare_queue(
-        n["queue"],
-        durable=True,
-        arguments={
-            "x-dead-letter-exchange": RETRY_EXCHANGE,
-            "x-dead-letter-routing-key": n["retry_key"],
-        },
-    )
-    await queue.bind(exchange, routing_key=n["key"])
+    queues: dict[str, aio_pika.abc.AbstractQueue] = {}
+    for task in (EPISODIC, SEMANTIC):
+        n = names(task)
+        # 每类任务各自重试，TTL 到期后只回到自己的主队列。
+        queue = await channel.declare_queue(
+            n["queue"],
+            durable=True,
+            arguments={
+                "x-dead-letter-exchange": RETRY_EXCHANGE,
+                "x-dead-letter-routing-key": n["retry_key"],
+            },
+        )
+        await queue.bind(exchange, routing_key=n["key"])
+        queues[task] = queue
 
-    # 重试队列：只负责压住 TTL，到期后经死信回源，重新投回主队列
-    retry_queue = await channel.declare_queue(
-        n["retry_queue"],
-        durable=True,
-        arguments={
-            "x-message-ttl": settings.MQ_RETRY_TTL_MS,
-            "x-dead-letter-exchange": EXCHANGE,
-            "x-dead-letter-routing-key": n["key"],
-        },
-    )
-    await retry_queue.bind(retry_exchange, routing_key=n["retry_key"])
+        retry_queue = await channel.declare_queue(
+            n["retry_queue"],
+            durable=True,
+            arguments={
+                "x-message-ttl": settings.MQ_RETRY_TTL_MS,
+                "x-dead-letter-exchange": EXCHANGE,
+                "x-dead-letter-routing-key": n["key"],
+            },
+        )
+        await retry_queue.bind(retry_exchange, routing_key=n["retry_key"])
 
-    # 死信队列：没有自动入口，靠 consumer 数够 x-death 次数后手动转发进来
-    dead_letter_queue = await channel.declare_queue(n["dlq"], durable=True)
-    await dead_letter_queue.bind(dead_letter_exchange, routing_key=n["dead_key"])
+        # 超限后由 consumer 显式转发进对应的死信队列。
+        dead_letter_queue = await channel.declare_queue(n["dlq"], durable=True)
+        await dead_letter_queue.bind(dead_letter_exchange, routing_key=n["dead_key"])
 
-    return exchange, queue
+    return exchange, queues

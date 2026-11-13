@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-from typing import Literal
 from loguru import logger
 from minimemo.common.existFact import existFact
 from minimemo.common.memoryInfo import episodicMemoryInfo, memoryInfo, semanticMemoryInfo

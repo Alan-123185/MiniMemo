@@ -4,7 +4,7 @@ import aio_pika
 from loguru import logger
 from minimemo.config.data import settings
 from minimemo.mq import topology
-from minimemo.mq.topology import EPISODIC, names
+from minimemo.mq.topology import EPISODIC, SEMANTIC, names
 
 
 """
@@ -68,17 +68,24 @@ class eventPublisher:
         发一条情景抽取的触发信号
         source 只用于排障，区分这条消息是写入时发的还是扫描器补发的
         """
+        await self._publish_trigger(EPISODIC, {"agent_id": agent_id, "session_id": session_id}, source)
+
+    async def publish_semantic_trigger(self, agent_id: str, source: str = "scanner"):
+        """发一条跨会话的语义提炼触发信号，互斥和水位粒度均为 agent。"""
+        await self._publish_trigger(SEMANTIC, {"agent_id": agent_id}, source)
+
+    async def _publish_trigger(self, task: str, payload: dict[str, str], source: str):
         if self._exchange is None:
-            logger.warning(f"MQ 未连接，触发消息未发出，等待扫描器补发 agent_id={agent_id} session_id={session_id}")
+            logger.warning(f"MQ 未连接，触发消息未发出，等待扫描器补发 task={task} payload={payload}")
             return
         message = aio_pika.Message(
-            body=json.dumps({"agent_id": agent_id, "session_id": session_id}).encode("utf-8"),
+            body=json.dumps(payload).encode("utf-8"),
             delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
             content_type="application/json",
             headers={"source": source},
         )
         try:
-            await self._exchange.publish(message, routing_key=names(EPISODIC)["key"])
+            await self._exchange.publish(message, routing_key=names(task)["key"])
         except Exception as e:
             logger.warning(f"MQ 发布失败，不影响写入，等待扫描器补发: {e}")
 
