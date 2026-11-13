@@ -3,15 +3,15 @@ import sys
 import aio_pika
 import log  # noqa: F401  引入即完成日志配置，worker 的日志要落到和 API 同一个 logs 目录
 from loguru import logger
-from minimemo.config.data import settings
-from minimemo.config.modelConfig import set_pool
-from minimemo.db.session import create_session
-from minimemo.mq.consumer import on_episodic_message, on_semantic_message
-from minimemo.mq.publisher import get_publisher
-from minimemo.mq.topology import EPISODIC, SEMANTIC, names, setup_topology
-from minimemo.mq.watermark import get_ready_memory
-from minimemo.repository.agentRepository import agentRepository
-from minimemo.tools.backgroundTask import spawn
+from config.data import settings
+from config.modelConfig import set_pool
+from db.session import create_session
+from mq.consumer import on_episodic_message, on_semantic_message
+from mq.publisher import get_publisher
+from mq.topology import EPISODIC, SEMANTIC, names, setup_topology
+from mq.watermark import get_ready_memory
+from repository.agentRepository import agentRepository
+from tools.backgroundTask import spawn
 
 
 """

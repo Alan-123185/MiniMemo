@@ -1,13 +1,12 @@
-import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from minimemo.db.Base import init_tables
-from minimemo.db.session import engine
-from minimemo.mq.publisher import get_publisher
-from minimemo.router.agentRouter import router as agent_router
-from minimemo.router.modelRouter import router as model_router
-from minimemo.router.memoryRouter import router as memory_router
-from minimemo.router.sessionRouter import router as session_router
+from db.Base import init_tables
+from db.session import engine
+from mq.publisher import get_publisher
+from router.agentRouter import router as agent_router
+from router.modelRouter import router as model_router
+from router.memoryRouter import router as memory_router
+from router.sessionRouter import router as session_router
 import log
 
 
