@@ -5,7 +5,11 @@ from  common.requestSchema.storeRequest import originContentStoreRequest
 from  common.result import Result
 from  service.dependencies import get_memory_service
 from repository.dependencies import get_agent_repo
-from router.dependencies import resolve_agent_id
+
+
+"""
+这个类暂时先不管
+"""
 
 router=APIRouter()
 

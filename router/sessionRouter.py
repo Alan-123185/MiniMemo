@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from common.result import Result
 from repository.dependencies import get_agent_repo, get_session_repo
-from router.dependencies import resolve_agent_id
 
 router = APIRouter()
 
@@ -12,6 +11,6 @@ async def register_session(agent_name: str, session_id: str, user_id: str,
     手动注册一个会话到指定智能体下
     会话id由调用方传入
     """
-    internal_agent_id = await resolve_agent_id(user_id, agent_name, agent_rep)
+    internal_agent_id = await agent_rep.resolve_agent_id(user_id, agent_name)
     await session_rep.register_session(internal_agent_id, session_id)
     return Result.success()

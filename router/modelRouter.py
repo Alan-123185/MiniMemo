@@ -7,14 +7,14 @@ from  config import modelConfig
 router=APIRouter()
 
 @router.get("/MiniMemo/model/list")
-async def get_models():
+async def get_models(user_id: str):
     """
     获取所有可用的模型列表
     """
     return Result(response=modelConfig.get_pool())
 
 @router.post("/MiniMemo/model/set")
-async def set_model(payload: modelPool):
+async def set_model(user_id: str, payload: modelPool):
     """
     设置当前使用的模型
     """
