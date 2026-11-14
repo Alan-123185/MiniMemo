@@ -28,6 +28,8 @@ async def add_memory(store_request:originContentStoreRequest, user_id: str,
     )
     return Result.success()
 
+
+
 @router.post("/MiniMemo/memory/search")
 async def search_memory(search_request:searchRequest, user_id: str,
                         memory_service=Depends(get_memory_service), agent_rep=Depends(get_agent_repo)):

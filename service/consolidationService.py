@@ -62,6 +62,7 @@ class consolidationService:
             ret.append(f"[{index}] {memory.content}")
         return "\n".join(ret)
 
+
     @classmethod
     async def get_unarchive_session_by_agent(cls,agent_id:str) -> list[unarchiveSessionStatus]:
         """
@@ -207,8 +208,7 @@ class consolidationService:
         embedding_model = model.embedding
         try:
             need_process_content,id_map=await cls.sort_prompt_for_add_episodics(origin_content_list)
-            episodic_memory_list,truncate_from=await asyncio.to_thread(
-                modelService.to_episodic_memory,
+            episodic_memory_list,truncate_from=await modelService.to_episodic_memory(
                 origin_content=need_process_content,
                 model=chat_model,
             )
@@ -217,7 +217,7 @@ class consolidationService:
 
             #处理相似记忆               长耗时
             for memory in episodic_memory_list:
-                embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
+                embedding=await modelService.embedding(memory["content"], embedding_model)
                 memory["embedding"]=embedding
                 memory["embedding_model"]=embedding_model.model_name
             memory_info_list=[episodicMemoryInfo(content=memory["content"],
@@ -293,8 +293,7 @@ class consolidationService:
         embedding_model = model.embedding
         try:
             need_process_content=await cls.sort_prompt_for_add_semantics(episodic_memories_list)
-            semantic_memory_list=await asyncio.to_thread(
-                modelService.to_semantic_memory,
+            semantic_memory_list=await modelService.to_semantic_memory(
                 episodic_memories=need_process_content,
                 model=chat_model,
             )
@@ -303,7 +302,7 @@ class consolidationService:
 
             #处理相似记忆               长耗时
             for memory in semantic_memory_list:
-                embedding=await asyncio.to_thread(modelService.embedding,memory["content"],embedding_model)
+                embedding=await modelService.embedding(memory["content"], embedding_model)
                 memory["embedding"]=embedding
                 memory["embedding_model"]=embedding_model.model_name
             memory_info_list=[semanticMemoryInfo(content=memory["content"],
@@ -438,9 +437,8 @@ class consolidationService:
                 finally:
                     await session.close()                    # 连接已归还，模型等待不占连接
                     
-                # session 关闭后调模型，to_thread 不堵事件循环
-                pan_dict = await asyncio.to_thread(
-                    modelService.judge_similarity,
+                # session 关闭后调模型
+                pan_dict = await modelService.judge_similarity(
                     fact1=memo.content,
                     fact2=candidates,
                     model=chat_model,

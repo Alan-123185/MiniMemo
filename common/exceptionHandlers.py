@@ -1,12 +1,10 @@
 """FastAPI 请求异常处理，统一返回项目已有的 Result 格式。"""
-
 from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from loguru import logger
 from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse
-
 from common.exceptions import BusinessException
 from common.result import Result
 

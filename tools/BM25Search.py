@@ -1,3 +1,4 @@
+from common.bm25Result import bm25Result
 from config.data import settings
 from sqlalchemy import text
 
@@ -15,8 +16,11 @@ pdb.score 越大越相关
 原文、情景记忆、语义记忆都是 memory 的子类，
 内容都落在父表的 content 列上，所以这一个索引覆盖三者，
 检索结果需要按 memory_type 再分流的话，在调用方做
+
+
+用jieba分词器的全文检索，中文在库内切，查询串不用再自己分词，「|||」会自动拿同一个分词器处理
 """
-async def fts_search(engine, match_expr: str, k: int = settings.TOP_K) -> list:
+async def bm25_search(engine, match_expr: str, k: int = settings.TOP_K) -> list:
     sql = text("""
         SELECT m.id AS id, m.memory_type AS memory_type,
                pdb.score(m.id) AS score
@@ -26,4 +30,5 @@ async def fts_search(engine, match_expr: str, k: int = settings.TOP_K) -> list:
         LIMIT :k
     """)
     async with engine.connect() as conn:
-        return (await conn.execute(sql, {"m": match_expr, "k": k})).fetchall()
+        list=(await conn.execute(sql, {"m": match_expr, "k": k})).fetchall()
+        return [bm25Result(memory_id=l[0], memory_type=l[1], score=l[2]) for l in list]

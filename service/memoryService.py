@@ -100,33 +100,5 @@ class memoryService:
         return memory_list
 
 
-    async def search_origin_content(self, search_request:searchRequest, *, user_id: str) -> list:
-        """
-        检索原文
-        原文也是记忆，向量同样挂在 memory_vector 上，
-        所以召回路径和 search_memory 完全一样，
-        区别只是最后按 origin_content 这个子类去取
-        """
-        config = await self.user_repository.get_models(user_id)
-        model = modelPool(**config.model_dump(exclude_none=True))
-        embedding_model = model.embedding
-        question=await modelService.sort_question(search_request.query,model=model.chat)
-        memory_ids:list[str]=[]
-        seen:set[str]=set()
-        for q in question:
-            query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
-            vector_list=await self.embedding_repository.query_vectors(
-                agent_id=search_request.agent_name,
-                embedding_model=embedding_model.model_name,
-                query=query_embedding,
-                memory_type="origin",  # 限制搜索原文
-            )
-            for vector, _ in vector_list:
-                if vector.memory_id not in seen:
-                    seen.add(vector.memory_id)
-                    memory_ids.append(vector.memory_id)
-        content_list=await self.origin_content_repository.search_memory(memory_ids)
-        logger.info(f"检索出来的原文:{[content.content for content in content_list]}")
-        return content_list
 
 
