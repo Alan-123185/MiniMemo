@@ -5,7 +5,7 @@ from common.existFact import existFact
 from common.memoryInfo import episodicMemoryInfo, memoryInfo, semanticMemoryInfo
 from common.unarchiveSessionStatus import unarchiveAgentStatus, unarchiveSessionStatus
 from config.data import settings
-from config.modelConfig import get_pool
+from config.modelConfig import modelConfig, modelPool
 from db.session import create_session
 from models.memoryModel.episodicMemory import episodicMemory
 from models.memoryModel.origin_content import originContent
@@ -14,6 +14,7 @@ from repository.episodicMemoryRepository import episodicMemoryRepository
 from repository.memoryRepository import memoryRepository
 from repository.originContentRepository import originContentRepository
 from repository.semanticMemoryRepository import semanticMemoryRepository
+from repository.userRepository import userRepository
 from service.modelService import modelService
 from tools.backgroundTask import spawn
 from tools.numpyTool import cosine_similarity
@@ -189,10 +190,8 @@ class consolidationService:
         #计算待抽取的初始记忆列表
 
         session = create_session()
-        model=get_pool()
-        chat_model=model.chat
-        embedding_model=model.embedding
         try:
+            config = await userRepository(session).get_models_by_agent(agent_id)
             origin_repo = originContentRepository(session)
             origin_content_list=await origin_repo.fetch_unarchived_by_session(agent_id, session_id)
         finally:
@@ -203,6 +202,9 @@ class consolidationService:
 
 
         #调用模型先把这东西抽成情景记忆    长耗时
+        model = modelPool(**config.model_dump(exclude_none=True))
+        chat_model = model.chat
+        embedding_model = model.embedding
         try:
             need_process_content,id_map=await cls.sort_prompt_for_add_episodics(origin_content_list)
             episodic_memory_list,truncate_from=await asyncio.to_thread(
@@ -224,7 +226,7 @@ class consolidationService:
                                             embedding_model=memory["embedding_model"])
                                             for memory in episodic_memory_list]
             episodic_memory_list, similarity_decisions = await cls._process_similarity(
-                memory_info_list, agent_id, "episodic"
+                memory_info_list, agent_id, "episodic", chat_model=chat_model
             )
             return episodic_memory_list, similarity_decisions, archived_list,id_map
         except Exception as e:
@@ -273,10 +275,8 @@ class consolidationService:
         这个函数用于预处理agent的语义记忆提炼 不做任何数据库操作
         """
         session = create_session()
-        model=get_pool()
-        chat_model=model.chat
-        embedding_model=model.embedding
         try:
+            config = await userRepository(session).get_models_by_agent(agent_id)
             #先把需要提炼的情景记忆抽出来
             episodic_repo = episodicMemoryRepository(session)
             episodic_memories_list=await episodic_repo.fetch_unarchived_by_agent(agent_id)
@@ -288,6 +288,9 @@ class consolidationService:
 
 
         #调用模型先把这东西抽成语义记忆    长耗时
+        model = modelPool(**config.model_dump(exclude_none=True))
+        chat_model = model.chat
+        embedding_model = model.embedding
         try:
             need_process_content=await cls.sort_prompt_for_add_semantics(episodic_memories_list)
             semantic_memory_list=await asyncio.to_thread(
@@ -310,7 +313,7 @@ class consolidationService:
                                             embedding_model=memory["embedding_model"])
                                             for memory in semantic_memory_list]
             semantic_memory_list, similarity_decisions = await cls._process_similarity(
-                memory_info_list, agent_id, "semantic"
+                memory_info_list, agent_id, "semantic", chat_model=chat_model
             )
             return semantic_memory_list, similarity_decisions, archived_list  # type: ignore
         except Exception as e:
@@ -381,7 +384,7 @@ class consolidationService:
     
     @staticmethod
     async def _process_similarity[T: memoryInfo](
-        memories: list[T], agent_id: str, memory_type: str
+        memories: list[T], agent_id: str, memory_type: str, *, chat_model: modelConfig
     ) -> tuple[list[T], list[tuple[T, dict]]]:
 
         async def _process_one_memory(
@@ -440,7 +443,7 @@ class consolidationService:
                     modelService.judge_similarity,
                     fact1=memo.content,
                     fact2=candidates,
-                    model=get_pool().chat,
+                    model=chat_model,
                 )
                 return (index, "JUDGED", pan_dict)
 

@@ -16,6 +16,7 @@ from router.agentRouter import router as agent_router
 from router.modelRouter import router as model_router
 from router.memoryRouter import router as memory_router
 from router.sessionRouter import router as session_router
+from router.userRouter import router as user_router
 import log
 
 
@@ -40,6 +41,7 @@ app.include_router(model_router)
 app.include_router(agent_router)
 app.include_router(memory_router)
 app.include_router(session_router)
+app.include_router(user_router)
 
 @app.get("/MiniMemo/hello")
 async def hello():

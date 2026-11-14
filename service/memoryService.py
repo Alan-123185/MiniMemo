@@ -3,7 +3,7 @@ from loguru import logger
 from common.memoryInfo import originContentMemoryInfo
 from  common.requestSchema.searchRequest import searchRequest
 from common.requestSchema.storeRequest import originContentStoreRequest
-from  config.modelConfig import get_pool
+from config.modelConfig import modelPool
 from models.memoryModel.memory import Memory
 from mq.publisher import get_publisher
 from prompt.memoryPromptHEAD import MEMORY_PROMPT_HEAD
@@ -11,27 +11,37 @@ from  repository.embeddingRepository import embeddingRepository
 from repository.episodicMemoryRepository import episodicMemoryRepository
 from  repository.originContentRepository import originContentRepository
 from repository.semanticMemoryRepository import semanticMemoryRepository
+from repository.userRepository import userRepository
 from  service.modelService import modelService
 from tools.backgroundTask import spawn
 
 
 class memoryService:
 
-    def __init__(self, semantic_memory_repository:semanticMemoryRepository,episodic_memory_repository:episodicMemoryRepository, embedding_repository: embeddingRepository, origin_content_repository: originContentRepository):
+    def __init__(
+        self,
+        semantic_memory_repository: semanticMemoryRepository,
+        episodic_memory_repository: episodicMemoryRepository,
+        embedding_repository: embeddingRepository,
+        origin_content_repository: originContentRepository,
+        user_repository: userRepository,
+    ):
         self.semantic_memory_repository = semantic_memory_repository
         self.episodic_memory_repository = episodic_memory_repository
         self.origin_content_repository = origin_content_repository
         self.embedding_repository = embedding_repository
+        self.user_repository = user_repository
 
 
     """
     添加第一层记忆  原始内容
     """
-    async def add_origin_content(self, store_request: originContentStoreRequest):
+    async def add_origin_content(self, store_request: originContentStoreRequest, *, user_id: str):
         """
         为指定的智能体添加原始内容，非常简陋
         """
-        model=get_pool()
+        config = await self.user_repository.get_models(user_id)
+        model = modelPool(**config.model_dump(exclude_none=True))
         embedding_model=model.embedding
         embedding=await asyncio.to_thread(modelService.embedding,store_request.origin_content,embedding_model)
         memory=originContentMemoryInfo(
@@ -57,11 +67,12 @@ class memoryService:
     这是记忆召回最终直接调用的函数
        情景记忆、语义记忆分别做向量与关键词召回，统一融合后，再判断哪些记忆真正有助于回答当前问题。
     """
-    async def search_memory(self, search_request:searchRequest) -> list[Memory]:
+    async def search_memory(self, search_request:searchRequest, *, user_id: str) -> list[Memory]:
         """
         搜索指定智能体的记忆
         """
-        model=get_pool()
+        config = await self.user_repository.get_models(user_id)
+        model = modelPool(**config.model_dump(exclude_none=True))
         embedding_model = model.embedding
         question=await modelService.sort_question(search_request.query,model=model.chat)
         """
@@ -89,14 +100,15 @@ class memoryService:
         return memory_list
 
 
-    async def search_origin_content(self, search_request:searchRequest) -> list:
+    async def search_origin_content(self, search_request:searchRequest, *, user_id: str) -> list:
         """
         检索原文
         原文也是记忆，向量同样挂在 memory_vector 上，
         所以召回路径和 search_memory 完全一样，
         区别只是最后按 origin_content 这个子类去取
         """
-        model=get_pool()
+        config = await self.user_repository.get_models(user_id)
+        model = modelPool(**config.model_dump(exclude_none=True))
         embedding_model = model.embedding
         question=await modelService.sort_question(search_request.query,model=model.chat)
         memory_ids:list[str]=[]

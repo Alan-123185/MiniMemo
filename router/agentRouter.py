@@ -12,6 +12,7 @@ async def get_agents(user_id: str, agent_rep=Depends(get_agent_repo)):
     agent_list = await agent_rep.get_agents(user_id)
     return Result(response=[agent.agent_name for agent in agent_list])
 
+
 @router.post("/MiniMemo/agent/register/{user_id}/{agent_name}")
 async def register_agent(agent_name: str, user_id: str, agent_rep=Depends(get_agent_repo)):
     """

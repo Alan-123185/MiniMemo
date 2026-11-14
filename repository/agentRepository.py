@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from common.exceptions import NotFoundException
 from  models.agent import Agent
 from models.session import Session as SessionModel
@@ -36,11 +35,14 @@ class agentRepository:
 
     async def get_agent(self, agent_name: str, user_id: str) -> Agent | None:
         """按所属用户与对外名称查找 Agent。"""
-        return (
+        agent= (
             await self.session.execute(
                 select(Agent).filter_by(user_id=user_id, agent_name=agent_name)
             )
         ).scalars().first()
+        if not agent:
+            raise NotFoundException(f"Agent not found for user_id={user_id}, agent_name={agent_name}")
+        
 
 
 
@@ -54,10 +56,4 @@ class agentRepository:
         return (await self.session.execute(query)).scalars().all()
 
 
-    async def resolve_agent_id(self, user_id: str, agent_name: str) -> str:
-        """将用户下的对外 Agent 名称解析为业务内部使用的主键。"""
-        agent = await self.get_agent(agent_name, user_id)
-        if agent is None:
-            raise NotFoundException(f"Agent not found for user_id={user_id}, agent_name={agent_name}")
-        return agent.id
 

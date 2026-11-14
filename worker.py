@@ -4,7 +4,6 @@ import aio_pika
 import log  # noqa: F401  引入即完成日志配置，worker 的日志要落到和 API 同一个 logs 目录
 from loguru import logger
 from config.data import settings
-from config.modelConfig import set_pool
 from db.session import create_session
 from mq.consumer import on_episodic_message, on_semantic_message
 from mq.publisher import get_publisher
@@ -63,9 +62,6 @@ async def run_scanner(stop: asyncio.Event):
 
 
 async def main():
-    # 抽取要用大模型，模型池必须先就位，否则 get_pool() 会直接抛 RuntimeError
-    set_pool()
-
     connection = await aio_pika.connect_robust(
         host=settings.MQ_HOST,
         port=settings.MQ_PORT,

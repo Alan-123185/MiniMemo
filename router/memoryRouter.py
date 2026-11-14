@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from common.exceptions import NotFoundException
 from  common.requestSchema.searchRequest import searchRequest
 from  common.requestSchema.storeRequest import originContentStoreRequest
 from  common.result import Result
@@ -19,9 +20,11 @@ async def add_memory(store_request:originContentStoreRequest, user_id: str,
     """
     外部调用 只能指定添加初始内容记忆
     """
-    internal_agent_id = await resolve_agent_id(user_id, store_request.agent_name, agent_rep)
+    agent = await agent_rep.get_agent(agent_name=store_request.agent_name, user_id=user_id)
+    if agent is None:
+        raise NotFoundException("Agent 不存在")
     await memory_service.add_origin_content(
-        store_request.model_copy(update={"agent_name": internal_agent_id})
+        store_request.model_copy(update={"agent_name": agent.id}), user_id=user_id
     )
     return Result.success()
 
@@ -31,9 +34,11 @@ async def search_memory(search_request:searchRequest, user_id: str,
     """
     搜索指定智能体的记忆
     """
-    internal_agent_id = await resolve_agent_id(user_id, search_request.agent_name, agent_rep)
+    agent = await agent_rep.get_agent(agent_name=search_request.agent_name, user_id=user_id)
+    if agent is None:
+        raise NotFoundException("Agent 不存在")
     memories=await memory_service.search_memory(
-        search_request.model_copy(update={"agent_name": internal_agent_id})
+        search_request.model_copy(update={"agent_name": agent.id}), user_id=user_id
     )
     return Result(response=[{"id": memory.id, "content": memory.content} for memory in memories])
 
