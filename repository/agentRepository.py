@@ -42,6 +42,7 @@ class agentRepository:
         ).scalars().first()
         if not agent:
             raise NotFoundException(f"Agent not found for user_id={user_id}, agent_name={agent_name}")
+        return agent
         
 
 
