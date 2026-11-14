@@ -46,6 +46,9 @@ class embeddingRepository:
         )).all()
         return [(vector, 1.0 - dist) for vector, dist in rows]
 
+
+
+
     async def get_all_vectors(self, embedding_model: str) -> Sequence[memoryVector]:
         """
         获取指定模型下的所有向量

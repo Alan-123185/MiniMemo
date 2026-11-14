@@ -9,6 +9,7 @@ from repository.dependencies import get_agent_repo
 
 
 """
+11.14
 这个类暂时先不管
 """
 
@@ -31,7 +32,7 @@ async def add_memory(store_request:originContentStoreRequest, user_id: str,
 
 
 @router.post("/MiniMemo/memory/search")
-async def search_memory(search_request:searchRequest, user_id: str,
+async def search_memory(search_request:searchRequest,
                         memory_service=Depends(get_memory_service), agent_rep=Depends(get_agent_repo)):
     """
     搜索指定智能体的记忆
