@@ -27,3 +27,5 @@ alembic/
 minimemo.egg-info/
 test/
 testdatas/
+tests/
+docs/

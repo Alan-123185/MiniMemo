@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class storeRequest(BaseModel):
-    agent_id:str
+    agent_name: str
     origin_content:str
 
 class episodeStoreRequest(storeRequest):

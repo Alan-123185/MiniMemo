@@ -8,6 +8,11 @@ from  repository.episodicMemoryRepository import episodicMemoryRepository
 from  repository.originContentRepository import originContentRepository
 from  repository.semanticMemoryRepository import semanticMemoryRepository
 from repository.sessionRepository import sessionRepository
+from repository.userRepository import userRepository
+
+
+def get_user_repo(session: AsyncSession = Depends(get_session)) -> userRepository:
+    return userRepository(session)
 
 
 def get_agent_repo(session: AsyncSession = Depends(get_session)) -> agentRepository:

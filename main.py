@@ -1,5 +1,14 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException
+from common.exceptions import BusinessException
+from common.exceptionHandlers import (
+    business_exception_handler,
+    http_exception_handler,
+    validation_exception_handler,
+    unhandled_exception_handler,
+)
 from db.Base import init_tables
 from db.session import engine
 from mq.publisher import get_publisher
@@ -7,6 +16,7 @@ from router.agentRouter import router as agent_router
 from router.modelRouter import router as model_router
 from router.memoryRouter import router as memory_router
 from router.sessionRouter import router as session_router
+from router.userRouter import router as user_router
 import log
 
 
@@ -22,10 +32,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.add_exception_handler(BusinessException, business_exception_handler) # type: ignore
+app.add_exception_handler(HTTPException, http_exception_handler) # type: ignore
+app.add_exception_handler(RequestValidationError, validation_exception_handler) # type: ignore
+app.add_exception_handler(Exception, unhandled_exception_handler)
+
 app.include_router(model_router)
 app.include_router(agent_router)
 app.include_router(memory_router)
 app.include_router(session_router)
+app.include_router(user_router)
 
 @app.get("/MiniMemo/hello")
 async def hello():
