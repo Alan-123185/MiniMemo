@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends
+
 from common.result import Result
 from repository.dependencies import get_agent_repo
 
 router = APIRouter()
+
 
 @router.get("/MiniMemo/agent/list/{user_id}")
 async def get_agents(user_id: str, agent_rep=Depends(get_agent_repo)):
