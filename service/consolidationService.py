@@ -16,8 +16,6 @@ from repository.originContentRepository import originContentRepository
 from repository.semanticMemoryRepository import semanticMemoryRepository
 from repository.userRepository import userRepository
 from service.modelService import modelService
-from tools.backgroundTask import spawn
-from tools.numpyTool import cosine_similarity
 from tools.sessionLock import try_agent_lock, try_session_lock
 
 

@@ -5,15 +5,12 @@ from  common.requestSchema.searchRequest import searchRequest
 from common.requestSchema.storeRequest import originContentStoreRequest
 from config.modelConfig import modelPool
 from models.memoryModel.memory import Memory
-from mq.publisher import get_publisher
-from prompt.memoryPromptHEAD import MEMORY_PROMPT_HEAD
 from  repository.embeddingRepository import embeddingRepository
 from repository.episodicMemoryRepository import episodicMemoryRepository
 from  repository.originContentRepository import originContentRepository
 from repository.semanticMemoryRepository import semanticMemoryRepository
 from repository.userRepository import userRepository
 from  service.modelService import modelService
-from tools.backgroundTask import spawn
 
 
 class memoryService:
@@ -36,10 +33,11 @@ class memoryService:
     """
     添加第一层记忆  原始内容
     """
-    async def add_origin_content(self, store_request: originContentStoreRequest, *, user_id: str):
+    async def add_origin_content(self, store_request: originContentStoreRequest):
         """
         为指定的智能体添加原始内容，非常简陋
         """
+        user_id = store_request.user_id
         config = await self.user_repository.get_models(user_id)
         model = modelPool(**config.model_dump(exclude_none=True))
         embedding_model=model.embedding

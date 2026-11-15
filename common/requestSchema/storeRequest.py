@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class storeRequest(BaseModel):
     agent_name: str
     origin_content:str
+    user_id:str
 
 class episodeStoreRequest(storeRequest):
     """

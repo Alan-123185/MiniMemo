@@ -1,5 +1,4 @@
 import asyncio
-import sys
 import aio_pika
 import log  # noqa: F401  引入即完成日志配置，worker 的日志要落到和 API 同一个 logs 目录
 from loguru import logger
