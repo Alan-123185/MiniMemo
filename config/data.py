@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     SIMILARITY_THRESHOLD:float=0.85  #相似度阈值，超过该阈值的记忆将被认为是重复的
 
-    TOP_K:int=5    #搜索记忆时的最大返回条数
+    TOP_K:int=50    #搜索记忆时的最大返回条数
 
     # BM25 参数，写进索引 DDL，改了必须重建索引才生效，不是查询时参数
     BM25_K1:float=1.2   #词频饱和
@@ -56,6 +56,8 @@ class Settings(BaseSettings):
 
     MQ_USER:str="MiniMemo"
 
+    RRF_K:int=60   #RRF 融合算法的 k 参数，越大越偏向于多路检索结果的融合，越小越偏向于单路检索结果的排序
+
     MQ_PASSWORD:str=""   #敏感项，默认空，在 .env 里填
 
     MQ_PREFETCH:int=10   #不能调大：抽取互斥锁是进程内的，prefetch=1 才能保证同一会话不被并发抽两遍
@@ -68,6 +70,6 @@ class Settings(BaseSettings):
 
     MAX_SIM_CONCURRENCY :int=5   #相似度判断的最大并发数，过大容易打爆大模型
     
-    negative_words:list[str]=["不", "没", "无", "别", "勿", "非", "未", "莫", "甭", "不要", "没有"]  #负面词汇列表，用于过滤记忆中的负面内容
+    #negative_words:list[str]=["不", "没", "无", "别", "勿", "非", "未", "莫", "甭", "不要", "没有"]  #负面词汇列表，用于过滤记忆中的负面内容
 
 settings = Settings() # type: ignore

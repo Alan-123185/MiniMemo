@@ -9,6 +9,8 @@ from repository.userRepository import userRepository
 from service.modelService import modelService
 from tools.BM25Search import bm25_search
 from db.session import engine
+from config.data import settings
+from tools.RRFFuse import rrf_fuse
 
 
 
@@ -47,15 +49,38 @@ class searchService:
             query=query_embedding,
             memory_type=mode,     # 限制搜索原文 # type: ignore
         )
-        seen=set()
+        seen={}
         for vector, _ in vector_list:
-            seen.add(vector.memory_id)
+            seen[vector.memory_id]=None
         return list(seen)
 
     
-    async def search_memory(self, search_request:searchRequest) -> list[str]:
+    # async def search_memory(self, search_request:searchRequest) -> list[str]:
+    #     """
+    #     11.15
+    #     搜索指定智能体的记忆  还没有加过期处理
+    #     """
+    #     user_id=search_request.user_id
+    #     config = await self.user_repository.get_models(user_id)
+    #     model = modelPool(**config.model_dump(exclude_none=True))
+    #     embedding_model=model.embedding
+    #     query_embedding=await modelService.embedding(search_request.query,embedding_model)
+    #     # 1. bm25 检索原始输入
+    #     bm25_memory_ids=await self._search_bm25(search_request)
+    #     # 2. 向量检索原文、情景记忆、语义记忆
+    #     origin_memory_ids=await self._search_memory_L1(search_request,query_embedding,"origin")
+    #     episodic_memory_ids=await self._search_memory_L1(search_request,query_embedding,"episodic")
+    #     semantic_memory_ids=await self._search_memory_L1(search_request,query_embedding,"semantic")
+    #     # 3. 融合结果
+    #     memory_ids=list(set(bm25_memory_ids+origin_memory_ids+episodic_memory_ids+semantic_memory_ids))
+    #     return memory_ids
+
+
+
+    async def pre_ranking(self, search_request:searchRequest,memory_ids:list[str]) -> list[str]:
         """
-        搜索指定智能体的记忆
+        11.15
+        对召回的记忆进行预排序  目前是直接用向量相似度排序
         """
         user_id=search_request.user_id
         config = await self.user_repository.get_models(user_id)
@@ -69,14 +94,16 @@ class searchService:
         episodic_memory_ids=await self._search_memory_L1(search_request,query_embedding,"episodic")
         semantic_memory_ids=await self._search_memory_L1(search_request,query_embedding,"semantic")
         # 3. 融合结果
-        memory_ids=list(set(bm25_memory_ids+origin_memory_ids+episodic_memory_ids+semantic_memory_ids))
+        rrf_fuse(
+            ranked_lists=[bm25_memory_ids,origin_memory_ids,episodic_memory_ids,semantic_memory_ids],
+            k=settings.RRF_K,
+            top_n=len(memory_ids)
+        )
+        
         return memory_ids
 
 
-
     
-
-
 
 
 
