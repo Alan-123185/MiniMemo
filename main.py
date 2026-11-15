@@ -17,6 +17,7 @@ from router.modelRouter import router as model_router
 from router.memoryRouter import router as memory_router
 from router.sessionRouter import router as session_router
 from router.userRouter import router as user_router
+from router.consolidationRouter import router as console_router
 import log
 
 
@@ -42,7 +43,7 @@ app.include_router(agent_router)
 app.include_router(memory_router)
 app.include_router(session_router)
 app.include_router(user_router)
-
+app.include_router(console_router)
 @app.get("/MiniMemo/hello")
 async def hello():
     return {"message": "Hello, World!"}
@@ -58,7 +59,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="127.0.0.1",
-        port=8000,
+        port=1314,
         log_level="info",
         reload=True,
         loop=loop,

@@ -5,6 +5,7 @@ from  db.session import get_session
 from  repository.agentRepository import agentRepository
 from  repository.embeddingRepository import embeddingRepository
 from  repository.episodicMemoryRepository import episodicMemoryRepository
+from repository.memoryRepository import memoryRepository
 from  repository.originContentRepository import originContentRepository
 from  repository.semanticMemoryRepository import semanticMemoryRepository
 from repository.sessionRepository import sessionRepository
@@ -43,3 +44,7 @@ def get_semantic_memory_repo(
     session: AsyncSession = Depends(get_session),
 ) -> semanticMemoryRepository:
     return semanticMemoryRepository(session)
+
+
+def get_memory_repo(session: AsyncSession = Depends(get_session)) -> memoryRepository:
+    return memoryRepository(session)
