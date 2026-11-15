@@ -12,9 +12,8 @@ from  prompt.similarityJudgePrompt import similarity_judge_prompt
 from  tools.processJSON import json_to_dict
 
 
+
 class modelService:
-
-
 
     @staticmethod
     async def to_episodic_memory(origin_content:str,model:modelConfig) -> tuple[list, int]:
