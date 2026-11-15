@@ -13,6 +13,7 @@ from repository.originContentRepository import originContentRepository
 from repository.semanticMemoryRepository import semanticMemoryRepository
 from repository.userRepository import userRepository
 from  service.memoryService import memoryService
+from service.searchService import searchService
 
 
 def get_memory_service(
@@ -29,6 +30,31 @@ def get_memory_service(
     user_repository: userRepository = Depends(get_user_repo),
 ) -> memoryService:
     return memoryService(
+        semantic_memory_repository=semantic_memory_repository,
+        episodic_memory_repository=episodic_memory_repository,
+        origin_content_repository=origin_content_repository,
+        embedding_repository=embedding_repository,
+        user_repository=user_repository,
+    )
+
+
+
+
+
+def get_search_service(
+    embedding_repository: embeddingRepository = Depends(get_embedding_repo),
+    episodic_memory_repository: episodicMemoryRepository = Depends(
+        get_episodic_memory_repo
+    ),
+    semantic_memory_repository: semanticMemoryRepository = Depends(
+        get_semantic_memory_repo
+    ),
+    origin_content_repository: originContentRepository = Depends(
+        get_origin_content_repo
+    ),
+    user_repository: userRepository = Depends(get_user_repo),
+) -> searchService:
+    return searchService(
         semantic_memory_repository=semantic_memory_repository,
         episodic_memory_repository=episodic_memory_repository,
         origin_content_repository=origin_content_repository,

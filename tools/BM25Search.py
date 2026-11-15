@@ -20,15 +20,15 @@ pdb.score 越大越相关
 
 用jieba分词器的全文检索，中文在库内切，查询串不用再自己分词，「|||」会自动拿同一个分词器处理
 """
-async def bm25_search(engine, match_expr: str, k: int = settings.TOP_K) -> list:
+async def bm25_search(engine, match_expr: str, agent_id: str, k: int = settings.TOP_K) -> list:
     sql = text("""
         SELECT m.id AS id, m.memory_type AS memory_type,
                pdb.score(m.id) AS score
         FROM memory m
-        WHERE m.content ||| :m AND m.is_delete = false
+        WHERE m.content ||| :m AND m.is_delete = false AND m.agent_id = :agent_id
         ORDER BY score DESC
         LIMIT :k
     """)
     async with engine.connect() as conn:
-        list=(await conn.execute(sql, {"m": match_expr, "k": k})).fetchall()
+        list=(await conn.execute(sql, {"m": match_expr, "agent_id": agent_id, "k": k})).fetchall()
         return [bm25Result(memory_id=l[0], memory_type=l[1], score=l[2]) for l in list]

@@ -19,11 +19,18 @@ class embeddingRepository:
             self.session.add(memory_vector)
         await self.session.commit()
 
-    async def query_vectors(self, query: list[float], agent_id: str, embedding_model: str, memory_type: str | None = None) -> list[tuple[memoryVector, float]]:
+    async def query_vectors(
+        self,
+        query: list[float],
+        agent_id: str,
+        embedding_model: str,
+        memory_type: str | None = None,
+    ) -> list[tuple[memoryVector, float]]:
         """
-        查询指定内容相似度最高的前 top_k 条向量，按相似度从高到低排序
+        查询相似度不低于阈值的前 top_k 条向量，按相似度从高到低排序
         memory_type 是 memory 表上的鉴别器取值，传了就只在同等级的记忆之间比较，
         不传则不加限制，检索时用（要同时召回情景与语义两路）
+        similarity_threshold 是余弦相似度下限，低于该值的结果不会返回
 
         embedding 是 vector 列，用 pgvector 的余弦距离在库里排序取前 k，
         不再把整个 agent 的向量全拉回内存算
@@ -40,7 +47,10 @@ class embeddingRepository:
         )
         if memory_type is not None:
             vector_query = vector_query.where(Memory.memory_type == memory_type)
-        # cosine_distance 就是 <=>，值越小越相似，与相似度方向相反，所以升序
+        # cosine_distance 就是 <=>，相似度 = 1 - distance，值越小越相似。
+        vector_query = vector_query.where(
+            distance <= 1.0 -settings.SIMILARITY_THRESHOLD
+        )
         rows = (await self.session.execute(
             vector_query.order_by(distance).limit(settings.TOP_K)
         )).all()
