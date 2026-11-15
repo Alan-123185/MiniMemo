@@ -10,7 +10,8 @@ from service.dependencies import get_memory_service
 router = APIRouter()
 
 
-@router.post("/MiniMemo/consolidation/add_episodic_memory/{agent_name}/session/{session_id}")
+
+@router.post("/MiniMemo/consolidation/add_episodic_memory/user/{user_id}/agent/{agent_name}/session/{session_id}")
 async def episodic_memory_consolidation(agent_name: str,session_id: str, user_id: str,
                                        agent_rep=Depends(get_agent_repo)):
     """
@@ -20,7 +21,7 @@ async def episodic_memory_consolidation(agent_name: str,session_id: str, user_id
     await consolidationService.consolidate_episodics(internal_agent_id, session_id)
     return Result.success()
 
-@router.post("/MiniMemo/consolidation/add_semantinc_memory/{agent_name}")
+@router.post("/MiniMemo/consolidation/add_semantinc_memory/user/{user_id}/agent/{agent_name}")
 async def semantic_memory_consolidation(agent_name: str, user_id: str, agent_rep=Depends(get_agent_repo)):
     """
     调用接口主动触发语义记忆抽取

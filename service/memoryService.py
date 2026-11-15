@@ -41,7 +41,7 @@ class memoryService:
         config = await self.user_repository.get_models(user_id)
         model = modelPool(**config.model_dump(exclude_none=True))
         embedding_model=model.embedding
-        embedding=await asyncio.to_thread(modelService.embedding,store_request.origin_content,embedding_model)
+        embedding=await modelService.embedding(store_request.origin_content,embedding_model)
         memory=originContentMemoryInfo(
             content=store_request.origin_content,
             embedding=embedding,
@@ -81,7 +81,7 @@ class memoryService:
         memory_ids:list[str]=[]
         seen:set[str]=set()
         for q in question:
-            query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
+            query_embedding=await modelService.embedding(q,embedding_model)
             vector_list=await self.embedding_repository.query_vectors(
                 agent_id=search_request.agent_name,
                 embedding_model=embedding_model.model_name,query=query_embedding)
