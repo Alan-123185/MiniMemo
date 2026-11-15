@@ -16,7 +16,7 @@ class memoryInfo(BaseModel):
 
 
 class episodicMemoryInfo(memoryInfo):
-    origin_content_id: Optional[list[str]] = None
+    origin_content_id: list[int] | None = None
 
 
 
