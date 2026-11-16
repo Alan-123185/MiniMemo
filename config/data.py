@@ -42,8 +42,6 @@ class Settings(BaseSettings):
 
     MAX_UNARCHIVED_TIME_SEMANTIC:int=60*60  #一个agent未归档的语义记忆最大时间，超过该时间将触发自动归档
 
-    EPISODIC_CONSOLIDATION_INTERVAL:int=60*5  #情景记忆归档的时间间隔，单位秒
-
     getMemoryMode: ClassVar[Literal["episodic", "semantic"]] = "episodic"
     
     # ---------- RabbitMQ 触发链 ----------

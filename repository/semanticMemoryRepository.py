@@ -21,7 +21,6 @@ class semanticMemoryRepository(memoryRepository[semanticMemoryInfo]):
         self,
         memories: list[semanticMemoryInfo],  #多态访问 到时候传入semanticMemoryInfo
         agent_id: str,
-        origin_content_id: str | None = None,
         commit: bool = True,
     ) -> None:
         """

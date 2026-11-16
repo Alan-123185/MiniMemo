@@ -75,18 +75,15 @@ class originContentRepository(memoryRepository[originContentMemoryInfo]):
 
 
 
-    async def fetch_unarchived_by_session(self, agent_id: str, session_id: str, limit: int | None = None) -> list[originContent]:
+    async def fetch_unarchived_by_session(self, agent_id: str, session_id: str) -> list[originContent]:
         """
-        这个方法和上面的不一样，提供了会话id，可以灵活的按照会话取未归档原文
-        limit=None 时不限量，供显式归档整段会话用
+        按会话取未归档原文，按创建时间升序排列。
         """
         query = select(originContent).where(
             originContent.agent_id == agent_id,
             originContent.session == session_id,
             *self._unarchived_conditions,
         ).order_by(originContent.create_time.asc())
-        if limit is not None:
-            query = query.limit(limit)
         return (await self.session.execute(query)).scalars().all()
 
 
