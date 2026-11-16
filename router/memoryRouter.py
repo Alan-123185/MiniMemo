@@ -37,6 +37,10 @@ async def search_memory(search_request:searchRequest,
     """
     搜索指定智能体的记忆
     """
+    agent = await agent_rep.get_agent(agent_name=search_request.agent_id, user_id=search_request.user_id)
+    if agent is None:
+        raise NotFoundException("Agent 不存在")
+    search_request.agent_id=agent.id
     result=await search_service.search_memory(search_request)
     return Result(response=result)
 

@@ -2,17 +2,23 @@ from pydantic import BaseModel
 
 
 class searchRequest(BaseModel):
-    agent_id: str
     query: str #单个关键语句
     user_id: str
+    agent_id:str  #注意 这个地方传进来应该是agent_name 但是在service里会被替换成agent_id
 
-class searchEpisodesRequest(searchRequest):
-    agent_id: str
-    query: str
 
-class searchSemanticsRequest(searchRequest):
-    agent_id: str
-    query: str
+
+
+
+
+#
+# class searchEpisodesRequest(searchRequest):
+#     agent_id: str
+#     query: str
+#
+# class searchSemanticsRequest(searchRequest):
+#     agent_id: str
+#     query: str
 
 
 

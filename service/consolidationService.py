@@ -412,6 +412,7 @@ class consolidationService:
                         agent_id=agent_id,
                         embedding_model=memo.embedding_model,
                         query=memo.embedding,
+                        similarity_threshold=settings.SIMILARITY_THRESHOLD,
                         memory_type=memory_type,
                     )
 

@@ -22,7 +22,12 @@ class Settings(BaseSettings):
     MAX_RETRY_TIMES:int=3   #大模型请求失败最大重试次数
 
 
-    SIMILARITY_THRESHOLD:float=0.85  #相似度阈值，超过该阈值的记忆将被认为是重复的
+    SIMILARITY_THRESHOLD:float=0.85  #入库判重阈值，超过该阈值的记忆将被认为是重复的，要送模型复核
+
+    # 检索召回下限，和上面的判重阈值分开：判重宁可漏判也要高，
+    # 召回宁可带噪声也要低，两者共用一个值会让向量路几乎召不回任何东西
+    # 这个 embedding 空间的相似度尺度整体在 0.6~0.8，取 0.7 时每题约十几条候选
+    RECALL_SIMILARITY_THRESHOLD:float=0.7
 
     TOP_K:int=50    #搜索记忆时的最大返回条数
 

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class storeRequest(BaseModel):
-    agent_name: str
+    agent_id: str    #注意：进来是agent_name，经过路由层转换成agent_id
     origin_content:str
     user_id:str
 

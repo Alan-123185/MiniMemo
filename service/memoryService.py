@@ -4,6 +4,7 @@ from common.memoryInfo import originContentMemoryInfo
 from  common.requestSchema.searchRequest import searchRequest
 from common.requestSchema.storeRequest import originContentStoreRequest
 from config.modelConfig import modelPool
+from config.data import settings
 from models.memoryModel.memory import Memory
 from  repository.embeddingRepository import embeddingRepository
 from repository.episodicMemoryRepository import episodicMemoryRepository
@@ -83,8 +84,9 @@ class memoryService:
         for q in question:
             query_embedding=await modelService.embedding(q,embedding_model)
             vector_list=await self.embedding_repository.query_vectors(
-                agent_id=search_request.agent_name,
-                embedding_model=embedding_model.model_name,query=query_embedding)
+                agent_id=search_request.agent_id,
+                embedding_model=embedding_model.model_name,query=query_embedding,
+                similarity_threshold=settings.RECALL_SIMILARITY_THRESHOLD)
             for vector, _ in vector_list:
                 if vector.memory_id not in seen:
                     seen.add(vector.memory_id)
