@@ -26,10 +26,15 @@ class Settings(BaseSettings):
 
     # 检索召回下限，和上面的判重阈值分开：判重宁可漏判也要高，
     # 召回宁可带噪声也要低，两者共用一个值会让向量路几乎召不回任何东西
-    # 这个 embedding 空间的相似度尺度整体在 0.6~0.8，取 0.7 时每题约十几条候选
-    RECALL_SIMILARITY_THRESHOLD:float=0.7
+    # 这个 embedding 空间的相似度尺度整体在 0.6~0.8，取 0.65 时每题约十几条候选
+    RECALL_SIMILARITY_THRESHOLD:float=0.65
 
     TOP_K:int=50    #搜索记忆时的最大返回条数
+
+    # BM25 召回候选数上限，和 TOP_K 分开：RRF 假设各路输入规模相当，排序才有可比性。
+    # BM25 用 ||| 任意词命中，语料小的时候很容易一路满候选把 RRF 压成自己一家的排序，
+    # 三路向量按阈值筛完只剩个位数，输入差一个量级，等权融合就失衡了
+    BM25_CANDIDATE_LIMIT:int=15
 
     # BM25 参数，写进索引 DDL，改了必须重建索引才生效，不是查询时参数
     BM25_K1:float=1.2   #词频饱和
@@ -59,7 +64,6 @@ class Settings(BaseSettings):
 
     MQ_USER:str="MiniMemo"
 
-    RRF_K:int=60   #RRF 融合算法的 k 参数，越大越偏向于多路检索结果的融合，越小越偏向于单路检索结果的排序
 
     MQ_PASSWORD:str=""   #敏感项，默认空，在 .env 里填
 
@@ -72,6 +76,28 @@ class Settings(BaseSettings):
     MQ_SCAN_INTERVAL:int=60   #兜底扫描间隔，单位秒，必须远小于 MAX_UNARCHIVED_TIME
 
     MAX_SIM_CONCURRENCY :int=5   #相似度判断的最大并发数，过大容易打爆大模型
+
+
+
+
+
+
+    #RRF_FUSE工具的权重配置
+    RRF_K:int=60   #RRF 融合算法的 k 参数，越大越偏向于多路检索结果的融合，越小越偏向于单路检索结果的排序
+
+    RRF_ORIGINAL_WEIGHT:float=1.0   #原始输入的权重，越大越偏向于原始输入的排序，越小越偏向于多路检索结果的融合
+
+    RRF_EPISODIC_WEIGHT:float=1.0   #情景记忆的权重，越大越偏向于情景记忆的排序，越小越偏向于多路检索结果的融合
+
+    RRF_SEMANTIC_WEIGHT:float=1.0   #语义记忆的权重，越大越偏向于语义记忆的排序，越小越偏向于多路检索结果的融合
+
+    RRF_BM25_WEIGHT:float=1.0   #BM25的权重，越大越偏向于BM25的排序，越小越偏向于多路检索结果的融合
+
+
+
+
+
+
     
     #negative_words:list[str]=["不", "没", "无", "别", "勿", "非", "未", "莫", "甭", "不要", "没有"]  #负面词汇列表，用于过滤记忆中的负面内容
 

@@ -42,7 +42,6 @@ class searchService:
             agent_id=search_request.agent_id,
             embedding_model=embedding_model.model_name,
             query=query_embedding,
-            similarity_threshold=settings.RECALL_SIMILARITY_THRESHOLD,
             memory_type=mode,     # 限制搜索原文 # type: ignore
         )
         seen={}

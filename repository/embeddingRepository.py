@@ -24,7 +24,6 @@ class embeddingRepository:
         query: list[float],
         agent_id: str,
         embedding_model: str,
-        similarity_threshold: float,
         memory_type: str | None = None,
     ) -> list[tuple[memoryVector, float]]:
         """
@@ -52,7 +51,7 @@ class embeddingRepository:
             vector_query = vector_query.where(Memory.memory_type == memory_type)
         # cosine_distance 就是 <=>，相似度 = 1 - distance，值越小越相似。
         vector_query = vector_query.where(
-            distance <= 1.0 - similarity_threshold
+            distance <= 1.0 - settings.RECALL_SIMILARITY_THRESHOLD
         )
         rows = (await self.session.execute(
             vector_query.order_by(distance).limit(settings.TOP_K)
