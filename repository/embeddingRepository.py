@@ -7,6 +7,14 @@ from  models.memoryModel.memory import Memory
 from  models.memoryVector import memoryVector
 
 
+# 召回阈值按记忆类型分流，调用方不传 similarity_threshold 时用这张表
+_RECALL_THRESHOLD = {
+    "origin": settings.RECALL_SIMILARITY_THRESHOLD_ORIGIN,
+    "episodic": settings.RECALL_SIMILARITY_THRESHOLD_EPISODIC,
+    "semantic": settings.RECALL_SIMILARITY_THRESHOLD_SEMANTIC,
+}
+
+
 class embeddingRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -25,14 +33,17 @@ class embeddingRepository:
         agent_id: str,
         embedding_model: str,
         memory_type: str | None = None,
+        similarity_threshold: float | None = None,
     ) -> list[tuple[memoryVector, float]]:
         """
         查询相似度不低于阈值的前 top_k 条向量，按相似度从高到低排序
         memory_type 是 memory 表上的鉴别器取值，传了就只在同等级的记忆之间比较，
         不传则不加限制，检索时用（要同时召回情景与语义两路）
         similarity_threshold 是余弦相似度下限，低于该值的结果不会返回。
-        这个值由调用方给定：判重要高（要挡住语义重复的条目），
-        召回要低（要放进来足够多的候选），两者不是一个数量级，不能共用
+        不传就按 memory_type 取召回阈值（三路分开配，见 config/data.py 的
+        RECALL_SIMILARITY_THRESHOLD_*）：召回时传进来的 query 是一句没针对性的
+        问句，和三类记忆的长度尺度差得远，得按类型分别放行；判重时传进来的是
+        同层级记忆自己的向量，两边同一个尺度，那里显式传 SIMILARITY_THRESHOLD
 
         embedding 是 vector 列，用 pgvector 的余弦距离在库里排序取前 k，
         不再把整个 agent 的向量全拉回内存算
@@ -49,9 +60,14 @@ class embeddingRepository:
         )
         if memory_type is not None:
             vector_query = vector_query.where(Memory.memory_type == memory_type)
+        if similarity_threshold is None:
+            similarity_threshold = _RECALL_THRESHOLD.get(memory_type or "")
+            if similarity_threshold is None:
+                # 没限定类型时取最松的一路，别在这里丢候选
+                similarity_threshold = min(_RECALL_THRESHOLD.values())
         # cosine_distance 就是 <=>，相似度 = 1 - distance，值越小越相似。
         vector_query = vector_query.where(
-            distance <= 1.0 - settings.RECALL_SIMILARITY_THRESHOLD
+            distance <= 1.0 - similarity_threshold
         )
         rows = (await self.session.execute(
             vector_query.order_by(distance).limit(settings.TOP_K)

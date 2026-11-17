@@ -24,10 +24,14 @@ class Settings(BaseSettings):
 
     SIMILARITY_THRESHOLD:float=0.85  #入库判重阈值，超过该阈值的记忆将被认为是重复的，要送模型复核
 
-    # 检索召回下限，和上面的判重阈值分开：判重宁可漏判也要高，
-    # 召回宁可带噪声也要低，两者共用一个值会让向量路几乎召不回任何东西
-    # 这个 embedding 空间的相似度尺度整体在 0.6~0.8，取 0.65 时每题约十几条候选
-    RECALL_SIMILARITY_THRESHOLD:float=0.65
+    # 检索召回下限，三路分开配。余弦相似度和文本长度强相关：语义记忆平均 34 字，
+    # 余弦天然偏高；情景记忆平均 241 字的叙述，余弦天然偏低。
+    # 三路共用一个数就等于默认它们在同一尺度上，实际不是
+    RECALL_SIMILARITY_THRESHOLD_ORIGIN:float=0.56     #原文，平均 171 字
+
+    RECALL_SIMILARITY_THRESHOLD_EPISODIC:float=0.52   #情景记忆，平均 241 字
+
+    RECALL_SIMILARITY_THRESHOLD_SEMANTIC:float=0.65   #语义记忆，平均 34 字
 
     TOP_K:int=50    #搜索记忆时的最大返回条数
 
