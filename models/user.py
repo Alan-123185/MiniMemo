@@ -15,3 +15,7 @@ class User(Base):
     chat: Mapped[dict[str, str] | None] = mapped_column(
         JSON(none_as_null=True).with_variant(JSONB(none_as_null=True), "postgresql")
     )
+
+    reranker: Mapped[dict[str, str] | None] = mapped_column(
+        JSON(none_as_null=True).with_variant(JSONB(none_as_null=True), "postgresql")
+    )

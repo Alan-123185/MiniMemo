@@ -15,22 +15,6 @@ from repository.dependencies import get_agent_repo
 
 router=APIRouter()
 
-# @router.post("/MiniMemo/memory/add")
-# async def add_memory(store_request:originContentStoreRequest, user_id: str,
-#                      memory_service=Depends(get_memory_service), agent_rep=Depends(get_agent_repo)):
-#     """
-#     外部调用 只能指定添加初始内容记忆
-#     """
-#     agent = await agent_rep.get_agent(agent_name=store_request.agent_name, user_id=user_id)
-#     if agent is None:
-#         raise NotFoundException("Agent 不存在")
-#     await memory_service.add_origin_content(
-#         store_request.model_copy(update={"agent_name": agent.id}), user_id=user_id
-#     )
-#     return Result.success()
-
-
-
 @router.post("/MiniMemo/memory/search")
 async def search_memory(search_request:searchRequest,
                         search_service=Depends(get_search_service), agent_rep=Depends(get_agent_repo)):

@@ -13,8 +13,10 @@ class UserModelConfig(BaseModel):
 
     embedding: modelConfig | None = None
     chat: modelConfig | None = None
+    reranker: modelConfig | None = None
 
 
 class modelPool(BaseModel):
     embedding:modelConfig=modelConfig(model_name=settings.DEFAULT_EMBEDDING_MODEL,base_url=settings.DEFAULT_BASE_URL,api_key=settings.DEFAULT_API_KEY)
     chat:modelConfig=modelConfig(model_name=settings.DEFAULT_MODEL,base_url=settings.DEFAULT_BASE_URL,api_key=settings.DEFAULT_API_KEY)
+    reranker: modelConfig=modelConfig(model_name=settings.DEFAULT_RERANKER_MODEL,base_url=settings.DEFAULT_BASE_URL,api_key=settings.DEFAULT_API_KEY)

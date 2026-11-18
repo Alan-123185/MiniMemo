@@ -13,6 +13,8 @@ class Settings(BaseSettings):
 
     DEFAULT_API_KEY:str=""
 
+    DEFAULT_RERANKER_MODEL:str=""
+
     DEFAULT_EMBEDDING_MODEL:str=""
 
     DB_DSN:str=""   # PostgreSQL 连接串，形如 postgresql+psycopg://user:password@host:5432/dbname  到时候读取环境变量
@@ -33,7 +35,12 @@ class Settings(BaseSettings):
 
     RECALL_SIMILARITY_THRESHOLD_SEMANTIC:float=0.65   #语义记忆，平均 34 字
 
-    TOP_K:int=50    #搜索记忆时的最大返回条数
+    TOP_K:int=50    #不带 memory_type 的向量查询的候选上限，判重显式传这个值
+
+    # RRF 融合后取多少条，这里才是「搜索返回几条」。和候选上限不是一回事：
+    # 三路配额 RECALL_CANDIDATE_LIMIT_* 决定进融合的原料，这个决定出锅的份量
+    # 这个暂时先不动，到时候再改
+    RRF_TOP_N:int=50
 
     # BM25 召回候选数上限，和 TOP_K 分开：RRF 假设各路输入规模相当，排序才有可比性。
     # BM25 任意词命中，语料小的时候很容易一路满候选把 RRF 压成自己一家的排序，

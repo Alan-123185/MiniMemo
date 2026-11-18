@@ -18,7 +18,7 @@ from  models.memoryVector import memoryVector
 # }
 
 # 召回条数按记忆类型分流，每路只取自己那一类，配额见 config/data.py 的
-# RECALL_CANDIDATE_LIMIT_*。不带 memory_type 的调用（判重那条路）不走这张表，仍按 TOP_K 取
+# RECALL_CANDIDATE_LIMIT_*。判重那条路不走这张表，调用方显式传 limit
 _RECALL_LIMIT = {
     "origin": settings.RECALL_CANDIDATE_LIMIT_ORIGIN,
     "episodic": settings.RECALL_CANDIDATE_LIMIT_EPISODIC,
@@ -44,6 +44,7 @@ class embeddingRepository:
         agent_id: str,
         embedding_model: str,
         memory_type: str | None = None,
+        limit: int | None = None,
         #similarity_threshold: float | None = None,
     ) -> list[tuple[memoryVector, float]]:
         """
@@ -82,7 +83,8 @@ class embeddingRepository:
         # )
         rows = (await self.session.execute(
             vector_query.order_by(distance).limit(
-                _RECALL_LIMIT.get(memory_type or "", settings.TOP_K)
+                limit if limit is not None
+                else _RECALL_LIMIT.get(memory_type or "", settings.TOP_K)
             )
         )).all()
         return [(vector, 1.0 - dist) for vector, dist in rows]

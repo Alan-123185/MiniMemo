@@ -2,6 +2,7 @@ from typing import Literal
 from common.memoryInfo import returnMemoryInfo
 from common.requestSchema.searchRequest import searchRequest
 from config.modelConfig import modelPool
+from models.memoryModel.memory import Memory
 from repository.embeddingRepository import embeddingRepository
 from repository.memoryRepository import memoryRepository
 from repository.userRepository import userRepository
@@ -74,9 +75,28 @@ class searchService:
         memory_ids=rrf_fuse(
             ranked_lists=[bm25_memory_ids,origin_memory_ids,episodic_memory_ids,semantic_memory_ids],
             k=settings.RRF_K,
-            top_n=settings.TOP_K
+            top_n=settings.RRF_TOP_N
         )
         return memory_ids
+
+
+    """
+    11.18
+    决定加上重排序进行精排
+    """
+    async def fine_ranking(self, search_request:searchRequest, memories: list[Memory]) -> list[Memory]:
+        user_id = search_request.user_id
+        config = await self.user_repository.get_models(user_id)
+        model = modelPool(**config.model_dump(exclude_none=True))
+        reranker_model = model.reranker
+        # 在这里实现重排序逻辑
+        rerank_list=await modelService.rerank(search_request.query,memories, reranker_model)
+        #这里可以加上精细化处理
+
+
+
+
+        return rerank_list
 
 
 
@@ -89,12 +109,14 @@ class searchService:
         """
         memory_ids=await self.pre_ranking(search_request)
         memory_list=await self.memory_respository.search_memory(memory_ids)
+        #这里再补一层重排序
+        rerank_list=await self.fine_ranking(search_request=search_request, memories=memory_list)
         return [returnMemoryInfo(content=memory.content,
                                  memory_type=memory.memory_type,
                                  update_time=memory.update_time
-                                 )for memory in memory_list]
+                                 ) for memory in rerank_list]
 
-    
+
 
     @staticmethod
     async def _search_bm25(search_request:searchRequest) -> list[str]:
