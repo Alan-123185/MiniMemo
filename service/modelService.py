@@ -139,7 +139,7 @@ class modelService:
                     logger.error(f"记忆重排失败，错误信息：{e}")
                     return memories
                 await asyncio.sleep(2 ** i)
-        raise memories
+        return memories
 
 
 
