@@ -6,12 +6,23 @@ from  config.data import settings
 from  models.memoryModel.memory import Memory
 from  models.memoryVector import memoryVector
 
-
+"""
+11.18
+我认为废除各分路阈值才是破局的办法
+"""
 # 召回阈值按记忆类型分流，调用方不传 similarity_threshold 时用这张表
-_RECALL_THRESHOLD = {
-    "origin": settings.RECALL_SIMILARITY_THRESHOLD_ORIGIN,
-    "episodic": settings.RECALL_SIMILARITY_THRESHOLD_EPISODIC,
-    "semantic": settings.RECALL_SIMILARITY_THRESHOLD_SEMANTIC,
+# _RECALL_THRESHOLD = {
+#     "origin": settings.RECALL_SIMILARITY_THRESHOLD_ORIGIN,
+#     "episodic": settings.RECALL_SIMILARITY_THRESHOLD_EPISODIC,
+#     "semantic": settings.RECALL_SIMILARITY_THRESHOLD_SEMANTIC,
+# }
+
+# 召回条数按记忆类型分流，每路只取自己那一类，配额见 config/data.py 的
+# RECALL_CANDIDATE_LIMIT_*。不带 memory_type 的调用（判重那条路）不走这张表，仍按 TOP_K 取
+_RECALL_LIMIT = {
+    "origin": settings.RECALL_CANDIDATE_LIMIT_ORIGIN,
+    "episodic": settings.RECALL_CANDIDATE_LIMIT_EPISODIC,
+    "semantic": settings.RECALL_CANDIDATE_LIMIT_SEMANTIC,
 }
 
 
@@ -33,7 +44,7 @@ class embeddingRepository:
         agent_id: str,
         embedding_model: str,
         memory_type: str | None = None,
-        similarity_threshold: float | None = None,
+        #similarity_threshold: float | None = None,
     ) -> list[tuple[memoryVector, float]]:
         """
         查询相似度不低于阈值的前 top_k 条向量，按相似度从高到低排序
@@ -60,17 +71,19 @@ class embeddingRepository:
         )
         if memory_type is not None:
             vector_query = vector_query.where(Memory.memory_type == memory_type)
-        if similarity_threshold is None:
-            similarity_threshold = _RECALL_THRESHOLD.get(memory_type or "")
-            if similarity_threshold is None:
-                # 没限定类型时取最松的一路，别在这里丢候选
-                similarity_threshold = min(_RECALL_THRESHOLD.values())
+        # if similarity_threshold is None:
+        #     similarity_threshold = _RECALL_THRESHOLD.get(memory_type or "")
+        #     if similarity_threshold is None:
+        #         # 没限定类型时取最松的一路，别在这里丢候选
+        #         similarity_threshold = min(_RECALL_THRESHOLD.values())
         # cosine_distance 就是 <=>，相似度 = 1 - distance，值越小越相似。
-        vector_query = vector_query.where(
-            distance <= 1.0 - similarity_threshold
-        )
+        # vector_query = vector_query.where(
+        #     distance <= 1.0 - similarity_threshold
+        # )
         rows = (await self.session.execute(
-            vector_query.order_by(distance).limit(settings.TOP_K)
+            vector_query.order_by(distance).limit(
+                _RECALL_LIMIT.get(memory_type or "", settings.TOP_K)
+            )
         )).all()
         return [(vector, 1.0 - dist) for vector, dist in rows]
 

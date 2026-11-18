@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-def rrf_fuse(ranked_lists: list[list[str]], k: int = 60, top_n: int = 10) -> list[str]:
+def rrf_fuse(ranked_lists: list[list[str]], k: int = 60, top_n: int =10 ) -> list[str]:
     """ranked_lists: 多路检索结果，每路是按名次排好的 memory_id 列表"""
     scores = defaultdict(float)
     for ranked in ranked_lists:                 # 遍历每一路检索源

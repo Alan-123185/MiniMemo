@@ -415,7 +415,7 @@ class consolidationService:
                         memory_type=memory_type,
                         # 判重两侧是同一层级的记忆自己的向量，同一个尺度，
                         # 不走召回那套按类型分流的阈值
-                        similarity_threshold=settings.SIMILARITY_THRESHOLD,
+                        #similarity_threshold=settings.SIMILARITY_THRESHOLD,
                     )
 
                     need_to_judge = []

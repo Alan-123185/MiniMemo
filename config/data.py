@@ -40,6 +40,15 @@ class Settings(BaseSettings):
     # 三路向量按阈值筛完只剩个位数，输入差一个量级，等权融合就失衡了
     BM25_CANDIDATE_LIMIT:int=15
 
+    # 三路向量各自的召回候选上限，和 TOP_K 分开：每条路只负责自己那一类记忆，
+    # 配额按各类型的饱和度定——origin 给到 20 条就把自己那类召全，episodic 7、semantic 3 同理。
+    # 给多了不涨召回，只是把无关记忆塞进候选并集，挤掉 RRF 融合的位子
+    RECALL_CANDIDATE_LIMIT_ORIGIN:int=20
+
+    RECALL_CANDIDATE_LIMIT_EPISODIC:int=7
+
+    RECALL_CANDIDATE_LIMIT_SEMANTIC:int=3
+
     # BM25 参数，写进索引 DDL，改了必须重建索引才生效，不是查询时参数
     BM25_K1:float=1.2   #词频饱和
 
