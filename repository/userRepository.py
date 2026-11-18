@@ -1,5 +1,4 @@
 from typing import Literal
-
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -42,7 +41,7 @@ class userRepository:
         user = await self.session.get(User, user_id)
         if user is None:
             raise NotFoundException("用户不存在")
-        return UserModelConfig.model_validate({"embedding": user.embedding, "chat": user.chat})
+        return UserModelConfig.model_validate({"embedding": user.embedding, "chat": user.chat,"reranker": user.reranker})
 
 
 
@@ -96,10 +95,11 @@ class userRepository:
 
 
 
-    async def delete_model(self, user_id: str, kind: Literal["embedding", "chat"]) -> None:
+
+    async def delete_model(self, user_id: str, kind: Literal["embedding", "chat", "reranker"]) -> None:
         """清空指定的一项模型配置。"""
-        if kind not in ("embedding", "chat"):
-            raise BusinessException("模型类型必须是 embedding 或 chat")
+        if kind not in ("embedding", "chat", "reranker"):
+            raise BusinessException("模型类型必须是 embedding 或 chat 或 reranker")
         user = await self.session.get(User, user_id, with_for_update={"key_share": True})
         if user is None:
             raise NotFoundException("用户不存在")

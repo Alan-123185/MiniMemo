@@ -1,4 +1,7 @@
 from typing import Literal
+
+from loguru import logger
+
 from common.memoryInfo import returnMemoryInfo
 from common.requestSchema.searchRequest import searchRequest
 from config.modelConfig import modelPool
@@ -90,6 +93,9 @@ class searchService:
         model = modelPool(**config.model_dump(exclude_none=True))
         reranker_model = model.reranker
         # 在这里实现重排序逻辑
+        if not memories:
+            logger.info("No memories to rerank.")
+            return memories
         rerank_list=await modelService.rerank(search_request.query,memories, reranker_model)
         #这里可以加上精细化处理
 

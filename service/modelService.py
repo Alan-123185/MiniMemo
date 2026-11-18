@@ -137,9 +137,9 @@ class modelService:
                 logger.info(f"记忆重排失败，错误信息：{e}")
                 if i == settings.MAX_RETRY_TIMES - 1:
                     logger.error(f"记忆重排失败，错误信息：{e}")
-                    raise
+                    return memories
                 await asyncio.sleep(2 ** i)
-        raise RuntimeError("记忆重排失败")
+        raise memories
 
 
 
