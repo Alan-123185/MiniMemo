@@ -95,10 +95,7 @@ class searchService:
             logger.info("No memories to rerank.")
             return memories
         rerank_list=await modelService.rerank(search_request.query,memories, reranker_model)
-        #这里可以加上精细化处理
-
-
-        return rerank_list[search_request.return_count:]
+        return rerank_list
 
 
 
@@ -113,6 +110,7 @@ class searchService:
         memory_list=await self.memory_respository.search_memory(memory_ids)
         #这里再补一层重排序
         rerank_list=await self.fine_ranking(search_request=search_request, memories=memory_list)
+        rerank_list=rerank_list[:search_request.return_count]
         return [returnMemoryInfo(content=memory.content,
                                  memory_type=memory.memory_type,
                                  update_time=memory.update_time
