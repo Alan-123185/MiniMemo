@@ -97,11 +97,6 @@ class Settings(BaseSettings):
 
     MAX_SIM_CONCURRENCY :int=5   #相似度判断的最大并发数，过大容易打爆大模型
 
-
-
-
-
-
     #RRF_FUSE工具的权重配置
     RRF_K:int=60   #RRF 融合算法的 k 参数，越大越偏向于多路检索结果的融合，越小越偏向于单路检索结果的排序
 

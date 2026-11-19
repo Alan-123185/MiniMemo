@@ -22,7 +22,7 @@ async def add_memory(user_id, agent_name, origin_content, role):
     response.raise_for_status()
 
 def read_memory_from_file(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, "r", encoding="utf-8-sig") as f:
         content = f.read().replace("\r\n", "\n")
 
     messages = []
@@ -33,7 +33,7 @@ def read_memory_from_file(file_path):
         if not line:
             continue
 
-        question = re.match(r"^问\d+[：:]\s*(.*)$", line)
+        question = re.match(r"^问\d*[：:]\s*(.*)$", line)
         answer = re.match(r"^答[：:]\s*(.*)$", line)
         if question or answer:
             if current_role is not None:
@@ -61,7 +61,7 @@ def read_memory_from_file(file_path):
 
 if __name__ == "__main__":
     # 读取文件内容并发送请求
-    # read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/healthy.txt")
-    read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/codex.txt")
+    read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/healthy.txt")
+    read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/.txt")
     read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/race.txt")
 
