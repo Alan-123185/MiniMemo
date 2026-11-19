@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     # RRF 融合后取多少条，这里才是「搜索返回几条」。和候选上限不是一回事：
     # 三路配额 RECALL_CANDIDATE_LIMIT_* 决定进融合的原料，这个决定出锅的份量
     # 这个暂时先不动，到时候再改
-    RRF_TOP_N:int=50
+    RRF_TOP_N:int=25
 
     # BM25 召回候选数上限，和 TOP_K 分开：RRF 假设各路输入规模相当，排序才有可比性。
     # BM25 任意词命中，语料小的时候很容易一路满候选把 RRF 压成自己一家的排序，
@@ -113,10 +113,9 @@ class Settings(BaseSettings):
 
     RRF_BM25_WEIGHT:float=1.0   #BM25的权重，越大越偏向于BM25的排序，越小越偏向于多路检索结果的融合
 
+    SEARCH_RETURN_K:int=25   #最终搜索返回的记忆数量
 
-
-
-
+    DEFAULT_RETURN_K:int=10   #默认搜索返回的记忆数量
 
     
     #negative_words:list[str]=["不", "没", "无", "别", "勿", "非", "未", "莫", "甭", "不要", "没有"]  #负面词汇列表，用于过滤记忆中的负面内容

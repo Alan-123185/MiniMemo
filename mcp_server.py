@@ -66,9 +66,8 @@ def build_server(base_url: str, user_id: str, agent_name: str) -> MCPServer:
         """
         检索已有记忆。
         使用场景：用户提到以前的讨论、偏好、项目决定或约定，或者当前任务依赖历史背景时，先用这个工具回查。
-        :param query: 用自然语言描述填一个具体问题或者你希望检索的内容或者记忆
+        :param query: 用一句完整的自然语言描述要回忆的具体问题或经历。结合最近对话补足已知指代，禁止用空格拼接多个关键词或把多个检索目标塞进一条查询，如果需要查询多个内容，请多次调用
         :return: 返回匹配的内容、记忆类型和更新时间；空列表表示本次没有找到匹配项。
-
         """
         request = searchRequest(user_id=user_id, agent_id=agent_name, query=query)
         result = await _post_memory(base_url, "search", request.model_dump(mode="json"))
