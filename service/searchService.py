@@ -1,7 +1,5 @@
 from typing import Literal
-
 from loguru import logger
-
 from common.memoryInfo import returnMemoryInfo
 from common.requestSchema.searchRequest import searchRequest
 from config.modelConfig import modelPool
@@ -100,9 +98,7 @@ class searchService:
         #这里可以加上精细化处理
 
 
-
-
-        return rerank_list
+        return rerank_list[search_request.return_count:]
 
 
 
