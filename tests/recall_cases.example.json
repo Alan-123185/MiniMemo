@@ -1,0 +1,61 @@
+[
+  {
+    "query": "我当时对临时日志保留时长的原话是什么？",
+    "evidence_example": "原文：我希望临时日志只留三天。",
+    "relevant": {"origin-log-retention": "origin"},
+    "demo_rankings": {
+      "bm25": ["origin-log-retention", "origin-log-path"],
+      "origin": ["origin-log-retention", "origin-log-path"],
+      "episodic": [],
+      "semantic": []
+    }
+  },
+  {
+    "query": "之前怎么让同步的模型请求不拖住其他任务？",
+    "evidence_example": "情景：排查事件循环阻塞时，把同步模型请求交给线程池执行。",
+    "relevant": {"episode-old-model-call": "episodic"},
+    "demo_rankings": {
+      "bm25": ["origin-model-timeout"],
+      "origin": [],
+      "episodic": ["episode-old-model-call"],
+      "semantic": ["semantic-current-model-call"]
+    }
+  },
+  {
+    "query": "我平时希望多长时间清理一次临时日志？",
+    "evidence_example": "语义：用户偏好将临时日志保留三天。",
+    "relevant": {"semantic-log-retention": "semantic"},
+    "demo_rankings": {
+      "bm25": ["origin-log-path"],
+      "origin": [],
+      "episodic": [],
+      "semantic": []
+    }
+  },
+  {
+    "query": "现在怎么调用模型，为什么要调整原来的调用方式？",
+    "evidence_example": "语义记录现状：统一用异步客户端。情景记录原因：调整时希望统一调用方式，减少等待网络请求时的线程占用。",
+    "relevant": {
+      "semantic-current-model-call": "semantic",
+      "episode-model-call-decision": "episodic"
+    },
+    "demo_rankings": {
+      "bm25": [
+        "n01", "n02", "n03", "n04", "n05", "n06", "n07", "n08", "n09", "n10",
+        "n11", "n12", "n13", "n14", "n15", "n16", "n17", "n18", "n19", "n20",
+        "n21", "n22", "n23", "n24", "n25", "n26", "n27", "n28", "n29", "n30",
+        "n31", "n32", "n33", "n34", "n35", "n36", "n37", "n38", "n39", "n40",
+        "n41", "n42", "n43", "n44", "n45", "n46", "n47", "n48", "n49", "semantic-current-model-call"
+      ],
+      "origin": [
+        "n01", "n02", "n03", "n04", "n05", "n06", "n07", "n08", "n09", "n10",
+        "n11", "n12", "n13", "n14", "n15", "n16", "n17", "n18", "n19", "n20",
+        "n21", "n22", "n23", "n24", "n25", "n26", "n27", "n28", "n29", "n30",
+        "n31", "n32", "n33", "n34", "n35", "n36", "n37", "n38", "n39", "n40",
+        "n41", "n42", "n43", "n44", "n45", "n46", "n47", "n48", "n49"
+      ],
+      "episodic": ["episode-model-call-decision"],
+      "semantic": ["semantic-current-model-call"]
+    }
+  }
+]

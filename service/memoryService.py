@@ -1,19 +1,16 @@
-import asyncio
+
 from loguru import logger
 from common.memoryInfo import originContentMemoryInfo
 from  common.requestSchema.searchRequest import searchRequest
 from common.requestSchema.storeRequest import originContentStoreRequest
 from config.modelConfig import modelPool
 from models.memoryModel.memory import Memory
-from mq.publisher import get_publisher
-from prompt.memoryPromptHEAD import MEMORY_PROMPT_HEAD
 from  repository.embeddingRepository import embeddingRepository
 from repository.episodicMemoryRepository import episodicMemoryRepository
 from  repository.originContentRepository import originContentRepository
 from repository.semanticMemoryRepository import semanticMemoryRepository
 from repository.userRepository import userRepository
 from  service.modelService import modelService
-from tools.backgroundTask import spawn
 
 
 class memoryService:
@@ -36,14 +33,15 @@ class memoryService:
     """
     添加第一层记忆  原始内容
     """
-    async def add_origin_content(self, store_request: originContentStoreRequest, *, user_id: str):
+    async def add_origin_content(self, store_request: originContentStoreRequest):
         """
         为指定的智能体添加原始内容，非常简陋
         """
+        user_id = store_request.user_id
         config = await self.user_repository.get_models(user_id)
         model = modelPool(**config.model_dump(exclude_none=True))
         embedding_model=model.embedding
-        embedding=await asyncio.to_thread(modelService.embedding,store_request.origin_content,embedding_model)
+        embedding=await modelService.embedding(store_request.origin_content,embedding_model)
         memory=originContentMemoryInfo(
             content=store_request.origin_content,
             embedding=embedding,
@@ -51,7 +49,7 @@ class memoryService:
             role=store_request.role,
             session_id=store_request.session_id
         )
-        await self.origin_content_repository.add_memory([memory], agent_id=store_request.agent_name)
+        await self.origin_content_repository.add_memory([memory], agent_id=store_request.agent_id)
         """
         11.9
         添加完原始内容之后你不要触发情景记忆 
@@ -83,9 +81,9 @@ class memoryService:
         memory_ids:list[str]=[]
         seen:set[str]=set()
         for q in question:
-            query_embedding=await asyncio.to_thread(modelService.embedding,q,embedding_model)
+            query_embedding=await modelService.embedding(q,embedding_model)
             vector_list=await self.embedding_repository.query_vectors(
-                agent_id=search_request.agent_name,
+                agent_id=search_request.agent_id,
                 embedding_model=embedding_model.model_name,query=query_embedding)
             for vector, _ in vector_list:
                 if vector.memory_id not in seen:

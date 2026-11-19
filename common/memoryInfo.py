@@ -1,3 +1,4 @@
+import datetime
 from typing import Literal, Optional
 
 from pydantic import BaseModel
@@ -15,7 +16,7 @@ class memoryInfo(BaseModel):
 
 
 class episodicMemoryInfo(memoryInfo):
-    origin_content_id: Optional[list[str]] = None
+    origin_content_id: list[int] | None = None
 
 
 
@@ -34,3 +35,14 @@ class semanticMemoryInfo(memoryInfo):
     """
     type: Literal["fact", "opinion", "hypothesis"] = "fact"
     is_alive: Optional[bool] = True
+
+
+
+
+class returnMemoryInfo(BaseModel):
+    """
+    最终召回返回的记忆信息
+    """
+    content: str
+    memory_type: Literal["origin", "episodic", "semantic"]
+    update_time:datetime.datetime

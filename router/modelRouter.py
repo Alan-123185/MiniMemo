@@ -14,7 +14,7 @@ async def get_models(user_id: str, user_rep: userRepository = Depends(get_user_r
     config = await user_rep.get_models(user_id)
     #排除api_key字段
     return Result(response=config.model_dump(
-        mode="json", exclude={"embedding": {"api_key"}, "chat": {"api_key"}}
+        mode="json", exclude={"embedding": {"api_key"}, "chat": {"api_key"}, "reranker": {"api_key"}}
     ))
 
 
@@ -39,7 +39,7 @@ async def set_model(
 @router.delete("/MiniMemo/model/delete")
 async def delete_model(
     user_id: str,
-    kind: Literal["embedding", "chat"],
+    kind: Literal["embedding", "chat", "reranker"],
     user_rep: userRepository = Depends(get_user_repo),
 ):
     """清空指定用户的一项模型配置。"""

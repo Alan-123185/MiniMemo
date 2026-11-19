@@ -16,8 +16,6 @@ from repository.originContentRepository import originContentRepository
 from repository.semanticMemoryRepository import semanticMemoryRepository
 from repository.userRepository import userRepository
 from service.modelService import modelService
-from tools.backgroundTask import spawn
-from tools.numpyTool import cosine_similarity
 from tools.sessionLock import try_agent_lock, try_session_lock
 
 
@@ -415,6 +413,9 @@ class consolidationService:
                         embedding_model=memo.embedding_model,
                         query=memo.embedding,
                         memory_type=memory_type,
+                        limit=settings.TOP_K,
+                        # 判重两侧是同一层级的记忆自己的向量，同一个尺度，
+                        # 不走召回那套按类型分流的阈值
                     )
 
                     need_to_judge = []

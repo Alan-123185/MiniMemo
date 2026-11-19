@@ -5,6 +5,8 @@ from  config.data import settings
 from  config.modelConfig import modelConfig
 from openai import AsyncOpenAI
 from loguru import logger
+
+from models.memoryModel.memory import Memory
 from prompt.memoryPrompt.episodeMemoryPrompt import EPISODE_MEMORY_PROMPT
 from prompt.memoryPrompt.semanticMemoryPrompt import SEMANTIC_MEMORY_PROMPT
 from prompt.queryChangePrompt import QUERY_CHANGE_PROMPT
@@ -12,9 +14,8 @@ from  prompt.similarityJudgePrompt import similarity_judge_prompt
 from  tools.processJSON import json_to_dict
 
 
+
 class modelService:
-
-
 
     @staticmethod
     async def to_episodic_memory(origin_content:str,model:modelConfig) -> tuple[list, int]:
@@ -88,6 +89,70 @@ class modelService:
 
 
 
+    @staticmethod
+    async def embedding(fact:str,model:modelConfig) -> list[float]:
+        client=modelService.get_async_client(api_key=model.api_key,base_url=model.base_url)
+        for i in range(settings.MAX_RETRY_TIMES):
+            try:
+                res=await client.embeddings.create(
+                    model=model.model_name,
+                    input=fact
+                )
+                return res.data[0].embedding
+            except Exception as e:
+                logger.info(f"记忆向量化失败({i+1}/{settings.MAX_RETRY_TIMES})")
+                if i==settings.MAX_RETRY_TIMES-1:
+                    logger.error(f"记忆向量化失败，错误信息：{e}")
+                    raise e
+                await asyncio.sleep(2 ** i)
+        raise RuntimeError("记忆向量化失败")
+
+
+
+    @staticmethod
+    async def rerank(query: str, memories: list[Memory], model: modelConfig) -> list[Memory]:
+        """
+        11.18
+        重排模型调用
+        """
+        client = modelService.get_async_client(api_key=model.api_key, base_url=model.base_url)
+        documents = [memory.content for memory in memories]
+        for i in range(settings.MAX_RETRY_TIMES):
+            try:
+                result = await client.post(
+                    "/rerank",
+                    cast_to=dict,
+                    body={
+                        "model": model.model_name,
+                        "query": query,
+                        "documents": documents,
+                        "top_n": len(documents),   #这里重排序只负责打分，不负责截断，截断由 pre_ranking 决定
+                        "return_documents": True,
+                    },
+                )
+                ranked_items = result["results"]
+                return [memories[item["index"]] for item in ranked_items]
+            except Exception as e:
+                logger.info(f"记忆重排失败({i+1}/{settings.MAX_RETRY_TIMES})")
+                logger.info(f"记忆重排失败，错误信息：{e}")
+                if i == settings.MAX_RETRY_TIMES - 1:
+                    logger.error(f"记忆重排失败，错误信息：{e}")
+                    return memories
+                await asyncio.sleep(2 ** i)
+        return memories
+
+
+
+    @staticmethod
+    @lru_cache(maxsize=8)
+    def get_async_client(api_key: str, base_url: str) -> AsyncOpenAI:
+        return AsyncOpenAI(api_key=api_key, base_url=base_url)
+
+
+
+
+
+
     """
     将最近几轮对话内容校准
     query 改写
@@ -117,37 +182,4 @@ class modelService:
     #                 raise e
     #             await asyncio.sleep(2 ** i)
     #     raise RuntimeError("对话排序失败")
-
-
-
-    @staticmethod
-    async def embedding(fact:str,model:modelConfig) -> list[float]:
-        client=modelService.get_async_client(api_key=model.api_key,base_url=model.base_url)
-        for i in range(settings.MAX_RETRY_TIMES):
-            try:
-                res=await client.embeddings.create(
-                    model=model.model_name,
-                    input=fact
-                )
-                return res.data[0].embedding
-            except Exception as e:
-                logger.info(f"记忆向量化失败({i+1}/{settings.MAX_RETRY_TIMES})")
-                if i==settings.MAX_RETRY_TIMES-1:
-                    logger.error(f"记忆向量化失败，错误信息：{e}")
-                    raise e
-                await asyncio.sleep(2 ** i)
-        raise RuntimeError("记忆向量化失败")
-
-
-
-
-
-
-    @staticmethod
-    @lru_cache(maxsize=8)
-    def get_async_client(api_key: str, base_url: str) -> AsyncOpenAI:
-        return AsyncOpenAI(api_key=api_key, base_url=base_url)
-
-
-
 

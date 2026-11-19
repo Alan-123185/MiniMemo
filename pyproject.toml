@@ -18,14 +18,16 @@ dependencies = [
     "pgvector>=0.4.0",   # 向量类型与近邻检索
 ]
 
+[project.optional-dependencies]
+mcp = ["mcp>=2,<3", "httpx>=0.28,<1"]
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-# 根目录的 main.py 是应用入口，worker.py 是记忆抽取的独立进程入口，
-# 两者都作为顶层模块单独打包
-py-modules = ["main", "worker"]
+# FastAPI、记忆抽取 Worker 和 MCP 的进程入口。
+py-modules = ["main", "worker", "mcp_server"]
 
 [tool.setuptools.packages.find]
 # 业务代码按领域目录直接放在项目根目录。
