@@ -210,7 +210,8 @@ class consolidationService:
                 origin_content=need_process_content,
                 model=chat_model,
             )
-            archived_list=origin_content_list if truncate_from<=0 else origin_content_list[:truncate_from]
+            # -1 才是整批处理完；0 表示从第 0 号原文起的话题被截断，这一批一条都不归档
+            archived_list=origin_content_list if truncate_from<0 else origin_content_list[:truncate_from]
 
 
             #处理相似记忆               长耗时
@@ -252,7 +253,7 @@ class consolidationService:
             origin_repo = originContentRepository(session)
             episodic_repo = episodicMemoryRepository(session)
             await cls._apply_similarity_decisions(
-                episodic_repo, similarity_decisions, agent_id=agent_id
+                episodic_repo, similarity_decisions, agent_id=agent_id, origin_content_ids=id_map
             )
             await origin_repo.mark_archived([memory.id for memory in archived_list], agent_id=agent_id)
             await episodic_repo.add_memory(
@@ -354,6 +355,7 @@ class consolidationService:
         repository: memoryRepository,
         decisions: list[tuple[memoryInfo, dict]],
         *, agent_id: str,
+        origin_content_ids: dict[str, str] | None = None,
     ) -> None:
         for memory, decision in decisions:
             if decision["action"] == "UPDATE":
@@ -363,6 +365,20 @@ class consolidationService:
                     new_embedding=memory.embedding,
                     agent_id=agent_id,
                 )
+                # 内容已经换成新一批原文抽出来的，子表上跟着内容走的东西也要一起换
+                if isinstance(repository, episodicMemoryRepository):
+                    await repository.replace_origin_links(
+                        decision["target_id"],
+                        getattr(memory, "origin_content_id", None),
+                        origin_content_ids,
+                        agent_id=agent_id,
+                    )
+                elif isinstance(repository, semanticMemoryRepository):
+                    await repository.update_type(
+                        decision["target_id"],
+                        getattr(memory, "type", None),
+                        agent_id=agent_id,
+                    )
             elif decision["action"] == "DELETE":
                 await repository.kill_memory(memory_id=decision["target_id"], agent_id=agent_id)
 

@@ -40,6 +40,26 @@ class semanticMemoryRepository(memoryRepository[semanticMemoryInfo]):
 
 
 
+    async def update_type(self, memory_id: str, type: str | None, *, agent_id: str) -> None:
+        """
+        UPDATE 命中已有语义记忆时，子表的 type 也要跟着新内容一起换
+        父表的 content 已经在 update_memory 里改过，type 留在旧值会和新内容对不上
+        """
+        if type is None:
+            return
+        await self._require_owned_memories([memory_id], agent_id)
+        await self.session.execute(
+            update(semanticMemory)
+            .where(
+                semanticMemory.id == memory_id,
+                semanticMemory.id.in_(select(Memory.id).where(Memory.agent_id == agent_id)),
+            )
+            .values(type=type)
+            .execution_options(synchronize_session=False)
+        )
+
+
+
     async def kill_memory(self, memory_id: str, *, agent_id: str) -> None:
         """
         语义记忆的“作废”是双重语义：事实不再成立，同时也从检索中隐去

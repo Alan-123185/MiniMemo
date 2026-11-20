@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 from common.memoryInfo import episodicMemoryInfo
 from common.unarchiveSessionStatus import unarchiveAgentStatus
 from models.episodeOriginLink import episodeOriginLink
@@ -100,6 +100,40 @@ class episodicMemoryRepository(memoryRepository[episodicMemoryInfo]):
                         ))
         if commit:
             await self.session.commit()
+
+
+
+    async def replace_origin_links(
+        self,
+        episode_id: str,
+        origin_content_id: list[int] | None,
+        origin_content_ids: dict[str, str] | None,
+        *,
+        agent_id: str,
+    ) -> None:
+        """
+        UPDATE 命中已有情景记忆时，用新一批原文替换掉这条记忆原有的溯源边
+        内容已经被新记忆取代，旧的来源跟着作废，留在一起只会让溯源指向错的东西
+        """
+        await self._require_owned_memories([episode_id], agent_id)
+        await self.session.execute(
+            delete(episodeOriginLink).where(episodeOriginLink.episode_id == episode_id)
+        )
+        if not (origin_content_ids and origin_content_id):
+            return
+        referenced_ids = set()
+        for number in origin_content_id:
+            content_id = origin_content_ids.get(str(number))
+            if content_id is not None:
+                referenced_ids.add(content_id)
+        await originContentRepository(self.session)._require_owned_memories(
+            list(referenced_ids), agent_id
+        )
+        for content_id in referenced_ids:
+            self.session.add(episodeOriginLink(
+                episode_id=episode_id,
+                origin_content_id=content_id,
+            ))
 
 
 
