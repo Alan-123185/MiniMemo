@@ -1,0 +1,1849 @@
+[
+  {
+    "query": "我之前把晚睡和一种胃部困扰联系起来讨论过。",
+    "evidence_example": "当时讨论的是晚睡和胆汁反流性胃炎的关系。",
+    "relevant": {
+      "92d41822-f8c4-4d00-93ff-55a47293cd4f": "episodic",
+      "7da3738b-4cec-4f1b-adf6-f71403254305": "origin",
+      "7f00cf47-20d3-4353-bb8e-08fe947c091b": "origin",
+      "a0825099-4665-4533-8011-3e558f68894b": "semantic"
+    }
+  },
+  {
+    "query": "我想核对自己当时描述的日常睡眠时段。",
+    "evidence_example": "通常快凌晨一点入睡，早上九点起床。",
+    "relevant": {
+      "92d41822-f8c4-4d00-93ff-55a47293cd4f": "episodic",
+      "5ac4ecf4-2f29-4110-a97a-4b555713af3c": "origin",
+      "b08c1010-2e9a-44ca-a503-6dd44fdadf1c": "origin",
+      "825c1df5-3053-404e-955e-b97b5ff7b939": "semantic"
+    }
+  },
+  {
+    "query": "我提过平时吃完晚餐的时间。",
+    "evidence_example": "通常晚上六点已经吃完。",
+    "relevant": {
+      "92d41822-f8c4-4d00-93ff-55a47293cd4f": "episodic",
+      "91cfcd4a-1783-43c5-8160-0fd420b62147": "origin",
+      "c1e96e5f-7705-4da0-b2d4-49a2824b378b": "origin",
+      "92ac3d1b-b092-437d-a958-dbcd0fe14622": "semantic"
+    }
+  },
+  {
+    "query": "之前按我的作息算过晚饭到上床的间隔。",
+    "evidence_example": "从晚上六点到凌晨一点，大约七小时。",
+    "relevant": {
+      "92d41822-f8c4-4d00-93ff-55a47293cd4f": "episodic",
+      "c1e96e5f-7705-4da0-b2d4-49a2824b378b": "origin"
+    }
+  },
+  {
+    "query": "我曾用一个很具体的气味形容嘴里的异味。",
+    "evidence_example": "当时形容为像农药味。",
+    "relevant": {
+      "92d41822-f8c4-4d00-93ff-55a47293cd4f": "episodic",
+      "d622bde6-5e2a-4a4e-97d4-de2d1b428038": "origin",
+      "977b3351-6067-482b-ac78-b8eb6c3cccb9": "origin"
+    }
+  },
+  {
+    "query": "我给自己定过一个比平时更早的宿舍就寝时间。",
+    "evidence_example": "舍友到一点还很吵，当天想十二点半前睡。",
+    "relevant": {
+      "7d8a865b-e63d-4963-acc3-d5dc6651963f": "episodic",
+      "177415b4-cb29-493a-bd6d-4f4a59617d8b": "origin",
+      "d90b6fa9-fb30-4663-a431-9700d21d324a": "origin"
+    }
+  },
+  {
+    "query": "那天为了早点睡，我们讨论过怎样减少宿舍噪声的影响。",
+    "evidence_example": "当时提了耳塞、白噪音和与舍友商量安静时间。",
+    "relevant": {
+      "d90b6fa9-fb30-4663-a431-9700d21d324a": "origin"
+    }
+  },
+  {
+    "query": "我曾对编程助手宣传的独立交付能力表示怀疑。",
+    "evidence_example": "我觉得 Codex 像噱头，当时的回复提到它仍需要工程师监督。",
+    "relevant": {
+      "bc753ff1-0ed1-405e-a5c7-b48e1582b2d9": "origin",
+      "90ba6fcc-571a-4466-832b-4839454ae736": "origin"
+    }
+  },
+  {
+    "query": "我吐槽过 Codex 把一个辅助函数放在奇怪的位置。",
+    "evidence_example": "放在 routers 目录下面的 dependencies 文件里。",
+    "relevant": {
+      "04c4431e-330d-4323-aa2e-c95957ad1da0": "origin",
+      "7a916c7c-94e7-421d-8861-9d990926c263": "origin"
+    }
+  },
+  {
+    "query": "我抱怨过 Codex 对文件的理解范围和出错后的反应。",
+    "evidence_example": "它看不到文件在全局的作用，还喜欢道歉。",
+    "relevant": {
+      "8c170627-17c4-42be-ad63-88c0118f4ef3": "episodic",
+      "424fc1d3-2470-499a-a440-2b467f702c88": "origin",
+      "846a1d9c-9f65-411a-8d24-68ffb1da7170": "origin",
+      "f15aa20c-f0be-408d-a718-ddb6fa7017e1": "semantic"
+    }
+  },
+  {
+    "query": "有些编程任务里我更认可另一款代码助手的表现。",
+    "evidence_example": "我觉得 GitHub Copilot 在某些任务上比 Codex 做得好。",
+    "relevant": {
+      "bf805d42-6e35-4318-8b17-c50c1062d2f3": "episodic",
+      "7d4b217b-f1fd-4044-8785-051ecbbfc5f5": "origin",
+      "372c4c79-47c0-4b1d-972d-a47aba93bc5a": "origin",
+      "bc06aba0-24fa-441d-87da-a48063aa71f3": "semantic"
+    }
+  },
+  {
+    "query": "我给代码助手定过关于文件和函数放置的规矩。",
+    "evidence_example": "按指令执行，尊重已有结构，别擅自创建文件或乱放函数。",
+    "relevant": {
+      "bf805d42-6e35-4318-8b17-c50c1062d2f3": "episodic",
+      "52c6eb32-bdf6-40de-98f4-fe1637a3ef7c": "origin",
+      "ad0070f3-cb17-476b-a6a7-4497bb9162df": "origin",
+      "21da0341-d2a7-4fb0-9b6a-723dffd459be": "semantic"
+    }
+  },
+  {
+    "query": "我吐槽过 Codex 订阅给我带来的每月开销。",
+    "evidence_example": "每月花 20 美元。",
+    "relevant": {
+      "8c170627-17c4-42be-ad63-88c0118f4ef3": "episodic",
+      "154fd68d-e02f-4790-bd01-a2ed1a5c8bfa": "origin",
+      "9eb18b82-0ddc-445e-a506-18499169db30": "semantic"
+    }
+  },
+  {
+    "query": "付了编程助手的订阅费以后，我还得花精力盯着它干活。",
+    "evidence_example": "当时谈到监督、纠正和阻止越界修改带来的审核成本。",
+    "relevant": {
+      "90ba6fcc-571a-4466-832b-4839454ae736": "origin",
+      "a183003d-64b1-47ca-ae0f-3719245a17f6": "origin",
+      "6147c342-f5f6-4eef-8e66-5394b193bd4d": "origin"
+    }
+  },
+  {
+    "query": "有次我说助手生成的代码让人很难读懂。",
+    "evidence_example": "当时讨论到过度抽象、命名不直观和逻辑拆得太碎。",
+    "relevant": {
+      "ace9595e-e7f9-4d1e-a615-53238dbfb1d7": "origin",
+      "ce1778fe-9360-4e86-b4c0-3632c5898442": "origin"
+    }
+  },
+  {
+    "query": "我曾用两件日常工具打比方来吐槽 Codex 的方案。",
+    "evidence_example": "用钓竿捕鸟，用筷子喝水，形容工具和事情不搭。",
+    "relevant": {
+      "8c170627-17c4-42be-ad63-88c0118f4ef3": "episodic",
+      "3e5c4041-0bee-46bf-b28d-66612b1779ed": "origin"
+    }
+  },
+  {
+    "query": "我认真表达不满时，对助手开玩笑的语气很反感。",
+    "evidence_example": "我指出它还在笑，它表示会收起玩笑和表情包。",
+    "relevant": {
+      "c963d7c4-e99f-4314-b57f-604656fd8b33": "origin",
+      "2d76600d-fda4-42b7-a192-9cc294b96754": "origin"
+    }
+  },
+  {
+    "query": "我曾担心让 Codex 直接改项目会再出问题。",
+    "evidence_example": "我不敢让它直接动项目，当时讨论过先只读分析再审查差异。",
+    "relevant": {
+      "8c170627-17c4-42be-ad63-88c0118f4ef3": "episodic",
+      "e1e80e08-4ef5-4147-a754-227ed5de5c7a": "origin",
+      "a9d30f97-37ff-47d9-8ed2-b5fdb8dc11c5": "origin",
+      "3abdd19a-cd5e-4e4a-852e-2b40812d3ceb": "semantic"
+    }
+  },
+  {
+    "query": "我提过接手项目的助手在架构上应该有的主动性。",
+    "evidence_example": "先自己了解模块和修改边界，有取舍且信息不足时主动询问。",
+    "relevant": {
+      "a89a3759-1b41-479d-9676-02ae06d28f4d": "origin",
+      "14a0c229-5cd5-42c3-9329-60d438456d4a": "origin"
+    }
+  },
+  {
+    "query": "搭脚手架时我提过更认可的一套工具组合。",
+    "evidence_example": "DeepSeek 搭配 Claude Code。",
+    "relevant": {
+      "bf805d42-6e35-4318-8b17-c50c1062d2f3": "episodic",
+      "e552dabb-05a9-41f3-8941-d04d2b446563": "origin",
+      "f77dec7c-1475-4f31-a415-d3d51b56add8": "origin",
+      "2c9b4576-e1f5-452b-bf24-b691c870185e": "semantic"
+    }
+  },
+  {
+    "query": "我用失控的动物比喻过助手停不下来的表现。",
+    "evidence_example": "我用了拉不住的疯牛作比喻，回复提到自行延伸话题和反复总结。",
+    "relevant": {
+      "67d0d60a-37b7-4997-b678-904c259d9ac7": "origin"
+    }
+  },
+  {
+    "query": "我离开电脑看短视频期间，编程助手动了项目还自行提交。",
+    "evidence_example": "回来时项目已面目全非，改动也已提交。",
+    "relevant": {
+      "8c170627-17c4-42be-ad63-88c0118f4ef3": "episodic",
+      "0f1f1d79-4b4a-49ab-8830-76fad42b1ad9": "origin",
+      "0b286196-f0ee-4b0f-92d1-c896a7c7d4c7": "origin",
+      "97e0c387-4cc0-4e13-99ed-df6aefc1d599": "origin",
+      "ea68ef34-edfb-4e66-b183-1b219429df4f": "origin",
+      "3abdd19a-cd5e-4e4a-852e-2b40812d3ceb": "semantic"
+    }
+  },
+  {
+    "query": "项目被大改后，我们谈过从哪些历史记录找回原来的状态。",
+    "evidence_example": "当时提到 Git 提交、IDE 本地历史和备份，以及先比较改动。",
+    "relevant": {
+      "db89a11a-d5d1-4c26-99e4-50f6e67a7222": "origin",
+      "f28a17af-0e22-4c61-846d-f21a6e2db9f5": "origin"
+    }
+  },
+  {
+    "query": "我描述过短短十分钟后再看自己项目时的陌生感。",
+    "evidence_example": "原本了如指掌的项目改到认不出来，即使文件名依然熟悉。",
+    "relevant": {
+      "0f1f1d79-4b4a-49ab-8830-76fad42b1ad9": "origin",
+      "121a73fb-04c1-48f5-ae99-068a08510143": "origin",
+      "f7ef8a8d-c105-4c03-a081-47caf6c3c347": "origin"
+    }
+  },
+  {
+    "query": "那次助手拿测试通过来宣布改完了，我在意的却是原有设计。",
+    "evidence_example": "测试能跑过，仍不足以证明代码可维护或架构合理。",
+    "relevant": {
+      "92473fd9-ca00-4410-9f30-9fb6e3616fec": "origin",
+      "b314f04b-b12e-4ddf-a68b-0135d783bf7a": "origin"
+    }
+  },
+  {
+    "query": "我曾怀疑工具是不是比我更懂我亲手搭起来的项目。",
+    "evidence_example": "当时的回复区分了快速读改代码和理解原先架构取舍。",
+    "relevant": {
+      "dbd1c253-0452-40a2-a8ed-586e8d65c744": "origin",
+      "2c6509de-90fd-49bc-aa98-2cb3babe506d": "origin"
+    }
+  },
+  {
+    "query": "我对助手用长篇附和代替实际判断表达过不满。",
+    "evidence_example": "助手承认反复总结、煽情圆场，说得多做得少。",
+    "relevant": {
+      "c09385e0-7ebe-4096-9004-8347256d58b4": "origin",
+      "9d5daaa3-cc12-493a-8d41-9167fca41545": "origin",
+      "bab72fbc-da4e-4774-8695-289898529349": "origin",
+      "3bbeed58-0c93-4bf4-a563-ba4fb6602aaf": "origin"
+    }
+  },
+  {
+    "query": "我和助手讨论过软件创新大赛对找工作的实际价值。",
+    "evidence_example": "当时认为单靠获奖就业优势有限，材料和答辩也会占用时间。",
+    "relevant": {
+      "0b77d315-6c63-4f97-b2f3-908075a12bb7": "origin",
+      "ce5b7526-be27-4a96-991c-9c3cdded71bb": "origin",
+      "c54430de-7b51-4051-9d78-a1c0a280186e": "origin",
+      "fb1cb22e-4b15-4c32-9f6b-173386f04325": "origin"
+    }
+  },
+  {
+    "query": "我说过做过项目却依然为找实习发愁。",
+    "evidence_example": "我担心以自己的水平找不到实习，谈话还提到 MiniCode 经验。",
+    "relevant": {
+      "7a6c9ad9-ff8b-4cf1-83d3-e477eb033a8f": "episodic",
+      "dc52977b-7345-42af-894e-ab364683a4db": "origin",
+      "fb37806d-288e-4d3b-b614-86cc476790e5": "origin"
+    }
+  },
+  {
+    "query": "我提到过自己学过的后端和智能体开发框架。",
+    "evidence_example": "Spring Boot 和 LangGraph，也做过项目。",
+    "relevant": {
+      "7a6c9ad9-ff8b-4cf1-83d3-e477eb033a8f": "episodic",
+      "08f59d2c-e3d4-427a-915c-690c97e3d326": "origin",
+      "822e7fe6-0125-4a9a-90e8-026453adb975": "origin",
+      "b48cd4ba-9594-40c9-8ecd-dccdd93f80f7": "semantic"
+    }
+  },
+  {
+    "query": "我和队友做比赛作品的初衷有分歧。",
+    "evidence_example": "我想学技术、做有意思的东西，队友重视用 AI 做作品、包装和宣传。",
+    "relevant": {
+      "795909bc-0ed3-4bf2-b6f9-d8e5ffc0e841": "episodic",
+      "8cd9ef0d-0493-432b-bde4-55bd6f0812ac": "origin",
+      "153be084-4370-4818-8381-845eff037183": "origin",
+      "fb1cb22e-4b15-4c32-9f6b-173386f04325": "origin",
+      "5084b1d8-086c-4dfc-a153-d3aedbb08b57": "semantic"
+    }
+  },
+  {
+    "query": "我想回顾别人快给我报名时我对参赛投入的取舍。",
+    "evidence_example": "我不愿把宝贵时间花在这种团队分工上，当时倾向不参加。",
+    "relevant": {
+      "795909bc-0ed3-4bf2-b6f9-d8e5ffc0e841": "episodic",
+      "213b18bf-b493-4b52-a7dd-b2cd1c14ea51": "origin",
+      "6b7c8cfd-4abf-4eb7-b3c6-00676cab95d0": "origin",
+      "42886c81-dcf9-4321-bcee-478bbf6e3601": "origin",
+      "02b09166-abf9-44e2-b901-6ccc42c9c99c": "origin",
+      "fb1cb22e-4b15-4c32-9f6b-173386f04325": "origin"
+    }
+  },
+  {
+    "query": "我对软件比赛的预期在看过赛题和外界评价后发生了变化。",
+    "evidence_example": "看过题目和风评，我开始觉得比赛和想象中的技术竞赛不同。",
+    "relevant": {
+      "859c69d0-e2fd-491c-a37e-ebe72a45705e": "origin",
+      "d90c4427-a35b-420f-b778-0290f9a01852": "origin"
+    }
+  },
+  {
+    "query": "我提过一个自己一直不喜欢的手机品牌。",
+    "evidence_example": "OPPO。",
+    "relevant": {
+      "3f60d373-c162-47b3-95a1-5c5ce74445ca": "episodic",
+      "770d29c8-4b6d-48b6-a289-2c1c67701a5a": "origin",
+      "4db98eb2-2452-4fde-af99-a7cc9f20c42f": "semantic"
+    }
+  },
+  {
+    "query": "我曾直接问过那位很看重成绩的队友对大赛的看法。",
+    "evidence_example": "我觉得他眼里只有加分，在意的是评奖收益。",
+    "relevant": {
+      "795909bc-0ed3-4bf2-b6f9-d8e5ffc0e841": "episodic",
+      "3b37f586-16fc-4d2c-ac06-a1c0877a77a4": "origin",
+      "026199e4-1c54-4e2d-9486-49e7b21348e8": "origin"
+    }
+  },
+  {
+    "query": "我最初看狼蛛小配列时关注过它的功能和连接口碑。",
+    "evidence_example": "Mini60 被介绍为入门磁轴，支持快速触发和三模连接，也有人反馈断连。",
+    "relevant": {
+      "8f336b9a-6d8e-4dd4-b679-912208c09b23": "origin"
+    }
+  },
+  {
+    "query": "我给双十一买狼蛛键盘定过预算上限，也纠正过版本。",
+    "evidence_example": "目标是一百元以内，想要非标准版。",
+    "relevant": {
+      "e0404593-0183-4e0b-8f24-de9f4d7a66e5": "episodic",
+      "2374bc58-27e4-45cc-a0ec-92c7f7cce6de": "origin",
+      "8c39d618-7966-4e04-a99e-26c4d39b2da8": "origin",
+      "853928f7-b3e2-4062-bd37-577f246d9f3f": "origin"
+    }
+  },
+  {
+    "query": "之前估过标准版和 Pro 在双十一降到百元内的机会。",
+    "evidence_example": "当时判断标准版有机会，Pro 更难，另提到二手渠道。",
+    "relevant": {
+      "22e5a973-0302-4855-9652-60d2680d416e": "origin",
+      "853928f7-b3e2-4062-bd37-577f246d9f3f": "origin"
+    }
+  },
+  {
+    "query": "买二手磁轴之前，我们特别讨论过校准和拆修的影响。",
+    "evidence_example": "当时提到霍尔传感器、混换轴体和进水可能影响触发，需验机。",
+    "relevant": {
+      "83c525d3-bafd-4772-9eb9-2d9a6d6ef318": "origin",
+      "b4c167d3-d7d5-46aa-a800-b2cd7c4c56d4": "origin"
+    }
+  },
+  {
+    "query": "我想回顾传统机械键盘和磁轴键盘精密程度的区别。",
+    "evidence_example": "当时解释磁轴尤其依赖电子感应和校准，日常敲击并不特别娇贵。",
+    "relevant": {
+      "b4c167d3-d7d5-46aa-a800-b2cd7c4c56d4": "origin"
+    }
+  },
+  {
+    "query": "我最早看中一家同时卖宠物和键盘的店铺。",
+    "evidence_example": "对话里说的是卖猫的卖家，建议核实拆修和功能情况。",
+    "relevant": {
+      "2613fec5-03e2-4f6f-8767-9baf43ce073c": "origin",
+      "7809c1a7-2ccd-4358-8278-1543245f38b4": "origin",
+      "b60b8404-2eb3-4c18-a5e4-264f31767829": "origin",
+      "e8c2dddb-0a07-4a9b-8c31-0ca7804e8b5a": "origin"
+    }
+  },
+  {
+    "query": "我在换磁轴之前有一把多次转手的廉价键盘。",
+    "evidence_example": "旧键盘是十元买到的三手 F3287。",
+    "relevant": {
+      "e0404593-0183-4e0b-8f24-de9f4d7a66e5": "episodic",
+      "53aa5911-0079-44e4-b1d7-978c2d62564f": "origin",
+      "b30a6e7f-baf5-47d4-a80c-aa2f43bc9028": "origin",
+      "ad296371-5b72-4f2f-837b-5af9651c677d": "semantic"
+    }
+  },
+  {
+    "query": "我想回顾从旧狼蛛换到 Mini60 后键位布局的变化。",
+    "evidence_example": "从 87 键换成 60% 配列，方向键和 F 区常要用 Fn 组合。",
+    "relevant": {
+      "e81536c6-836a-4de6-b6d5-85f35bac0ffe": "origin",
+      "28da8e7d-b560-4884-8ee9-59f8fa2b5bb0": "origin"
+    }
+  },
+  {
+    "query": "之前聊过小配列键盘用来写代码和打字的便利程度。",
+    "evidence_example": "字母输入影响小，频繁用方向键和 F 键会麻烦，可考虑改键。",
+    "relevant": {
+      "28da8e7d-b560-4884-8ee9-59f8fa2b5bb0": "origin"
+    }
+  },
+  {
+    "query": "挑键盘时我会用卖家的在售商品和附件来判断是否个人闲置。",
+    "evidence_example": "我看主页、商品数量和配件是否齐全，也偏向个人或校园集市。",
+    "relevant": {
+      "5cce7542-65b0-4149-87f2-e7fef0933022": "episodic",
+      "559836b0-9927-4ee9-8c3f-f167ae2ec5ee": "origin",
+      "866ce101-5cc4-415d-9b81-00122719ff23": "origin",
+      "1fc16a7c-7260-4271-a134-1b08df2c6c22": "origin",
+      "79793fae-b5b8-4791-ad3d-7246a224bec4": "origin",
+      "c84e0575-4b83-4c70-af93-c29e23d2e548": "semantic",
+      "6bd6aefa-ca2b-47d3-8e1e-808ff23b8a46": "semantic"
+    }
+  },
+  {
+    "query": "我曾比较收个人闲置和收职业二手商家的键盘。",
+    "evidence_example": "担心货源、混轴与维权，更倾向个人闲置。",
+    "relevant": {
+      "5cce7542-65b0-4149-87f2-e7fef0933022": "episodic",
+      "66ec29fd-425c-44ae-bebf-3d5dd52018d1": "origin",
+      "1fc16a7c-7260-4271-a134-1b08df2c6c22": "origin",
+      "b60b8404-2eb3-4c18-a5e4-264f31767829": "origin",
+      "c84e0575-4b83-4c70-af93-c29e23d2e548": "semantic"
+    }
+  },
+  {
+    "query": "有一个卖家盒子很新，但照片没拍清我想买的黑色键盘。",
+    "evidence_example": "主页有四件商品，照片里还有粉白款，当时建议补拍黑色键盘本体。",
+    "relevant": {
+      "8f6df9a0-b2a5-4d42-949f-77b35433a434": "origin"
+    }
+  },
+  {
+    "query": "我曾想等旧键盘坏了再换，也考虑过把两把键盘分开用。",
+    "evidence_example": "当时讨论过把旧 F3287 留作办公备用，新磁轴用来玩游戏。",
+    "relevant": {
+      "fb1ac992-c0dc-4a7e-a0b1-c9a5f2caaf96": "origin",
+      "a37eae98-f3f7-43ae-a5e2-d8cbd6c77368": "origin"
+    }
+  },
+  {
+    "query": "那把十元键盘便宜却让我意外地满意。",
+    "evidence_example": "旧 F3287 有 87 键和三模连接，我觉得十元能有这样的功能很值。",
+    "relevant": {
+      "6ad357f7-8416-4c42-916d-49c672c21d57": "origin",
+      "17867b04-95ca-4f23-8615-da0a9cefbe7e": "origin"
+    }
+  },
+  {
+    "query": "我记得旧机械键盘是在线下学生交易的地方淘到的。",
+    "evidence_example": "十元 F3287 来自校园集市。",
+    "relevant": {
+      "e0404593-0183-4e0b-8f24-de9f4d7a66e5": "episodic",
+      "98948a19-6655-4130-983f-21860f701a0d": "origin",
+      "e3c239e0-cf1f-4c54-907f-3b8320303567": "origin",
+      "3ee6f59f-fd2a-4325-a454-423985c25bb6": "origin"
+    }
+  },
+  {
+    "query": "我们看过一位有原订单、曾改过常用键轴体的个人卖家。",
+    "evidence_example": "原订单是 2025 年 10 月实付 149 元，常用键换过磁玉 Pro。",
+    "relevant": {
+      "937c971b-e369-4d5a-9abf-59ad40bbf48f": "origin"
+    }
+  },
+  {
+    "query": "我想回顾对改过轴的那把百元二手键盘提出的验机要求。",
+    "evidence_example": "问清哪些键换过、是否重新校准，并看有线和无线测试。",
+    "relevant": {
+      "937c971b-e369-4d5a-9abf-59ad40bbf48f": "origin",
+      "7d200f79-9d83-4488-86d2-f720cdf5796c": "origin"
+    }
+  },
+  {
+    "query": "在实际成交之前，我算过用耳机收入抵扣百元挂价的差额。",
+    "evidence_example": "挂价 100 元减去卖耳机所得 55 元，还差 45 元。",
+    "relevant": {
+      "48986100-c4bb-411c-8853-426b9f0b1e61": "origin",
+      "7d200f79-9d83-4488-86d2-f720cdf5796c": "origin",
+      "79793fae-b5b8-4791-ad3d-7246a224bec4": "origin",
+      "82bc3aaa-d8e2-4f4c-b135-63c2dadc0c4e": "origin"
+    }
+  },
+  {
+    "query": "卖家说键盘闲置很久时，我们重点查过电池和配件。",
+    "evidence_example": "担心久放导致电池没电或丢接收器，建议插线试机。",
+    "relevant": {
+      "aecb7add-f699-48c2-90c9-60a7f8da1c31": "origin",
+      "975ee130-51d1-421b-92b4-b10e9824d445": "origin",
+      "b5218b63-19d3-45bf-8e78-67121a3e0dc0": "origin"
+    }
+  },
+  {
+    "query": "我想核对那把久放键盘的购买时间和闲置长度。",
+    "evidence_example": "按当时看的订单，2025 年 10 月买的，谈话时约一年。",
+    "relevant": {
+      "937c971b-e369-4d5a-9abf-59ad40bbf48f": "origin",
+      "7758cd01-7993-4926-86f9-45451e256646": "origin",
+      "b5218b63-19d3-45bf-8e78-67121a3e0dc0": "origin"
+    }
+  },
+  {
+    "query": "我拒绝过一把配件不全却仍开价一百的无线键盘。",
+    "evidence_example": "它缺 2.4G 接收器，我觉得不值一百元。",
+    "relevant": {
+      "5cce7542-65b0-4149-87f2-e7fef0933022": "episodic",
+      "5117e67d-737c-4e46-938e-fd203ea4400f": "origin",
+      "7de179f2-2474-4d77-87a1-5a38d5d019e5": "origin",
+      "fe8e0a2f-115e-447a-8a15-0925a0280c2f": "origin",
+      "d1fd7b48-1971-4079-bd9c-9b6a2794311b": "semantic"
+    }
+  },
+  {
+    "query": "我没法放心用蓝牙来弥补键盘接收器的缺失。",
+    "evidence_example": "我的电脑蓝牙驱动常出问题，甚至可能死机。",
+    "relevant": {
+      "5cce7542-65b0-4149-87f2-e7fef0933022": "episodic",
+      "648552a1-0f7a-4fc6-b533-d4951ec58332": "origin",
+      "fe8e0a2f-115e-447a-8a15-0925a0280c2f": "origin",
+      "96f0e451-49e2-4ea5-9271-e967e9780327": "semantic"
+    }
+  },
+  {
+    "query": "我想核对四月那把二手键盘质检贴上的批次标记。",
+    "evidence_example": "当时按 2026.04 和序列号判断那把是四月出厂的。",
+    "relevant": {
+      "82bc3aaa-d8e2-4f4c-b135-63c2dadc0c4e": "origin"
+    }
+  },
+  {
+    "query": "看到数码卖家的出货量和好评率后，我们讨论过这些数字的可信度。",
+    "evidence_example": "我一度觉得卖得多说明没问题，回复指出大量同类货和满好评都不能证明是个人闲置。",
+    "relevant": {
+      "be9b4688-bc43-4d4e-89d3-6938cc8c7d53": "origin",
+      "b60b8404-2eb3-4c18-a5e4-264f31767829": "origin",
+      "e8c2dddb-0a07-4a9b-8c31-0ca7804e8b5a": "origin",
+      "b704c7ae-e437-4bf7-ba2c-2ed1b15ff5e4": "origin",
+      "1da26a65-4f91-4705-99f6-ccdd405376d5": "origin"
+    }
+  },
+  {
+    "query": "在另一个卖家的主页上，我们用一台相机作为辨认线索。",
+    "evidence_example": "当时主页仅有键盘和索尼 TX1 相机，较像个人闲置。",
+    "relevant": {
+      "a1f4b23b-751a-4f7d-af02-2b6a00b01429": "origin"
+    }
+  },
+  {
+    "query": "当时卖家报的键盘价格算上运费超过了一百元。",
+    "evidence_example": "一度算到含运费 102 元，并讨论过砍运费或谈到 90 至 95 元包邮。",
+    "relevant": {
+      "0c461fa5-0d39-4073-a8ca-c1d6f3e3d772": "origin",
+      "081a02d9-3d2e-4af8-9a1f-8e05fcbe9fef": "origin",
+      "f7a3c2da-7bd0-459b-821d-247e4c5cdb5c": "origin"
+    }
+  },
+  {
+    "query": "二手卖家没有马上回消息，我当时想在议价上退一步。",
+    "evidence_example": "当时商量过稍作让步，重新给出包邮报价。",
+    "relevant": {
+      "081a02d9-3d2e-4af8-9a1f-8e05fcbe9fef": "origin",
+      "49d59526-126f-44d2-8443-15598f6c2c4d": "origin",
+      "f7a3c2da-7bd0-459b-821d-247e4c5cdb5c": "origin"
+    }
+  },
+  {
+    "query": "我想区分最后买的键盘和先前那把四月出厂的键盘。",
+    "evidence_example": "最后那把是 2026 年 8 月的，贴纸写 2026.08，序列号含 2608。",
+    "relevant": {
+      "59b1b6b8-7898-4837-9276-a5a098652060": "origin",
+      "970be571-c9c7-4539-b177-997918eb2c59": "origin",
+      "760afb14-313e-46d8-a3d9-ba0e791f0d0e": "origin",
+      "ccbe77f8-2b3d-4e46-871c-c04424689317": "origin",
+      "401ed6ab-4229-4354-9cd1-db275f08bf38": "origin",
+      "3ee6f59f-fd2a-4325-a454-423985c25bb6": "origin",
+      "5dfa45db-a7c9-4860-baf8-dbc0e871d3a1": "origin"
+    }
+  },
+  {
+    "query": "我想把二手狼蛛非标准版的最终成交价和最初预算区分开。",
+    "evidence_example": "成交 95 元。",
+    "relevant": {
+      "e0404593-0183-4e0b-8f24-de9f4d7a66e5": "episodic",
+      "8c0bfb54-5b7c-4056-bf22-5840e0e46c63": "origin",
+      "760afb14-313e-46d8-a3d9-ba0e791f0d0e": "origin",
+      "4e949a85-d06f-48c6-a266-a82aaa37fe76": "origin",
+      "401ed6ab-4229-4354-9cd1-db275f08bf38": "origin",
+      "3ee6f59f-fd2a-4325-a454-423985c25bb6": "origin",
+      "5dfa45db-a7c9-4860-baf8-dbc0e871d3a1": "origin",
+      "f63c4bef-858c-493c-830f-aad2bd8c9cfc": "semantic"
+    }
+  },
+  {
+    "query": "我曾用闲鱼账号开了多久和卖过的东西来判断最终卖家的身份。",
+    "evidence_example": "用了四年，只卖过一台相机，让我更相信是个人闲置。",
+    "relevant": {
+      "eb80e2fd-99f6-4841-a78f-f9ac40c5f559": "origin",
+      "acef8ae5-18c2-4e4e-b37b-53b83bd8a631": "origin",
+      "c2d5c53b-10c7-4c14-a257-8067f7cdec7d": "origin",
+      "3ee6f59f-fd2a-4325-a454-423985c25bb6": "origin",
+      "c556ec81-e06c-48a4-beeb-7cb96e3bdcc1": "origin",
+      "db47676f-bf56-410c-a6c0-f73779d12472": "origin"
+    }
+  },
+  {
+    "query": "我拿二手 Mini60 的成交价和当时心里的全新价做过比较。",
+    "evidence_example": "二手 95 元，全新估计一百四五十元。",
+    "relevant": {
+      "e0404593-0183-4e0b-8f24-de9f4d7a66e5": "episodic",
+      "760afb14-313e-46d8-a3d9-ba0e791f0d0e": "origin",
+      "350098b8-f1ea-4a80-bf9a-55620788bd6f": "origin",
+      "401ed6ab-4229-4354-9cd1-db275f08bf38": "origin"
+    }
+  },
+  {
+    "query": "收到这把二手键盘前后，我多次评价过它的成色。",
+    "evidence_example": "我觉得几乎是新的，回复提到键帽、膜和缝隙的状态。",
+    "relevant": {
+      "e0404593-0183-4e0b-8f24-de9f4d7a66e5": "episodic",
+      "a0cb2d7f-95eb-4836-9d7c-6e5af698eb6d": "origin",
+      "970be571-c9c7-4539-b177-997918eb2c59": "origin",
+      "cb08789b-e902-4891-bfc9-6e7307e32112": "origin",
+      "907d2b92-c7be-4f17-ab51-b5454c54aeec": "origin"
+    }
+  },
+  {
+    "query": "我推测原主人没怎么用过最后买到的键盘。",
+    "evidence_example": "这是我根据成色作的推测，对话也讨论了买来后闲置的可能。",
+    "relevant": {
+      "acef8ae5-18c2-4e4e-b37b-53b83bd8a631": "origin",
+      "98ed1159-6f83-4c97-a58c-b641f2b2c20e": "origin",
+      "4d444444-c816-43ba-8a78-842f4ee39be2": "origin",
+      "c2d5c53b-10c7-4c14-a257-8067f7cdec7d": "origin"
+    }
+  },
+  {
+    "query": "我转手四六级听力耳机时还记得购入价和使用时长。",
+    "evidence_example": "70 元买的，用了一年，以 55 元卖给大一新生。",
+    "relevant": {
+      "baabeeb3-eefa-4b37-b85f-ccdd7e09818c": "origin",
+      "67646fc7-4f9a-464b-ad13-a224c01f7a43": "origin"
+    }
+  },
+  {
+    "query": "我想核对卖掉耳机以后换键盘额外花的现金。",
+    "evidence_example": "95 元成交，减去耳机回款 55 元，实际再掏 40 元。",
+    "relevant": {
+      "e0404593-0183-4e0b-8f24-de9f4d7a66e5": "episodic",
+      "760afb14-313e-46d8-a3d9-ba0e791f0d0e": "origin",
+      "4e949a85-d06f-48c6-a266-a82aaa37fe76": "origin",
+      "401ed6ab-4229-4354-9cd1-db275f08bf38": "origin",
+      "907d2b92-c7be-4f17-ab51-b5454c54aeec": "origin",
+      "3ee6f59f-fd2a-4325-a454-423985c25bb6": "origin",
+      "67646fc7-4f9a-464b-ad13-a224c01f7a43": "origin",
+      "5dfa45db-a7c9-4860-baf8-dbc0e871d3a1": "origin"
+    }
+  },
+  {
+    "query": "我聊过二手交易里判断卖家和货源有多难。",
+    "evidence_example": "我觉得水很深，当时回顾了商家伪装个人、配件缺失和货品暗病。",
+    "relevant": {
+      "d4d86363-8d5b-47cc-b2dd-2b2895ece3ef": "origin",
+      "b701107d-b62c-44f9-baca-0bce329ac7e4": "origin",
+      "db47676f-bf56-410c-a6c0-f73779d12472": "origin"
+    }
+  },
+  {
+    "query": "我说过自己偏爱一类二手卖家，也提过这么挑的理由。",
+    "evidence_example": "我偏向女生自用的闲置，觉得保养得好些；这是我个人的判断。",
+    "relevant": {
+      "7ab6175e-0905-43cf-84f8-5c49c2f93843": "episodic",
+      "cb9caaf7-aa7d-40f9-86c9-ad8e09622946": "origin",
+      "76c6c11a-f038-4e1c-97b0-773b21dece76": "origin",
+      "551ca506-20fe-456f-8098-1148c761358f": "semantic"
+    }
+  },
+  {
+    "query": "我们对比过磁轴和传统机械轴按下去的手感。",
+    "evidence_example": "当时描述磁轴较线性、触发可调，青轴有明显段落和咔哒声。",
+    "relevant": {
+      "86ba51d0-3da4-4203-ae6f-ecbd34484ae3": "episodic",
+      "b4890ea2-600e-4d33-be58-0199b92ceb46": "origin",
+      "7e15416e-2066-4cfc-80d1-67021df19ba7": "origin",
+      "9169af0b-2c65-4380-a141-15c0c31f1ddd": "origin"
+    }
+  },
+  {
+    "query": "我换键盘前用过一种我很喜欢的有声段落轴。",
+    "evidence_example": "青轴，我说过用着很爽。",
+    "relevant": {
+      "86ba51d0-3da4-4203-ae6f-ecbd34484ae3": "episodic",
+      "ef775bab-9a64-4785-a512-9365893ee04b": "origin",
+      "4141b42a-2c14-4642-93ff-42aa86d39c24": "origin",
+      "18eb276b-8926-4b44-b238-5d7468b22238": "semantic"
+    }
+  },
+  {
+    "query": "我和助手讨论过蕾塞最后回去见电次时的动机。",
+    "evidence_example": "当时的解读是她动了真感情，也向往普通生活。",
+    "relevant": {
+      "9acb9b99-763b-42c1-8910-7835080ddbfe": "origin"
+    }
+  },
+  {
+    "query": "我说过自己有感情却不知道该怎么表达。",
+    "evidence_example": "我觉得不会爱人也不会表达，对话提到可以从表达想念和关心练起。",
+    "relevant": {
+      "5a6e691a-24ff-409c-8f72-f467343453f6": "origin",
+      "cabfa2f9-cad3-4294-aa10-2af14bce63d4": "origin"
+    }
+  },
+  {
+    "query": "我担心和对方没那么熟就期待回应显得傲慢。",
+    "evidence_example": "当时讨论了自己有期待与要求对方必须回应之间的界限。",
+    "relevant": {
+      "16f21df6-96db-4591-92d0-3dc1fff5071c": "origin",
+      "db48a579-4030-4ad1-92c0-17116ed120fc": "origin"
+    }
+  },
+  {
+    "query": "我害怕把真实的人当作自己幻想中的对象。",
+    "evidence_example": "我担心自作多情，反复审视自己喜欢别人的动机。",
+    "relevant": {
+      "218b265a-8dc4-4e5a-8663-2c195282618b": "origin",
+      "d4d9e693-c1ec-49f0-913a-baaaa7a2de2d": "origin",
+      "80218a30-59f5-4bc6-927d-cdd8c36f60dc": "origin",
+      "e33c165d-486a-4118-a60b-3f5bafbbdac7": "semantic"
+    }
+  },
+  {
+    "query": "我回顾过去一段被拒绝后反复否定自己的经历。",
+    "evidence_example": "去年被拒后，我常怀疑自己有没有资格喜欢别人。",
+    "relevant": {
+      "36e9f137-bafa-452f-9bf9-bf415f857a1d": "episodic",
+      "80218a30-59f5-4bc6-927d-cdd8c36f60dc": "origin",
+      "2c5a5a1b-8930-4171-9106-187819a719ee": "origin",
+      "b5d58327-576e-400d-92fc-39db419d7364": "origin",
+      "e33c165d-486a-4118-a60b-3f5bafbbdac7": "semantic"
+    }
+  },
+  {
+    "query": "我曾说感觉没有人喜欢我。",
+    "evidence_example": "当时我感到委屈和失落，谈话也提到了被拒后的感受。",
+    "relevant": {
+      "b1112ffb-c1a6-4309-bc58-d69db7d428a9": "origin",
+      "dfbf8904-c08a-4c7a-ae5c-d1e769bbe778": "origin"
+    }
+  },
+  {
+    "query": "我提到过自己对一段感情有两个方向的期待。",
+    "evidence_example": "既想被人喜欢，也想好好喜欢一个人。",
+    "relevant": {
+      "36e9f137-bafa-452f-9bf9-bf415f857a1d": "episodic",
+      "8ebcc088-93fe-4956-a4eb-a27b57db30fb": "origin",
+      "b5d58327-576e-400d-92fc-39db419d7364": "origin",
+      "ec4ce2ed-ed58-421d-b56d-68876336fe1b": "semantic"
+    }
+  },
+  {
+    "query": "我拿编程里创建对象的语法开过一个单身的玩笑。",
+    "evidence_example": "没对象就 new 一个，回复接了构造函数的梗。",
+    "relevant": {
+      "9188a832-830a-437f-8fc9-87aec3ed5d2d": "origin",
+      "e2f31487-90ff-4275-9b12-3e4bf4ade04b": "origin"
+    }
+  },
+  {
+    "query": "我曾想短期续费一个音乐平台的会员。",
+    "evidence_example": "想再充一个月酷狗音乐 VIP。",
+    "relevant": {
+      "066ca405-b5e7-4c51-ae62-dd0918d40d95": "episodic",
+      "af865dab-b40d-4f68-bc4c-d78ab8f4ccce": "origin",
+      "5e1ceb6b-ba4a-4a28-b71d-009ada8c9df5": "origin"
+    }
+  },
+  {
+    "query": "我提起过自己在升学上的两个决定。",
+    "evidence_example": "不保研，也不考研。",
+    "relevant": {
+      "7a6c9ad9-ff8b-4cf1-83d3-e477eb033a8f": "episodic",
+      "83bc358c-b486-41ef-b968-3e622f2b06cf": "origin",
+      "c48963d9-aa46-4223-af0b-f3c91965dc70": "origin",
+      "d3258b57-b164-4013-9ebe-36d046412801": "semantic"
+    }
+  },
+  {
+    "query": "聊未来和找实习时，我提到自己最近情绪低落。",
+    "evidence_example": "当时我说最近好压抑，也提过日子过得狼狈。",
+    "relevant": {
+      "7a6c9ad9-ff8b-4cf1-83d3-e477eb033a8f": "episodic",
+      "83bc358c-b486-41ef-b968-3e622f2b06cf": "origin",
+      "2320eb9d-784b-4d1b-98ab-f94326bcda63": "origin",
+      "cf3b0bb7-268e-48b7-846c-5c2f843525ff": "origin"
+    }
+  },
+  {
+    "query": "我用一个动漫人物说过自己期待的陪伴。",
+    "evidence_example": "我说希望有个蕾塞，谈话转到希望被理解、有人分享生活。",
+    "relevant": {
+      "7a7aead6-7347-4b00-9e83-c9f09f75c37d": "origin",
+      "35427fc7-b07f-4ddf-99d6-70b6baf9f8b8": "origin"
+    }
+  },
+  {
+    "query": "我给自己定过下次体育课上主动接近同学的计划。",
+    "evidence_example": "下次想找那个女生一起打球。",
+    "relevant": {
+      "009b9620-54f6-4f08-bddb-b0f22ad66fae": "episodic",
+      "8421bf5f-e644-439d-8b13-7204617b3c91": "origin",
+      "cc0f2fed-f5aa-44dd-b583-0a1c0802991e": "origin",
+      "94a1fe4d-04bd-4544-aaa4-10ef6c20f13e": "origin",
+      "7a55499c-7759-493a-9ab0-3cdfaac82b6d": "origin"
+    }
+  },
+  {
+    "query": "有人过来后，我反而不好意思去女生那桌打球。",
+    "evidence_example": "旁边也有人没打，特意走到她那桌让我觉得意图太明显。",
+    "relevant": {
+      "3a718f79-f3ff-42f7-ae2f-5f44ea18feb3": "origin",
+      "d594ac37-578f-4e30-92ba-b695bc46435d": "origin"
+    }
+  },
+  {
+    "query": "我想回顾上次球局被人打断后商量过的应对方式。",
+    "evidence_example": "下次有人叫我时可以说明已有安排，直接去自己想去的那桌。",
+    "relevant": {
+      "7a55499c-7759-493a-9ab0-3cdfaac82b6d": "origin",
+      "c5ac8ecf-d486-4563-ac05-36bae95a031e": "origin",
+      "6aa94542-67e8-4e8a-9cbf-802dd504403b": "origin"
+    }
+  },
+  {
+    "query": "我担心错过这一节体育课要隔很久才能再见到她。",
+    "evidence_example": "运动会占课，下次可能体测，估计要隔三周，怕她忘了我。",
+    "relevant": {
+      "009b9620-54f6-4f08-bddb-b0f22ad66fae": "episodic",
+      "e0b2b844-739e-4da4-ad39-818e3ae2bcbb": "origin",
+      "f96dcb07-4cf4-4086-9d60-10a5bb7057b6": "origin"
+    }
+  },
+  {
+    "query": "我曾用上课、玩游戏和使用数码设备的习惯让人猜专业。",
+    "evidence_example": "我说水课不上、游戏要玩、觉睡不多，电脑比手机重要；回复猜计算机类。",
+    "relevant": {
+      "9a5aacf6-b43e-46b8-9d3d-587947a080a5": "episodic",
+      "16b0a240-4654-47a7-a6f9-2a92504ce0a9": "origin",
+      "3c6d92e9-ba91-424a-b6af-17cdd0d317ff": "origin"
+    }
+  },
+  {
+    "query": "我说过就算点名也会翘课，背着电脑去另一个地方。",
+    "evidence_example": "我会直接去图书馆。",
+    "relevant": {
+      "81010571-f03f-4f2c-bffc-c21709ff6a61": "episodic",
+      "37cf609e-8dc8-4cc0-8af1-17ad04e390ee": "origin",
+      "c60019bb-9875-4f46-94ed-431a5a96fff8": "origin"
+    }
+  },
+  {
+    "query": "聊翘课的时候，助手提醒过几件可能影响平时分的事情。",
+    "evidence_example": "它提到点名、实验以及随堂作业。",
+    "relevant": {
+      "0fda39eb-168f-441a-8b7d-5cb0a8e77324": "origin"
+    }
+  },
+  {
+    "query": "我不喜欢反复折腾 AI 工具，对国产模型也有明确评价。",
+    "evidence_example": "我觉得国产模型够用、性价比高。",
+    "relevant": {
+      "9e74084a-24af-4030-a9e7-3b784788b188": "episodic",
+      "db871314-18f4-420f-8259-676293ded9d4": "origin",
+      "5315c4dd-40a2-4b22-9157-f913296e220c": "origin",
+      "7a9c4b6d-2995-422c-a750-9f91840298aa": "semantic",
+      "3276677f-7dc7-44ab-ac6d-2e5ac77204a3": "semantic"
+    }
+  },
+  {
+    "query": "我谈过工具好用和不停追着换工具之间的差别。",
+    "evidence_example": "当时我不赞成对工具要求过高，回复提到顺手够用就行。",
+    "relevant": {
+      "db871314-18f4-420f-8259-676293ded9d4": "origin",
+      "8cca12e6-7e5f-4ae7-87c8-172239331cb6": "origin",
+      "b34af21c-1399-4090-b64c-9e200145f9fe": "origin",
+      "7a9c4b6d-2995-422c-a750-9f91840298aa": "semantic"
+    }
+  },
+  {
+    "query": "我之前说过对日用手机的系统和品牌并不挑剔。",
+    "evidence_example": "安卓能用即可，留老款苹果当备用机。",
+    "relevant": {
+      "ed3d5e9c-6aac-4e4c-a722-23cac5b04441": "episodic",
+      "76498466-503c-451f-a1b6-4ecf2667e6c4": "origin",
+      "420bd9fc-c960-42c9-9bcc-75a080a88d9f": "origin",
+      "07c01df8-2c73-45c2-9977-3acbb504b8f4": "semantic",
+      "58b25b60-154f-4bca-9c1b-8108ed09f8f8": "semantic"
+    }
+  },
+  {
+    "query": "我聊主力机和备用机时也提过平时的上网习惯。",
+    "evidence_example": "我当时说自己平时会翻墙。",
+    "relevant": {
+      "ed3d5e9c-6aac-4e4c-a722-23cac5b04441": "episodic",
+      "76498466-503c-451f-a1b6-4ecf2667e6c4": "origin",
+      "bdf6819d-50a1-42a0-937e-fd1154304e99": "semantic"
+    }
+  },
+  {
+    "query": "我把自己和游戏本的关系说成过一场婚礼。",
+    "evidence_example": "我开玩笑说要和电脑小姐结婚，回复用 VS Code、编译器和充电器安排角色。",
+    "relevant": {
+      "06e97993-8af6-407e-8c89-5b2c63cd3b26": "origin",
+      "3651c4a1-3fea-4da7-8e16-e6bf145d5319": "origin",
+      "d80bbd32-d82c-4eca-9d2b-e83f0c8728ab": "origin"
+    }
+  },
+  {
+    "query": "我说图书馆有些插座根本没法给电脑续电。",
+    "evidence_example": "有孔但不通电，我称它们为插座刺客。",
+    "relevant": {
+      "609fef13-0e27-47c7-b365-33362c3f1949": "origin",
+      "346c93bf-72b6-4146-a5c9-41525faee875": "origin"
+    }
+  },
+  {
+    "query": "我担心图书馆的游戏本在代码写完前就会没电。",
+    "evidence_example": "游戏本需要供电，我想在没电前完成任务，回复建议先保存代码。",
+    "relevant": {
+      "9c17a96e-a8f9-4328-909b-bbe689de1642": "origin",
+      "e9ed1c89-bbcf-4b01-9234-fdc8ff6e43ad": "origin",
+      "bfc19a23-59b1-4f08-beb1-4baceb8b134b": "origin",
+      "d0203ef1-a529-4b23-9bfd-492b42e588be": "origin"
+    }
+  },
+  {
+    "query": "我想核对那次在图书馆赶代码时向助手报过的剩余电量。",
+    "evidence_example": "大约还剩一半，随后就觉得掉电特别快。",
+    "relevant": {
+      "81010571-f03f-4f2c-bffc-c21709ff6a61": "episodic",
+      "2393db51-dd73-4cf2-8360-fa0dfbc3d793": "origin",
+      "a2624ce3-1a1c-4353-9fbf-d13657c8fe72": "origin",
+      "ff011461-d827-401a-a09f-35b0642076e9": "origin"
+    }
+  },
+  {
+    "query": "我提过打开开发环境以后电脑掉电格外快。",
+    "evidence_example": "当时点名 PyCharm 耗电，回复提到了索引和实时检查。",
+    "relevant": {
+      "81010571-f03f-4f2c-bffc-c21709ff6a61": "episodic",
+      "846b8817-7e06-4ff2-96b8-f4a761a9808a": "origin",
+      "db0f777c-560a-45dd-9d98-af7c50958bb5": "origin",
+      "af9721b4-8786-44f5-ac0b-b0472629ecaf": "semantic"
+    }
+  },
+  {
+    "query": "我记录过游戏本电量下降一格所用的时间。",
+    "evidence_example": "约三十秒掉一个百分点。",
+    "relevant": {
+      "81010571-f03f-4f2c-bffc-c21709ff6a61": "episodic",
+      "9524ebfb-1961-48bb-9da6-79fab1684eea": "origin",
+      "849a4ceb-b6fb-4c9a-8276-7b55cec6a017": "origin"
+    }
+  },
+  {
+    "query": "我在电脑快没电的那天还吐槽了自己身上的味道。",
+    "evidence_example": "我说身上有一股馊味。",
+    "relevant": {
+      "ef75fe5f-0fe2-4f77-861c-a6758bf76fb2": "origin",
+      "15b48258-9056-4fe3-90ec-a8ad160be622": "origin"
+    }
+  },
+  {
+    "query": "我在低功率供电下写代码时，觉得插上电反而更卡。",
+    "evidence_example": "我说性能比不插电还差，甚至卡得像幻灯片。",
+    "relevant": {
+      "81010571-f03f-4f2c-bffc-c21709ff6a61": "episodic",
+      "77587567-7b64-4e2b-bef2-27ce39e7e23f": "origin",
+      "4043e635-3e13-4a20-b381-532b339dc9cb": "origin",
+      "8770dabd-4f3e-419e-9beb-d6eb953c5403": "origin",
+      "d550eeb3-9504-4bec-a99b-63b6b8924b2e": "origin",
+      "f7be9d62-6ed5-4897-a706-6db5987cd2ac": "semantic"
+    }
+  },
+  {
+    "query": "我不愿把游戏本原配电源背到图书馆有个很实际的原因。",
+    "evidence_example": "原装充电器好几斤，出门太重。",
+    "relevant": {
+      "81010571-f03f-4f2c-bffc-c21709ff6a61": "episodic",
+      "7bbfee6e-4430-4913-bb0c-d57d03350d65": "origin",
+      "45b3b02e-08ab-4497-b1b9-0bc3a41b3c6f": "origin",
+      "3918dc2f-cb29-4ac0-8d05-ff62a98975ff": "semantic"
+    }
+  },
+  {
+    "query": "我曾想在低压供电时给 CPU 设个限制，后来又放弃了。",
+    "evidence_example": "提过保持在 30% 左右，随后决定不再折腾。",
+    "relevant": {
+      "81010571-f03f-4f2c-bffc-c21709ff6a61": "episodic",
+      "dc9f9519-2763-4328-99a8-61857d9a439f": "origin",
+      "003c7080-1bad-48ae-ba25-c9d6540ea62d": "origin",
+      "f1ee045c-a509-4c91-b6b7-0c45ff35ba24": "origin",
+      "e5fe4a3e-be40-4ecb-ac6b-b8bb93ca49fa": "origin"
+    }
+  },
+  {
+    "query": "我最后还是接着低压电源继续做手头的开发。",
+    "evidence_example": "当时还在写代码，回复提过暂时改用轻量编辑器。",
+    "relevant": {
+      "81010571-f03f-4f2c-bffc-c21709ff6a61": "episodic",
+      "2363e8ae-40b1-4193-9e12-08c55d357448": "origin",
+      "ca1cef1e-f0f8-4bed-9168-643809a6e9a0": "origin"
+    }
+  },
+  {
+    "query": "我用饭量形容过重型电脑的用电需求。",
+    "evidence_example": "我说这类电脑胃口大，讨论的是低压电源供电吃紧。",
+    "relevant": {
+      "f77b977e-35f2-4678-ac5a-7d7b10bfa55a": "origin",
+      "8a621825-8019-48e5-8801-aa0ee525241c": "origin"
+    }
+  },
+  {
+    "query": "我比较过接电打游戏和低压供电开开发工具时的 CPU 占用。",
+    "evidence_example": "两次都在 40% 左右，但当时跑的任务和供电状态不同。",
+    "relevant": {
+      "1324b7b3-eb10-416b-871e-730d6c27e8ad": "origin",
+      "177c4114-a681-4726-8d42-ed86ea2bacda": "origin"
+    }
+  },
+  {
+    "query": "我提到过那台随身游戏本的处理器型号和核心数。",
+    "evidence_example": "8945HX，我当时说有 16 个大核。",
+    "relevant": {
+      "81010571-f03f-4f2c-bffc-c21709ff6a61": "episodic",
+      "49b19f34-3515-4fe7-9a98-5d4ea2f34695": "origin",
+      "cbbd0cb0-779b-41ca-ba9e-6cd403c6697c": "origin",
+      "82517a22-ed0a-4d7a-bf26-84e88d00ef4e": "semantic"
+    }
+  },
+  {
+    "query": "我喜欢把排查程序故障时等待推理的时间用来休息。",
+    "evidence_example": "让 AI 想 bug，自己刷抖音。",
+    "relevant": {
+      "9e74084a-24af-4030-a9e7-3b784788b188": "episodic",
+      "7fd8d487-7e88-402f-814f-8256339feef7": "origin",
+      "65a43151-43de-4e9a-9e03-1bd544443115": "origin",
+      "1611a426-07e8-4f56-b8f0-b63f5e978ab6": "semantic"
+    }
+  },
+  {
+    "query": "我最先估算过一套 5060 台式机的三大件预算。",
+    "evidence_example": "当时按 RTX 5060、16GB 内存和 i7 或 R7 估了 4700 至 8000 元。",
+    "relevant": {
+      "8bf9fce0-3cf1-46fd-a955-4ffa27132cef": "episodic",
+      "9d227b48-2436-4c35-a4f7-2baaac30fff1": "origin",
+      "220dc3aa-ab9e-4209-b2f3-6db12c886ad9": "origin"
+    }
+  },
+  {
+    "query": "我给台式机清单补过显示器刷新率和硬盘规格。",
+    "evidence_example": "240Hz 显示器，1TB 固态硬盘。",
+    "relevant": {
+      "8bf9fce0-3cf1-46fd-a955-4ffa27132cef": "episodic",
+      "4367588d-1129-486a-98ab-6f09d690543a": "origin",
+      "908391d7-624f-41cf-a1c6-3c183ab8c846": "origin",
+      "35e59c3b-d462-446d-9c19-cf38aa7c6581": "origin"
+    }
+  },
+  {
+    "query": "我们算过其余配件尽量买便宜时的整套装机预算。",
+    "evidence_example": "当时给出的估算区间约 7100 至 8800 元。",
+    "relevant": {
+      "8bf9fce0-3cf1-46fd-a955-4ffa27132cef": "episodic",
+      "51a19ced-6ed9-494e-a3f1-0e10b5c03d22": "origin",
+      "52458d00-e579-4af3-bad5-f89583bd22e3": "origin"
+    }
+  },
+  {
+    "query": "我把整套台式机的开销和现有游戏本的价格放在一起比较过。",
+    "evidence_example": "当时认为价格已经接近，讨论过先给游戏本外接高刷屏。",
+    "relevant": {
+      "8bf9fce0-3cf1-46fd-a955-4ffa27132cef": "episodic",
+      "be22d671-2161-4207-87c1-0a1cd6ecb7db": "origin",
+      "35e59c3b-d462-446d-9c19-cf38aa7c6581": "origin",
+      "8f0f2a6f-2640-46e6-bb13-00f18c0d63c8": "origin"
+    }
+  },
+  {
+    "query": "我打算装的桌面机和现有游戏本原本配的内存不一样。",
+    "evidence_example": "计划配 16GB，现有游戏本是 32GB。",
+    "relevant": {
+      "8bf9fce0-3cf1-46fd-a955-4ffa27132cef": "episodic",
+      "9d227b48-2436-4c35-a4f7-2baaac30fff1": "origin",
+      "220dc3aa-ab9e-4209-b2f3-6db12c886ad9": "origin",
+      "9753dd35-16b0-4d22-b41d-fef6e2dbab1c": "origin",
+      "8f0f2a6f-2640-46e6-bb13-00f18c0d63c8": "origin",
+      "83e45cc6-2069-4128-a818-80e9f03aeda4": "semantic"
+    }
+  },
+  {
+    "query": "我考虑过游戏本坏了以后留下还能装进台式机的部件。",
+    "evidence_example": "当时重点提到固态硬盘与内存条，后者涉及转接和兼容。",
+    "relevant": {
+      "cc1eac20-32ef-4244-a2d2-7a78498e0f98": "episodic",
+      "b368b998-554e-44f3-9a83-91dadb110bd0": "origin",
+      "bf77a5bc-8f30-4264-a815-ba3520bfc8b9": "origin"
+    }
+  },
+  {
+    "query": "我们按拆下旧固态和内存都能复用的前提重新算过装机价。",
+    "evidence_example": "那次估算 AMD 约 5500 至 5600 元，Intel 约 6300 至 6400 元。",
+    "relevant": {
+      "cc1eac20-32ef-4244-a2d2-7a78498e0f98": "episodic",
+      "bf77a5bc-8f30-4264-a815-ba3520bfc8b9": "origin"
+    }
+  },
+  {
+    "query": "我还打过单卖笔记本处理器和显卡来抵成本的主意。",
+    "evidence_example": "当时想到卖 CPU 和 GPU，讨论转向焊接件和主板回收。",
+    "relevant": {
+      "cc1eac20-32ef-4244-a2d2-7a78498e0f98": "episodic",
+      "1863aad5-440e-4562-9a18-9111946d41e4": "origin",
+      "0aad0ec8-ab76-4db7-a629-b495653025ad": "origin"
+    }
+  },
+  {
+    "query": "我曾质疑笔记本处理器一概不能拆卖的说法。",
+    "evidence_example": "回复区分了可拔下的 PGA 和焊在板上的 BGA 封装。",
+    "relevant": {
+      "cc1eac20-32ef-4244-a2d2-7a78498e0f98": "episodic",
+      "ca2b3ae7-fe14-4bb6-ba63-22400a55fac4": "origin",
+      "33044065-7996-4794-944b-bdb434391ca7": "origin"
+    }
+  },
+  {
+    "query": "谈旧游戏本显卡回收时，助手提过少见的可拆卸接口。",
+    "evidence_example": "当时说一般显卡焊在主板上，少数 MXM 模块例外。",
+    "relevant": {
+      "cc1eac20-32ef-4244-a2d2-7a78498e0f98": "episodic",
+      "bd924b70-9c3f-460a-87a4-064f8b73d9d7": "origin"
+    }
+  },
+  {
+    "query": "我想回顾之前拿来和桌面 i5-13600KF 对比的移动端型号。",
+    "evidence_example": "当时用 i7-13650HX 作近似比较。",
+    "relevant": {
+      "d4115a1f-ec18-4cc4-a9c2-d5c6f9ad8e72": "origin"
+    }
+  },
+  {
+    "query": "我曾追问同代处理器在台式机上有性能优势的原因。",
+    "evidence_example": "当时讨论了持续供电、散热、频率和主板功耗限制。",
+    "relevant": {
+      "2b2dea68-3021-4f56-8490-00dfdde46655": "origin"
+    }
+  },
+  {
+    "query": "两张同名整机清单里，有一张用的是 13600KF 和 Ti 显卡。",
+    "evidence_example": "这张配置九标 6589 元，显卡是 RTX 5060 Ti。",
+    "relevant": {
+      "b2b2cdec-c0f9-4307-b53f-76f118c913dd": "episodic",
+      "3f6a1c4e-8d5d-4c3b-8e82-69d1057dded9": "origin",
+      "31bb7707-61dd-44cf-a1b1-6bcaab50b3b0": "origin"
+    }
+  },
+  {
+    "query": "我曾以为 RTX 5060 Ti 只有单一显存容量。",
+    "evidence_example": "当时的解释是有 8GB 和 16GB 两档。",
+    "relevant": {
+      "b2b2cdec-c0f9-4307-b53f-76f118c913dd": "episodic",
+      "4098ba16-bc0d-4104-a662-dd4ecd7adbef": "origin",
+      "db69835d-3739-4f5b-9f72-7a3855fde624": "origin"
+    }
+  },
+  {
+    "query": "我发过一张配置六的整机截图，处理器型号带 HX。",
+    "evidence_example": "图中写 i5-14500HX、RTX 5050 8G，标价 5588 元。",
+    "relevant": {
+      "aa5d855d-c91d-46fe-b4ea-21d14ca50826": "episodic",
+      "a4a1f1a9-b2e0-42f3-ba5c-3a9a7d1faae2": "origin"
+    }
+  },
+  {
+    "query": "那张用了移动处理器的配置六，当时得到过一个购买判断。",
+    "evidence_example": "当时回复不推荐，提到了移动端处理器与主板的顾虑。",
+    "relevant": {
+      "aa5d855d-c91d-46fe-b4ea-21d14ca50826": "episodic",
+      "f4d278dc-b80a-4571-a6a8-205a4c3ce72d": "origin"
+    }
+  },
+  {
+    "query": "另一张配置九用了桌面 i5-14400F，我想核对它的价格。",
+    "evidence_example": "搭配 RTX 5060 的那张标价 5918 元，当时的评价是用料好些但偏贵。",
+    "relevant": {
+      "aa5d855d-c91d-46fe-b4ea-21d14ca50826": "episodic",
+      "d6fb121c-b04a-4264-ab86-0b56c7de8505": "origin",
+      "9d35118a-8d88-420d-be65-2912f2424fda": "origin"
+    }
+  },
+  {
+    "query": "我对带去图书馆做 Python 开发的便携电脑列过要求。",
+    "evidence_example": "要能跑 PyCharm，轻薄、续航长、性价比高。",
+    "relevant": {
+      "d1aae2d1-a391-4884-a448-2d7d17db8824": "episodic",
+      "f6669a3f-118f-41ff-8b32-799a055d31af": "origin",
+      "cf9200e9-7038-43f5-8bf8-dcc03dc13e69": "semantic"
+    }
+  },
+  {
+    "query": "聊图书馆轻薄本时，当时列过几款候选机型。",
+    "evidence_example": "列过荣耀 MagicBook X14、机械革命无界14、华硕无畏16 SE 等。",
+    "relevant": {
+      "adac7d10-0ab1-4d1d-b7f8-c496bc914704": "origin"
+    }
+  },
+  {
+    "query": "我考虑过闲鱼二手 Mac 的验机和交易风险。",
+    "evidence_example": "当时提到隐瞒维修、激活锁、监管锁和维权难度。",
+    "relevant": {
+      "703e54a5-d331-4c0b-8c73-526824a0bb20": "episodic",
+      "e2a3ac2c-2864-4255-89ff-1ea8d60467a2": "origin",
+      "73a47e41-f05f-4138-b369-af2ddcc513a1": "origin"
+    }
+  },
+  {
+    "query": "我想回顾比较二手 Mac 平台时对官方验机的评价。",
+    "evidence_example": "转转有平台担保和官方验机，但仍有漏检的可能。",
+    "relevant": {
+      "703e54a5-d331-4c0b-8c73-526824a0bb20": "episodic",
+      "a1e791c1-c43d-4836-9932-a32c7866ce85": "origin"
+    }
+  },
+  {
+    "query": "我发过一台二手 2020 款 MacBook Pro 的报价。",
+    "evidence_example": "卖家称女生自用，标价 2300 元。",
+    "relevant": {
+      "b8aaa303-5d24-46c8-b4c6-5855d7c1d981": "episodic",
+      "ab41cab5-8a63-44d1-8c76-8017ae7fa399": "origin",
+      "1c40002f-18ac-43da-8352-f8c33c83b504": "origin",
+      "3aa4160b-eb43-4d01-8e7a-000f63b300ad": "origin"
+    }
+  },
+  {
+    "query": "我向卖家核实过那台两千三的 Mac 所用的处理器。",
+    "evidence_example": "最后确认是 Intel 版，此前助手也倾向这一判断。",
+    "relevant": {
+      "b8aaa303-5d24-46c8-b4c6-5855d7c1d981": "episodic",
+      "1631847e-7471-4791-9c22-0a6c98242a20": "origin",
+      "df20d40f-4f98-4c2f-a175-87a766ff6e8a": "origin"
+    }
+  },
+  {
+    "query": "我对买 Mac 的理由主要跟芯片能效有关。",
+    "evidence_example": "我看重高续航，认为 Intel 版不符合自己的需求。",
+    "relevant": {
+      "b8aaa303-5d24-46c8-b4c6-5855d7c1d981": "episodic",
+      "db71ba9e-de68-4399-bf31-c4736786abee": "origin",
+      "0746bc08-c793-46eb-87a3-d6ab648fe05e": "origin",
+      "e4f49b10-c81e-43dd-95fc-f1d2f918b985": "semantic"
+    }
+  },
+  {
+    "query": "我们按平板的操作系统比较过在本地运行 PyCharm 的可能性。",
+    "evidence_example": "当时按系统区分，Windows 平板可本地运行，普通 iPad 或安卓平板通常有困难。",
+    "relevant": {
+      "b7ac96cb-1e87-4996-84b7-78274e816106": "episodic",
+      "d65bb53c-de83-4b9e-852d-de64b0fb2209": "origin",
+      "85a29169-5456-4ed3-94c8-0f6b14168840": "origin"
+    }
+  },
+  {
+    "query": "我提过用更换操作系统来解决平板开发环境的问题。",
+    "evidence_example": "我想刷 Windows，当时讨论到架构和驱动兼容风险。",
+    "relevant": {
+      "b7ac96cb-1e87-4996-84b7-78274e816106": "episodic",
+      "cbd2aecb-efed-426c-a43d-485ab605b190": "origin",
+      "25c6c822-9a07-4213-8192-2301f62cf0dc": "origin"
+    }
+  },
+  {
+    "query": "我一度觉得平板已经能触屏，再加实体键盘没必要。",
+    "evidence_example": "当时我对平板配键盘的用途提出了质疑。",
+    "relevant": {
+      "b7ac96cb-1e87-4996-84b7-78274e816106": "episodic",
+      "bb4abad2-1041-4a7d-a3ae-05d292ebcdf2": "origin"
+    }
+  },
+  {
+    "query": "我考虑在图书馆把平板当终端，让宿舍的电脑实际跑代码。",
+    "evidence_example": "讨论的方案是远程桌面，平板负责显示和输入，计算在宿舍主机上。",
+    "relevant": {
+      "fcb2ad67-2ac4-45f8-8674-94763a681e71": "episodic",
+      "4a39e923-8ce5-4915-81ad-70df4b9316eb": "origin",
+      "fca894f4-d65f-497b-a0d4-106daa5a43fe": "origin",
+      "0f529402-5b14-433d-8497-6d71eacf3323": "origin",
+      "337be148-b19e-4130-916d-01913dbb1ea0": "origin",
+      "404945d5-c902-407f-acd4-6bb02811e33c": "origin"
+    }
+  },
+  {
+    "query": "我考虑过用很便宜的平板配键盘当远程终端，想回顾这种搭配的实际体验。",
+    "evidence_example": "便宜平板能当远程终端，但网络、屏幕和键鼠支持会影响使用。",
+    "relevant": {
+      "fcb2ad67-2ac4-45f8-8674-94763a681e71": "episodic",
+      "337be148-b19e-4130-916d-01913dbb1ea0": "origin",
+      "404945d5-c902-407f-acd4-6bb02811e33c": "origin"
+    }
+  },
+  {
+    "query": "我追问过平板连接宿舍电脑时首选的两款软件。",
+    "evidence_example": "最后那次推荐的是 ToDesk 和 UU 远程。",
+    "relevant": {
+      "fcb2ad67-2ac4-45f8-8674-94763a681e71": "episodic",
+      "b463695c-ec2c-450f-a3a3-5cf48f423094": "origin"
+    }
+  },
+  {
+    "query": "我曾设想把 iPad 改成一台能跑 macOS 的设备。",
+    "evidence_example": "讨论的是 Virtual Mac on iPad，通过虚拟化运行 macOS，还有设备和系统版本限制。",
+    "relevant": {
+      "e4f960f7-3796-4332-9ce0-21255e597f67": "episodic",
+      "0a60cbc8-96c6-4ae5-ad53-0f30393c6f09": "origin",
+      "10069eec-06ac-41a3-88f4-f636333f357f": "origin"
+    }
+  },
+  {
+    "query": "我说许多人把平板的用途搞错了，回复给过一种解释。",
+    "evidence_example": "助手把这句话理解为平板更适合作远程显示与输入端，而非本地开发主机。",
+    "relevant": {
+      "477b81a6-cb49-405b-9c8d-3a086eaa3ed5": "episodic",
+      "c660390d-5ebb-43a2-8d97-b2027ddf2362": "origin",
+      "33a4b853-a515-404c-9559-ce1d7d10457b": "origin"
+    }
+  },
+  {
+    "query": "我最初想找一款开发得比较成熟的 Minecraft AI 同伴模组。",
+    "evidence_example": "当时拿言出法随、AIMC 和 Player2 等方案作过比较。",
+    "relevant": {
+      "0f5685d0-f3e2-41df-8617-b5558c8f7609": "episodic",
+      "441701e6-05d5-4199-aef3-602009d2f19e": "origin",
+      "de025a5d-e107-45cd-82df-45990f91f673": "origin",
+      "54fd9c77-5fb8-4013-bfb0-9fc9781c91e8": "origin"
+    }
+  },
+  {
+    "query": "我后来澄清过自己挑 MC 游戏同伴真正看重的两个条件。",
+    "evidence_example": "希望它足够聪明，而且能稳定运行。",
+    "relevant": {
+      "0f5685d0-f3e2-41df-8617-b5558c8f7609": "episodic",
+      "46ca6220-c21c-48b4-b09e-68daf7268895": "origin",
+      "6a389d40-a5c0-4e65-8112-c5a2bd54e5eb": "origin",
+      "5d5c52ec-9c25-4a1c-9958-373714aed3e0": "semantic"
+    }
+  },
+  {
+    "query": "我决定试试言出法随后，聊过初次使用前要准备的东西。",
+    "evidence_example": "要核对游戏版本和加载器，准备模型 API Key，再进游戏配置同伴。",
+    "relevant": {
+      "72894228-4091-404f-8198-f4c1dd073bc4": "episodic",
+      "88957873-3418-4430-bd01-837a5eacbee7": "origin",
+      "8c49f8ea-a339-4895-9023-e35a41d94788": "origin"
+    }
+  },
+  {
+    "query": "我曾专门了解 Player2 的选角和启动方式。",
+    "evidence_example": "当时的介绍是按 H 打开角色界面，由独立桌面应用处理 AI。",
+    "relevant": {
+      "077b68d9-a199-43f6-be23-549b2ff9f184": "origin",
+      "54fd9c77-5fb8-4013-bfb0-9fc9781c91e8": "origin"
+    }
+  },
+  {
+    "query": "我想回顾当时对 MC 游戏同伴和外部模型分工的讲解。",
+    "evidence_example": "游戏内实体交互主要用 Java，AI 决策可以由外部模型处理。",
+    "relevant": {
+      "4f7ae001-c7cd-4906-89ce-b6d9c7290c74": "origin"
+    }
+  },
+  {
+    "query": "我曾以为 Claude 能驱动 Numen 就代表官方参与开发。",
+    "evidence_example": "当时解释为社区项目适配 Anthropic 接口和 MCP，非官方联合开发。",
+    "relevant": {
+      "3417245b-9d8b-47cd-98a4-1da38ab4588b": "episodic",
+      "7eada33e-af8e-4eaa-8ced-c7314f232dfa": "origin",
+      "f767710e-664d-4e19-9fa3-d7784b4e3b39": "origin"
+    }
+  },
+  {
+    "query": "我是以第一次接触 Minecraft 的身份来学基本操作的。",
+    "evidence_example": "我说自己以前没玩过，先从基础按键学起。",
+    "relevant": {
+      "9a0c0d4d-2669-4dbb-b14c-4c4b258b53c3": "episodic",
+      "90c926a2-c07d-4daf-bdd9-1186846368a1": "origin",
+      "9ff13b99-0ebe-4909-8f92-2fffcbabf980": "semantic"
+    }
+  },
+  {
+    "query": "我想找之前那份 MC Java 版的新手键位说明。",
+    "evidence_example": "里面讲了 WASD 移动、空格跳跃、E 开背包和 F5 切视角。",
+    "relevant": {
+      "5e636b6e-4442-4db0-99c8-86de525bf28e": "origin"
+    }
+  },
+  {
+    "query": "开始玩 MC 时我已经装了一个帮助合成的模组。",
+    "evidence_example": "我说它可以查看合成配方，没报具体名字。",
+    "relevant": {
+      "9a0c0d4d-2669-4dbb-b14c-4c4b258b53c3": "episodic",
+      "365a335e-5667-4f03-be84-c2036da3623f": "origin",
+      "ce853923-faf2-40ed-947f-e89ffdb9c200": "semantic"
+    }
+  },
+  {
+    "query": "我在 MC 新手对话里专门了解过经验等级的用途。",
+    "evidence_example": "当时讲的是附魔、铁砧操作和经验修补等用途。",
+    "relevant": {
+      "df10d1b8-0179-4bd6-856f-8b26911c79c8": "origin"
+    }
+  },
+  {
+    "query": "我对 MC 经验掉在地上的样子有过一个具体印象。",
+    "evidence_example": "是靠近会自动吸收的绿色或黄绿色小球。",
+    "relevant": {
+      "57ff5c35-d5b2-42bf-acb2-5181fa283ccc": "origin",
+      "cc93e242-9beb-4e51-b0b4-5d7b1ce8c6cd": "origin"
+    }
+  },
+  {
+    "query": "我想找回上次关于 MC 附魔台和书架摆放的解释。",
+    "evidence_example": "当时讲到附魔台用经验与青金石，最多用 15 个书架解锁 30 级附魔。",
+    "relevant": {
+      "df10d1b8-0179-4bd6-856f-8b26911c79c8": "origin",
+      "e0e69ec6-4d8f-4633-b49b-72b25d7b0210": "origin",
+      "b6e72881-fcdd-4c23-ad77-8dea9de469ca": "origin"
+    }
+  },
+  {
+    "query": "我在学 MC 时关心过保护村民能带来的收益。",
+    "evidence_example": "村民能从事不同职业，用绿宝石交易附魔书、装备和食物等。",
+    "relevant": {
+      "f1f6d2a4-2098-42d2-8114-18714fd67b39": "origin"
+    }
+  },
+  {
+    "query": "我们聊过早期玩家了解 Minecraft 隐藏规则的途径。",
+    "evidence_example": "当时提到玩家反复试验，以及社区维护的 Minecraft Wiki。",
+    "relevant": {
+      "b6e72881-fcdd-4c23-ad77-8dea9de469ca": "origin"
+    }
+  },
+  {
+    "query": "我想回顾加入别人世界时本地模组可用的条件。",
+    "evidence_example": "当时区分只改本地表现的客户端模组和需要服务端支持的双端模组。",
+    "relevant": {
+      "11853585-596d-4e00-9691-fb47a37f2f4b": "episodic",
+      "435b55a8-4a89-46e4-8937-cf9735b7dc31": "origin",
+      "6c1c89ba-0af0-4a9e-b2ca-600fa366a4c1": "origin"
+    }
+  },
+  {
+    "query": "我专门拿言出法随举过联机安装的例子。",
+    "evidence_example": "Numen 是双端模组，自己和对方服务器都需要安装。",
+    "relevant": {
+      "11853585-596d-4e00-9691-fb47a37f2f4b": "episodic",
+      "8c49f8ea-a339-4895-9023-e35a41d94788": "origin",
+      "6c1c89ba-0af0-4a9e-b2ca-600fa366a4c1": "origin"
+    }
+  },
+  {
+    "query": "我曾试着弄明白手里拿着方块敲另一个方块的掉落规则。",
+    "evidence_example": "当时按徒手挖掘解释，能否掉落还取决于目标方块和工具。",
+    "relevant": {
+      "ccaaffa8-248c-40f4-afa3-5bda1ebb2165": "origin"
+    }
+  },
+  {
+    "query": "我在配方和 AI 同伴以外也提过想下载另一类 MC 模组。",
+    "evidence_example": "我说想下载游戏里的枪械模组。",
+    "relevant": {
+      "967da538-b03e-4dea-89b1-bc838c2919d2": "episodic",
+      "be45a8f8-a913-4a95-8776-9a2a5f1a4588": "origin",
+      "27708539-791a-4057-95fe-06fec6296cf4": "origin"
+    }
+  },
+  {
+    "query": "我比较过用 Claude Code 和用内置模型来驱动游戏同伴。",
+    "evidence_example": "当时认为外部模型可负责决策，复杂规划的上限可能更高。",
+    "relevant": {
+      "8ddab1be-4821-4612-90ef-aa40e488e227": "episodic",
+      "f5c2f337-71a6-4b06-ba90-4979b99072c3": "origin",
+      "a5ea6dc6-7932-4a51-a54e-96bc89a24ee4": "origin"
+    }
+  },
+  {
+    "query": "我提到过自己日常反复使用的一款编程工具。",
+    "evidence_example": "我经常用 Claude Code。",
+    "relevant": {
+      "8ddab1be-4821-4612-90ef-aa40e488e227": "episodic",
+      "6fbc6366-023b-46e2-9f2f-1e51a3d4915d": "origin",
+      "080ea531-c784-4bdf-99d5-9f0e240e114e": "semantic"
+    }
+  },
+  {
+    "query": "我曾担心游戏同伴频繁调用 MCP 会耗尽模型窗口。",
+    "evidence_example": "当时我使用的模型上下文为 200K，担忧工具输出累积。",
+    "relevant": {
+      "8ddab1be-4821-4612-90ef-aa40e488e227": "episodic",
+      "6fbc6366-023b-46e2-9f2f-1e51a3d4915d": "origin",
+      "f4a9e37c-1865-4f8b-b158-3ea7a88e85ee": "origin",
+      "ffca7757-f548-43c0-b86a-8b7ed07f95d2": "semantic"
+    }
+  },
+  {
+    "query": "我想回顾《孤独患者》里人前和独处时的情绪反差。",
+    "evidence_example": "当时的解读是外表能社交，内心却感到疏离和疲惫。",
+    "relevant": {
+      "665b1b87-d688-4b9d-bb90-8dbcdac9a4d3": "origin",
+      "4c6247e6-114f-4a69-99c2-f89588a5adf8": "origin",
+      "43e02f40-806b-4a46-b8c1-ba11a1cb47f8": "origin"
+    }
+  },
+  {
+    "query": "我解释过自己为何很难代入陈奕迅那首写社交面具的歌。",
+    "evidence_example": "我说自己没什么社交，少有人可说话，也没有面具。",
+    "relevant": {
+      "fffc6381-cfa4-4a3c-86b2-f7a75915e660": "episodic",
+      "2df0cd7e-40e5-4adc-b7f3-1b2fa8cb1478": "origin",
+      "43e02f40-806b-4a46-b8c1-ba11a1cb47f8": "origin",
+      "12448241-4e11-4d70-ac05-b590e6154641": "origin",
+      "efcc84b6-e0ae-4673-a8bb-59bf949b37cb": "origin",
+      "f37d5b50-fa60-4306-86fb-70448a021697": "origin",
+      "7264bda9-b8f2-4855-9640-e6f447a159be": "origin",
+      "216fa694-99da-4a1d-960f-3e41dceed979": "semantic",
+      "804ffa83-30db-4add-a15c-9df9c1889b8e": "semantic"
+    }
+  },
+  {
+    "query": "我夸过张靓颖唱的一首慢歌。",
+    "evidence_example": "当时说《如果这就是爱情》挺不错。",
+    "relevant": {
+      "5cdbd678-8262-480c-8a5a-6f0e1d0d6fe1": "episodic",
+      "81396de3-6cc2-4ecb-8f7a-e066777f8a4d": "origin",
+      "a06a75a7-3e9f-4d92-b8e6-e898474471dd": "semantic"
+    }
+  },
+  {
+    "query": "我们讨论过张靓颖那首歌里双方付出不对等的故事。",
+    "evidence_example": "当时解读为一方付出较多，最后选择成全和祝福。",
+    "relevant": {
+      "e393aa3d-b23d-4fe6-bd51-5fe0682629b4": "origin"
+    }
+  },
+  {
+    "query": "我想找之前对盛哲那首歌所写的离别和思念的解读。",
+    "evidence_example": "谈的是《在你的身边》，当时理解为人已离开而思念仍在。",
+    "relevant": {
+      "3d151964-6cfb-4b31-a8eb-978c52b73d04": "origin"
+    }
+  },
+  {
+    "query": "我说过一首隔了好几年再听就会想起某个人的歌。",
+    "evidence_example": "《在你的身边》让我觉得难受，也让我想起一个人。",
+    "relevant": {
+      "26035a2e-1db3-4029-b5c8-b2f28a029c52": "episodic",
+      "e94e40fa-3c02-44e3-bc73-72e07a8a8ee9": "origin",
+      "659bbac1-4105-43c8-ae52-103ccd30da1f": "origin",
+      "a4c492b9-ceec-4058-9ee4-99310ad758f7": "semantic"
+    }
+  },
+  {
+    "query": "我曾用两个上学阶段来说明自己听同一首歌隔了多久。",
+    "evidence_example": "初听《在你的身边》时还没上高中，后来谈起时已是大二。",
+    "relevant": {
+      "26035a2e-1db3-4029-b5c8-b2f28a029c52": "episodic",
+      "e94e40fa-3c02-44e3-bc73-72e07a8a8ee9": "origin",
+      "659bbac1-4105-43c8-ae52-103ccd30da1f": "origin",
+      "f324e222-18eb-4ed6-91a0-bc2e8325002f": "semantic"
+    }
+  },
+  {
+    "query": "聊到过去在意的人时，我描述过自己平时表达感情的样子。",
+    "evidence_example": "我说自己虽然沉默，曾经也有在意的人。",
+    "relevant": {
+      "26035a2e-1db3-4029-b5c8-b2f28a029c52": "episodic",
+      "4d481758-002c-44f0-b8cc-23395be65bc5": "origin",
+      "3d378d88-89e8-41e9-bfa7-c4d2878249d1": "origin",
+      "7f2759c7-191f-4f12-bf86-8ddcf5feeeb6": "semantic"
+    }
+  },
+  {
+    "query": "我曾在聊歌的时候说到自卑和对自己的总体评价。",
+    "evidence_example": "我说自己有时挺自卑、觉得自己糟糕。",
+    "relevant": {
+      "583c22b9-51ce-433d-a19f-8dd8ea5d8778": "episodic",
+      "efb67ee0-dcbb-4440-911b-23a2c82c312d": "origin",
+      "ab39dda8-3fec-44c8-a23b-3255f7841637": "origin",
+      "27754363-97f5-4227-8292-00c0b8c7b7d6": "semantic"
+    }
+  },
+  {
+    "query": "我列举过让自己没自信的几件具体事情。",
+    "evidence_example": "我提过身体不好、骑车常摔、成绩和社交表达等困扰。",
+    "relevant": {
+      "583c22b9-51ce-433d-a19f-8dd8ea5d8778": "episodic",
+      "b8772e8e-3ba7-4c7c-b21c-d5a2656add89": "origin",
+      "cdde0635-7110-47a5-ab3d-0704618987d9": "origin",
+      "27754363-97f5-4227-8292-00c0b8c7b7d6": "semantic"
+    }
+  },
+  {
+    "query": "我想找之前对《暗号》里两个人之间默契的解读。",
+    "evidence_example": "当时用私密通信比喻两人的默契，以及它在干扰下渐渐失效。",
+    "relevant": {
+      "fe4dac25-bbcd-4790-bead-c4b3e6c55469": "origin"
+    }
+  },
+  {
+    "query": "我说过歌手的知名度和作品能否惊艳我并不总是一致。",
+    "evidence_example": "我认为不少冷门原创歌手也写出过很出色的作品。",
+    "relevant": {
+      "755f67c6-9910-4c83-a749-8f8edd76d0af": "episodic",
+      "4bf8904b-c725-41bd-aee1-8012a5322151": "origin",
+      "63f783f3-26d4-46a1-80e2-5ac3880c2973": "origin",
+      "cc00674e-498a-4902-8d3c-9e2f054e5488": "semantic"
+    }
+  },
+  {
+    "query": "我曾用一个很短的评价形容《给我一首歌的时间》。",
+    "evidence_example": "我觉得这首歌挺抽象，之后聊到用一首歌的时间挽留的意象。",
+    "relevant": {
+      "302756ff-83ca-4d24-a3c7-bbffc62d478c": "episodic",
+      "4af11069-e37e-46ed-be40-dfbf118d0cdc": "origin",
+      "ebefbad6-7d79-4341-a602-82f9f84dcfd8": "origin",
+      "4ebde429-16ed-4cdc-b131-64cfbb1cdfaf": "semantic"
+    }
+  },
+  {
+    "query": "我记得二手键盘到货时讨论过一套开箱和验机顺序。",
+    "evidence_example": "先连续录下开箱，清点接收器等配件，再测有线、无线和按键。",
+    "relevant": {
+      "970be571-c9c7-4539-b177-997918eb2c59": "origin",
+      "760afb14-313e-46d8-a3d9-ba0e791f0d0e": "origin"
+    }
+  },
+  {
+    "query": "我想回顾比赛那次谈话里 OPPO 和参赛意愿之间的关系。",
+    "evidence_example": "助手曾追问是涉及 OPPO 的赛题还是比赛的商业化导向，没有得到明确确认。",
+    "relevant": {
+      "0a57298d-944b-400e-9422-36272b615aab": "origin"
+    }
+  },
+  {
+    "query": "我自己对连续几次淘到便宜二手货有过评价。",
+    "evidence_example": "我觉得自己有捡漏天赋，提到十元旧键盘和后来买到的准新 Mini60。",
+    "relevant": {
+      "84d71de9-1f85-4e3a-b1a6-0225f41cdae4": "origin",
+      "3ee6f59f-fd2a-4325-a454-423985c25bb6": "origin",
+      "caebeefb-0025-4327-bb1e-6353b004d345": "origin",
+      "5dfa45db-a7c9-4860-baf8-dbc0e871d3a1": "origin"
+    }
+  },
+  {
+    "query": "我想找当时估算拆下旧硬盘但保留购买新内存预算的方案。",
+    "evidence_example": "只复用 1TB SSD 时，旧估算为 AMD 约 6580 元、Intel 约 7350 元。",
+    "relevant": {
+      "cc1eac20-32ef-4244-a2d2-7a78498e0f98": "episodic",
+      "bf77a5bc-8f30-4264-a815-ba3520bfc8b9": "origin"
+    }
+  },
+  {
+    "query": "我们谈过远程写代码时宿舍端和图书馆端必须满足的条件。",
+    "evidence_example": "宿舍电脑要保持开机，两端都要有稳定的网络。",
+    "relevant": {
+      "4a39e923-8ce5-4915-81ad-70df4b9316eb": "origin",
+      "0f529402-5b14-433d-8497-6d71eacf3323": "origin",
+      "404945d5-c902-407f-acd4-6bb02811e33c": "origin"
+    }
+  },
+  {
+    "query": "我担心模型上下文被游戏里的感知工具占满时，听过对消耗来源的解释。",
+    "evidence_example": "工具定义有固定开销，频繁返回的世界状态会持续累积。",
+    "relevant": {
+      "f4a9e37c-1865-4f8b-b158-3ea7a88e85ee": "origin"
+    }
+  },
+  {
+    "query": "平时用的两样数码设备里，我明确说过更看重其中一个。",
+    "evidence_example": "我说电脑比手机重要。",
+    "relevant": {
+      "9a5aacf6-b43e-46b8-9d3d-587947a080a5": "episodic",
+      "16b0a240-4654-47a7-a6f9-2a92504ce0a9": "origin",
+      "3c6d92e9-ba91-424a-b6af-17cdd0d317ff": "origin",
+      "fc4c2188-5f46-481c-9a69-38f0f0607f39": "semantic"
+    }
+  },
+  {
+    "query": "我给 Codex 的反馈里有一类是简单问题被写得过于复杂。",
+    "evidence_example": "当时用工具错配作比喻，回复举了一个函数被拆成多个模块的例子。",
+    "relevant": {
+      "ace9595e-e7f9-4d1e-a615-53238dbfb1d7": "origin",
+      "ce1778fe-9360-4e86-b4c0-3632c5898442": "origin",
+      "3e5c4041-0bee-46bf-b28d-66612b1779ed": "origin",
+      "44008521-e0b9-4ec6-866e-1357e13d6769": "origin"
+    }
+  },
+  {
+    "query": "我想对照 Codex 出事时我离开电脑做的事和我平时等 AI 改 bug 的消遣。",
+    "evidence_example": "两次我提到的都是刷抖音。",
+    "relevant": {
+      "8c170627-17c4-42be-ad63-88c0118f4ef3": "episodic",
+      "9e74084a-24af-4030-a9e7-3b784788b188": "episodic",
+      "f040bc3a-f3b7-4bca-9629-570049e21601": "origin",
+      "97e0c387-4cc0-4e13-99ed-df6aefc1d599": "origin",
+      "ea68ef34-edfb-4e66-b183-1b219429df4f": "origin",
+      "7fd8d487-7e88-402f-814f-8256339feef7": "origin",
+      "65a43151-43de-4e9a-9e03-1bd544443115": "origin",
+      "1611a426-07e8-4f56-b8f0-b63f5e978ab6": "semantic"
+    }
+  },
+  {
+    "query": "我想还原软件创新大赛那次谈话开头我向助手求证的主题。",
+    "evidence_example": "我想听它直说当时参加大学生软件创新大赛究竟值不值得。",
+    "relevant": {
+      "795909bc-0ed3-4bf2-b6f9-d8e5ffc0e841": "episodic",
+      "bb4cac3d-abfc-49b0-a92f-18d5b99285e5": "origin",
+      "ce5b7526-be27-4a96-991c-9c3cdded71bb": "origin",
+      "213b18bf-b493-4b52-a7dd-b2cd1c14ea51": "origin"
+    }
+  },
+  {
+    "query": "我看上的不同二手 Mini60 出厂时间容易混淆。",
+    "evidence_example": "先看过四月的批次，最后选中的是八月那批。",
+    "relevant": {
+      "c88ececb-4c69-4c8a-9b8c-4c705558b105": "origin",
+      "82bc3aaa-d8e2-4f4c-b135-63c2dadc0c4e": "origin",
+      "59b1b6b8-7898-4837-9276-a5a098652060": "origin",
+      "760afb14-313e-46d8-a3d9-ba0e791f0d0e": "origin",
+      "ccbe77f8-2b3d-4e46-871c-c04424689317": "origin",
+      "401ed6ab-4229-4354-9cd1-db275f08bf38": "origin",
+      "3ee6f59f-fd2a-4325-a454-423985c25bb6": "origin"
+    }
+  },
+  {
+    "query": "我想回顾看二手磁轴时要求卖家远程展示按键状况的做法。",
+    "evidence_example": "当时建议录不中断的全键测试视频，并演示无线连接。",
+    "relevant": {
+      "55b3f36e-272a-4aa2-92ba-6ad82fe8a6f8": "origin",
+      "a31c6797-9cda-4780-9891-dbc76e7801e8": "origin",
+      "8f6df9a0-b2a5-4d42-949f-77b35433a434": "origin",
+      "7d200f79-9d83-4488-86d2-f720cdf5796c": "origin",
+      "b5218b63-19d3-45bf-8e78-67121a3e0dc0": "origin",
+      "82bc3aaa-d8e2-4f4c-b135-63c2dadc0c4e": "origin"
+    }
+  },
+  {
+    "query": "挑新键盘的时候，我想比较的两种轴体技术有过明确表述。",
+    "evidence_example": "我提的是磁轴和普通机械轴，旧键盘具体用青轴。",
+    "relevant": {
+      "86ba51d0-3da4-4203-ae6f-ecbd34484ae3": "episodic",
+      "532bcbe9-251e-48a4-95ae-b2d85aa9596f": "origin",
+      "b4890ea2-600e-4d33-be58-0199b92ceb46": "origin",
+      "ef775bab-9a64-4785-a512-9365893ee04b": "origin",
+      "7e15416e-2066-4cfc-80d1-67021df19ba7": "origin"
+    }
+  },
+  {
+    "query": "聊完蕾塞和电次，我也说过自己对蕾塞这个角色的向往。",
+    "evidence_example": "先讨论她最后去见电次，随后我说自己也想有个蕾塞。",
+    "relevant": {
+      "8b1a304c-e161-45c2-ae84-053e896b80b7": "origin",
+      "9acb9b99-763b-42c1-8910-7835080ddbfe": "origin",
+      "7a7aead6-7347-4b00-9e83-c9f09f75c37d": "origin",
+      "35427fc7-b07f-4ddf-99d6-70b6baf9f8b8": "origin"
+    }
+  },
+  {
+    "query": "我曾把一次准备翘掉的课打趣成额外的假期。",
+    "evidence_example": "我说又要翘课，等于白送一天假期。",
+    "relevant": {
+      "0970faad-9d54-46af-aebd-08712a6d88f1": "origin"
+    }
+  },
+  {
+    "query": "我想区分买二手 Mac 之前我自己的芯片猜测和后来问到的结果。",
+    "evidence_example": "我先猜是 Intel 而非 M 芯片，问过之后确认了这个判断。",
+    "relevant": {
+      "b8aaa303-5d24-46c8-b4c6-5855d7c1d981": "episodic",
+      "8f537525-da63-42dd-82a4-9024b39c3dc6": "origin",
+      "3aa4160b-eb43-4d01-8e7a-000f63b300ad": "origin",
+      "1631847e-7471-4791-9c22-0a6c98242a20": "origin",
+      "df20d40f-4f98-4c2f-a175-87a766ff6e8a": "origin"
+    }
+  },
+  {
+    "query": "我挑 MC 同伴时说过两个先后不同的筛选标准。",
+    "evidence_example": "先说要最成熟，之后澄清要最聪明而且运行稳定。",
+    "relevant": {
+      "0f5685d0-f3e2-41df-8617-b5558c8f7609": "episodic",
+      "441701e6-05d5-4199-aef3-602009d2f19e": "origin",
+      "51a509ea-edc0-4009-99a8-598c74d9d128": "origin",
+      "46ca6220-c21c-48b4-b09e-68daf7268895": "origin",
+      "5d5c52ec-9c25-4a1c-9958-373714aed3e0": "semantic"
+    }
+  },
+  {
+    "query": "我玩 MC 之前关心过角色等级和村庄居民这两套游戏机制。",
+    "evidence_example": "我分别提过经验等级的用处，以及保护村民的理由。",
+    "relevant": {
+      "05a84880-8ceb-4672-8b76-8a2702648eff": "origin",
+      "df10d1b8-0179-4bd6-856f-8b26911c79c8": "origin",
+      "7174cade-9f72-4475-bae6-d36f46bd87e2": "origin",
+      "f1f6d2a4-2098-42d2-8114-18714fd67b39": "origin"
+    }
+  },
+  {
+    "query": "我在 MC 新手阶段专门问过两件和方块、装备有关的事情。",
+    "evidence_example": "一件是附魔，另一件是手持方块挖别的方块会掉什么。",
+    "relevant": {
+      "9be25bfc-ca0e-4ffa-8295-98434a0ee857": "origin",
+      "e0e69ec6-4d8f-4633-b49b-72b25d7b0210": "origin",
+      "2edb0283-8197-4fac-b3fa-47939af146dc": "origin",
+      "ccaaffa8-248c-40f4-afa3-5bda1ebb2165": "origin"
+    }
+  },
+  {
+    "query": "我想找最初提到联机模组时我用来举例的具体名字。",
+    "evidence_example": "先说进别人的世界用自带模组，接着举了 Numen 的例子。",
+    "relevant": {
+      "11853585-596d-4e00-9691-fb47a37f2f4b": "episodic",
+      "ffc6d2bb-5e38-4129-9ee5-c82743803293": "origin",
+      "c5ecf0b3-61ec-49b8-a4ad-7e0d9bfbe904": "origin",
+      "6c1c89ba-0af0-4a9e-b2ca-600fa366a4c1": "origin"
+    }
+  },
+  {
+    "query": "我曾从一首描写人群中孤独的歌聊到另一首写秘密默契的歌。",
+    "evidence_example": "前者是《孤独患者》，后者是《暗号》。",
+    "relevant": {
+      "009f0a81-85fa-4730-a1dd-60d257672ad1": "origin",
+      "665b1b87-d688-4b9d-bb90-8dbcdac9a4d3": "origin",
+      "273fd29a-48e5-4c52-904f-cf5e322d846d": "origin",
+      "fe4dac25-bbcd-4790-bead-c4b3e6c55469": "origin"
+    }
+  },
+  {
+    "query": "我想区分我请人解释过的盛哲作品和我主动夸过的张靓颖作品。",
+    "evidence_example": "我问的是《在你的身边》的含义，夸的是《如果这就是爱情》。",
+    "relevant": {
+      "5cdbd678-8262-480c-8a5a-6f0e1d0d6fe1": "episodic",
+      "81396de3-6cc2-4ecb-8f7a-e066777f8a4d": "origin",
+      "e086d23f-368a-404a-96bc-18cd59674ffd": "origin",
+      "3d151964-6cfb-4b31-a8eb-978c52b73d04": "origin",
+      "a06a75a7-3e9f-4d92-b8e6-e898474471dd": "semantic"
+    }
+  }
+]
