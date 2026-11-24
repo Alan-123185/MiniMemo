@@ -1,6 +1,6 @@
 
 """
-批量发送添加记忆的请求
+批量发送添加记忆的请求的脚本
 """
 import asyncio
 import re
@@ -21,7 +21,7 @@ async def add_memory(user_id, agent_name, origin_content,session_id, role):
     print(response.status_code, response.text)
     response.raise_for_status()
 
-def read_memory_from_file(file_path,session_id):
+def read_memory_from_file(file_path,session_id="default"):
     with open(file_path, "r", encoding="utf-8-sig") as f:
         content = f.read().replace("\r\n", "\n")
 
@@ -62,10 +62,7 @@ def read_memory_from_file(file_path,session_id):
 
 if __name__ == "__main__":
     # 读取文件内容并发送请求
-    read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/healthy.txt","healthy")
-    read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/codex.txt","codex")
-    read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/race.txt","race")
-    read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/keyboard.txt","keyboard")
-    read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/raze.txt","raze")
-    read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/study_life.txt","study_life")
+    #read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/computer.txt")
+     # read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/MC.txt")
+     read_memory_from_file("D:/IDEA文件/python文件/MiniMemo/testdatas/alone.txt")
 

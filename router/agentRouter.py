@@ -21,5 +21,5 @@ async def register_agent(agent_name: str, user_id: str, agent_rep=Depends(get_ag
     注册一个智能体到记忆接管系统
     带唯一标识符
     """
-    await agent_rep.register_agent(agent_name, user_id)
-    return Result.success()
+    agent_id=await agent_rep.register_agent(agent_name, user_id)
+    return Result(message=f"agent {agent_id} 注册成功" if agent_id else f"改 agent 已存在")
